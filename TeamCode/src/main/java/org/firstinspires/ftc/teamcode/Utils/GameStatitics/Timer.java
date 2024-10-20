@@ -1,0 +1,34 @@
+package org.firstinspires.ftc.teamcode.Utils.GameStatitics;
+
+/**
+ * This is the Timer class. It is an elapsed time clock with millisecond precision, or at least as
+ * precise as the System.currentTimeMillis() is.
+ *
+ * @author Anyi Lin - 10158 Scott's Bots
+ * @author Aaron Yang - 10158 Scott's Bots
+ * @author Harrison Womack - 10158 Scott's Bots
+ * @version 1.0, 3/5/2024
+ */
+public class Timer {
+    private long startTime;
+
+
+    public Timer() {
+        resetTimer();
+    }
+
+
+    public void resetTimer() {
+        startTime = System.currentTimeMillis();
+    }
+
+
+    public long getElapsedTime() {
+        return System.currentTimeMillis() - startTime;
+    }
+
+
+    public double getElapsedTimeSeconds() {
+        return (getElapsedTime() / 1000.0);
+    }
+}
