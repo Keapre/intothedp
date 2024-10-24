@@ -50,13 +50,14 @@ import org.firstinspires.ftc.teamcode.Utils.Wrappers.GoBildaPinpointDriver;
 import org.firstinspires.ftc.teamcode.Utils.messages.DriveCommandMessage;
 import org.firstinspires.ftc.teamcode.Utils.messages.MecanumCommandMessage;
 import org.firstinspires.ftc.teamcode.Utils.messages.PoseMessage;
+import org.firstinspires.ftc.teamcode.Utils.pubSub.Subsystem;
 
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 @Config
-public final class MecanumDrive {
+public final class MecanumDrive extends Subsystem {
     public static class Params {
         // IMU orientation
         // TODO: fill in these values based on

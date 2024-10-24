@@ -17,6 +17,7 @@ import com.qualcomm.robotcore.util.ThreadPool;
 
 
 import org.firstinspires.ftc.teamcode.Utils.pubSub.Subsystem;
+import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.MecanumDrive;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,7 +30,7 @@ import java.util.concurrent.ExecutorService;
 public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarningSource {
     public static final String TAG = "Robot";
 
-
+    public MecanumDrive mecanum;
     String chubName = "Control Hub";
     String ehubName = "Expansion Hub 5";
     Pose2d start = new Pose2d(0,0,Math.toRadians(90));
@@ -111,6 +112,8 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
         //region Initialize subsystems
         subsystems = new ArrayList<>();
         try {
+            mecanum = new MecanumDrive(opMode.hardwareMap,start,false);
+            subsystems.add(mecanum);
             Log.w(TAG, "... intialized successfully");
 
         } catch (Exception e) {
