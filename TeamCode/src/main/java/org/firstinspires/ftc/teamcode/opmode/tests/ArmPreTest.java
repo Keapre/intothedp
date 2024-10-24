@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode.opmode.tests;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorRangeSensor;
@@ -10,17 +13,27 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.Utils.Caching.OPColorSensor;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 
+import java.util.List;
+
 @Config
 @TeleOp(name = "MiscociOuttake")
 public class ArmPreTest extends LinearOpMode {
 
-    Servo claw,rotate;
+    Limelight3A limelight;
+    Servo claw,rotate,tilt;
     OPColorSensor clSensor;
 
     GamePadController gamepadd;
+    double width = 0,length = 0;
 
-    public static double clawClosed = 0.75;
-    public static double clawOpened = 0.4;
+    void getDimensions(LLResultTypes.DetectorResult detector) {
+        List<List<Double>> points = detector.getTargetCorners();
+        width = Math.abs(points.get(0).get(0) - points.get(1).get(0)) + 1;
+        length = Math.abs(points.get(0).get(1) - points.get(1).get(1)) + 1;
+    }
+
+    public static double clawClosed = 0.45;
+    public static double clawOpened = 0.2;
     long lastChecked = System.currentTimeMillis();
     public static double threesholdTransition = 550;
     public static double clawThreeshold = 15;
@@ -28,8 +41,10 @@ public class ArmPreTest extends LinearOpMode {
 
     public static double ratioWidth = 1.0;
 
-    public static double verticalPose = 0.5;
-    public static double orizontalPose = 0.5;
+    public static double verticalPose = 0.14;
+    public static double orizontalPose = 0.69;
+
+
 
     enum RotateMode {
         VERTICAL(verticalPose),
@@ -50,15 +65,50 @@ public class ArmPreTest extends LinearOpMode {
         OPEN
     }
 
+    enum tiltMode {
+        UP(highTiltPos){
+            @Override
+            public tiltMode next() {
+                return this;
+            }
+        },
+        MID(tiltMidPos),
+        DOWN(lowTiltPos) {
+            @Override
+            public tiltMode previous() {
+                return this;
+            }
+        };
+
+        public final double pos;
+        tiltMode(double pos) {
+            this.pos = pos;
+        }
+        public tiltMode previous() {
+            return values()[ordinal()-1];
+        }
+        public tiltMode next() {
+            return values()[ordinal()+1];
+        }
+    }
+
+    public static double tiltMidPos = 0.5;
+    public static double lowTiltPos = 0;
+    public static double highTiltPos = 1;
+    tiltMode TiltMode = tiltMode.MID;
     @Override
     public void runOpMode() throws InterruptedException {
         ServoMode modeServo = ServoMode.OPEN;
 
+        tilt = hardwareMap.get(Servo.class,"tilt");
+        limelight = hardwareMap.get(Limelight3A.class,"limeLight");
         claw = hardwareMap.get(Servo.class,"Claw");
         rotate = hardwareMap.get(Servo.class,"rotate");
         RotateMode rMode = RotateMode.ORIZONTAL;
         clSensor =new OPColorSensor(hardwareMap.get(ColorRangeSensor.class,"sensor"));
         gamepadd = new GamePadController(gamepad1);
+        limelight.setPollRateHz(100);
+        limelight.start();
         waitForStart();
 
         while(opModeIsActive()) {
@@ -74,17 +124,59 @@ public class ArmPreTest extends LinearOpMode {
             if(gamepadd.bOnce()) {
                 usedSensor = !usedSensor;
             }
+            if (gamepadd.xOnce()) {
+                if(rMode == RotateMode.VERTICAL) {
+                    rMode = RotateMode.ORIZONTAL;
+                }else if(rMode == RotateMode.ORIZONTAL) {
+                    rMode = RotateMode.VERTICAL;
+                }
+            }
+            if(gamepadd.dpadUpOnce()) {
+                if(TiltMode == tiltMode.DOWN) {
+                    TiltMode = tiltMode.MID;
+                }else if(TiltMode == tiltMode.MID) {
+                    TiltMode = tiltMode.UP;
+                }
+            }else if(gamepadd.dpadDownOnce()) {
+                if(TiltMode == tiltMode.UP) {
+                    TiltMode = tiltMode.MID;
+                }else if(TiltMode == tiltMode.MID) {
+                    TiltMode = tiltMode.DOWN;
+                }
+            }
 
+            if(gamepadd.yOnce()) {
+                double maxConfidence = 0;
+                LLResult result = limelight.getLatestResult();
+                if (result!=null &&  result.isValid()) {
+                    List<LLResultTypes.DetectorResult> detections = result.getDetectorResults();
+                    for(LLResultTypes.DetectorResult detection : detections) {
+                        if(detection.getConfidence() > maxConfidence) {
+                            maxConfidence = detection.getConfidence();
+                            getDimensions(detection);
+                        }
+                    }
+                }
+                double ration = width/length;
+                if(ration < threesholdTransition) {
+                    rMode = RotateMode.VERTICAL;
+                }else {
+                    rMode = RotateMode.ORIZONTAL;
+                }
+                telemetry.addData("width:",threesholdTransition);
+                telemetry.addData("length:",threesholdTransition);
+
+            }
             switch (modeServo){
                 case CLOSED:
                     claw.setPosition(clawClosed);
                     break;
                 case OPEN:
-                    if(usedSensor && clSensor.getDistance() < clawThreeshold && System.currentTimeMillis() - lastChecked > threesholdTransition) {
-                        lastChecked = System.currentTimeMillis();
-                        modeServo = ServoMode.CLOSED;
-                        break;
-                    }
+//                    if(usedSensor && clSensor.getDistance() < clawThreeshold && System.currentTimeMillis() - lastChecked > threesholdTransition) {
+//                        lastChecked = System.currentTimeMillis();
+//                        modeServo = ServoMode.CLOSED;
+//                        break;
+//                    }
                     claw.setPosition(clawOpened);
                     break;
                 case PRE_CLOSED:
@@ -95,9 +187,33 @@ public class ArmPreTest extends LinearOpMode {
                 default:
                     break;
             }
+            switch (rMode){
+                case VERTICAL:
+                    rotate.setPosition(verticalPose);
+                    break;
+                case ORIZONTAL:
+                    rotate.setPosition(orizontalPose);
+                    break;
+
+            }
+
+            switch (TiltMode) {
+                case DOWN:
+                    tilt.setPosition(lowTiltPos);
+                    break;
+                case MID:
+                    tilt.setPosition(tiltMidPos);
+                    break;
+                case UP:
+                    tilt.setPosition(highTiltPos);
+                    break;
+            }
             telemetry.addData("distance",clSensor.getDistance());
             telemetry.addData("mode",modeServo);
             telemetry.addData("use Sensor:",usedSensor);
+            telemetry.addData("threeshold:",threesholdTransition);
+            telemetry.addData("rotate mode",rMode);
+            telemetry.addData("tilt",TiltMode);
             telemetry.update();
         }
 
