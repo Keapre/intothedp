@@ -93,7 +93,7 @@ public class Claw {
     public ROTATESTATE rotateState = ROTATESTATE.DEFAULT;
     public CLAWPOS clawPos = CLAWPOS.OPEN;
 
-    public Claw(HardwareMap hardwareMap) {
+    public Claw(HardwareMap hardwareMap,boolean isAuto) {
         this.claw = new CachingServo(hardwareMap.get(Servo.class, "claw"));
         this.rotate = new CachingServo(hardwareMap.get(Servo.class, "rotate"));
         this.tilt = new CachingServo(hardwareMap.get(Servo.class, "tilt"));

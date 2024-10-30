@@ -1,0 +1,19 @@
+{
+  "extension": [
+    {
+      "extensionLength" : 0
+    }
+  ],
+  "claw" : [
+    {
+      "CLAWPOS" : "CLOSED",
+      "ROTATESTATE" : "DEFAULT",
+      "TILTSTATE" : "DOWN"
+    }
+  ],
+  "Pitch" : [
+    {
+      "EXTENSIONPOS" : "DOWN"
+    }
+  ]
+}

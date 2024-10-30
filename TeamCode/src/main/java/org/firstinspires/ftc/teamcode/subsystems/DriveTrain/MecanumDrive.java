@@ -183,7 +183,7 @@ public final class MecanumDrive extends Subsystem {
 
         initializePp(pose);
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
-        localizer = new ThreeDeadWheelLocalizer(hardwareMap, PARAMS.inPerTick);
+        localizer = new TwoDeadWheelLocalizer(hardwareMap,lazyImu.get(), PARAMS.inPerTick);
         FlightRecorder.write("MECANUM_PARAMS", PARAMS);
     }
 

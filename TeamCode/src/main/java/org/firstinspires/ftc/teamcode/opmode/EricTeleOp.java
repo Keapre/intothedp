@@ -1,13 +1,13 @@
 package org.firstinspires.ftc.teamcode.opmode;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 
-public class TeleOp extends OpMode {
+@TeleOp(name = "eric e smech")
+public class EricTeleOp extends OpMode {
     Robot robot;
     GamePadController gamepadd;
 

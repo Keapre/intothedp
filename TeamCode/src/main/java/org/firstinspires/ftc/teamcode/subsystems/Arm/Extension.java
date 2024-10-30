@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.Utils.Utils;
 @Config
 public class Extension {
     DcMotorEx motor;
-    public enum EXTENSIOLENGTH {
+    public enum EXTENSIONLENGTH {
         MIN(0),
 
         STAGE1(0),
@@ -21,7 +21,7 @@ public class Extension {
         MAX(0);
 
         public double length;
-        EXTENSIOLENGTH(double x) {
+        EXTENSIONLENGTH(double x) {
             length = x;
         }
 
