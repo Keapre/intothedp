@@ -21,6 +21,8 @@ public class DriveTrainTest extends LinearOpMode {
         while(opModeIsActive()) {
             gg.update();
             drive.setMotorPowersFromGamepad(gg,1.0,false,true);
+            telemetry.addData("slow_mode",drive.slow_mode);
+            telemetry.update();
         }
     }
 }

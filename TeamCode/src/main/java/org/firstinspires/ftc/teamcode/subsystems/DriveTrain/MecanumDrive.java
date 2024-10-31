@@ -86,7 +86,7 @@ public class MecanumDrive extends Subsystem {
         public double kV = 0;
         public double kA = 0;
 
-        public  double rotateScale = 0.8;
+        public  double rotateScale = 0.85;
 
         // path profile parameters (in inches)
         public double maxWheelVel = 50;
@@ -108,6 +108,7 @@ public class MecanumDrive extends Subsystem {
         public double headingVelGain = 0.0; // shared with turn
     }
 
+    public boolean slow_mode = false;
     public static boolean  usePinPoint = true;
     public static boolean fieldCentric = false;
     public static Params PARAMS = new Params();
@@ -278,9 +279,8 @@ public class MecanumDrive extends Subsystem {
         rightBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         lastUpdated = System.currentTimeMillis();
         //TODO:reverse motor dumbass
-        rightBack.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
         leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
         lazyImu = new LazyImu(hardwareMap, "imu", new RevHubOrientationOnRobot(
                 PARAMS.logoFacingDirection, PARAMS.usbFacingDirection));
 
@@ -414,6 +414,9 @@ public class MecanumDrive extends Subsystem {
     public void setMotorPowersFromGamepad(GamePadController gg, double scale, boolean reverseFront, boolean customCurve) {
         MecanumUtil.Motion motion;
 
+        if(gg.leftStickButtonOnce()){
+            slow_mode = !slow_mode;
+        }
         double left_stick_x = gg.left_stick_x;
         double left_stick_y = gg.left_stick_y;
         double right_stick_x = PARAMS.rotateScale * gg.right_stick_x;
@@ -425,6 +428,7 @@ public class MecanumDrive extends Subsystem {
         if (fieldCentric) {
             motion = motion.toFieldCentricMotion(pose.heading.toDouble());
         }
+        if(slow_mode) scale = 0.7;
         MecanumUtil.Wheels wh = MecanumUtil.motionToWheelsFullSpeed(motion).scaleWheelPower(scale); // Use full forward speed on 19:1 motors
 /*        motorPowers[0] = ffMotor.compute(wh.frontLeft,PARAMS.maxProfileAccel);
         motorPowers[1] = ffMotor.compute(wh.backLeft,PARAMS.maxProfileAccel);
