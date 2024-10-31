@@ -6,11 +6,17 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.teamcode.Utils.Utils;
 
 public class CachingDcMotorEx extends CachingDcMotor implements DcMotorEx {
     private DcMotorEx delegate;
+    double lastPower = 0;
+    public double power = 0;
 
-
+    private double minPowerToOvercomeStaticFriction = 0.0;
+    public static final int SWITCH_FROM_STATIC_TO_KINETIC_FRICTION = 75;
+    private double minPowerToOvercomeKineticFriction = 0.0;
+    private long lastZeroTime = 0;
     public CachingDcMotorEx(DcMotorEx dcMotorEx,double tolerance) {
         super(dcMotorEx,tolerance);
         delegate = dcMotorEx;
@@ -105,7 +111,21 @@ public class CachingDcMotorEx extends CachingDcMotor implements DcMotorEx {
     public void setCurrentAlert(double current, CurrentUnit unit) {
         delegate.setCurrentAlert(current, unit);
     }
-
+    double k = 0.7; // 0.5
+    public void setTargetPowerSmooth(double power,double voltage) {
+        if (lastPower == 0){
+            lastZeroTime = System.currentTimeMillis();
+        }
+        if (power == 0) {
+            this.power = 0;
+            return;
+        }
+        power = Utils.minMaxClip(power, -1.0, 1.0);
+        double m = (System.currentTimeMillis() > SWITCH_FROM_STATIC_TO_KINETIC_FRICTION + lastZeroTime ? minPowerToOvercomeKineticFriction : minPowerToOvercomeStaticFriction) * (13.5/voltage);
+        power *= 1-m;
+        power = power + m * Math.signum(power);
+        this.power = power*k + this.lastPower*(1-k);
+    }
     @Override
     public boolean isOverCurrent() {
         return delegate.isOverCurrent();
