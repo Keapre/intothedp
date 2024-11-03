@@ -13,9 +13,9 @@ public class minimumKineticTuner {
     public double[] minPowerToOvercomeKineticFriction;
 
     private static final double POWER_INCREMENT = 0.005;
-    private static final int SAMPLES = 20; // Number of samples to average
-    private static final long WAIT_TIME_MS = 60; // Wait time between power adjustments
-    private static final double NOMINAL_VOLTAGE = 12.0; // Nominal voltage of the battery
+    private static final int SAMPLES = 20;
+    private static final long WAIT_TIME_MS = 60;
+    private static final double NOMINAL_VOLTAGE = 12.0;
 
     public minimumKineticTuner(CachingDcMotorEx[] motors) {
         this.motors = motors;
@@ -58,8 +58,6 @@ public class minimumKineticTuner {
                     }
                 }
 
-                // Now decrease power to find kinetic friction threshold
-                // Assuming motor is moving now
                 while (isMoving && power >= 0.0) {
                     power -= POWER_INCREMENT;
                     motor.setPower(power * voltageScale);
@@ -72,11 +70,9 @@ public class minimumKineticTuner {
                     }
                 }
 
-                // Stop the motor
                 motor.setPower(0.0);
             }
 
-            // Average the collected samples and apply voltage correction
             minPowerToOvercomeStaticFriction[i] = (staticFrictionTotal / SAMPLES) * voltageScale;
             minPowerToOvercomeKineticFriction[i] = (kineticFrictionTotal / SAMPLES) * voltageScale;
         }
@@ -86,13 +82,11 @@ public class minimumKineticTuner {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
-            // Handle the exception if needed
             Thread.currentThread().interrupt();
         }
     }
 
     private double thresholdVelocity() {
-        // Define a small velocity threshold to consider the motor moving
-        return 5; // Units depend on motor configuration (encoder ticks per second)
+        return 5;
     }
 }
