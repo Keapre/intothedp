@@ -581,9 +581,9 @@ public class MecanumDrive extends Subsystem {
         rightBack.setPower(motorPowers[2] = v2);
         rightFront.setPower(motorPowers[3] = v3);*/
 //
-        leftFront.setTargetPowerSmooth(motorPowers[0] = v,voltage,multiplier[0]);
-        leftBack.setTargetPowerSmooth(motorPowers[1] = v1,voltage,multiplier[1]);
-        rightBack.setTargetPowerSmooth(motorPowers[2] = v2,voltage,multiplier[2]);
-        rightFront.setTargetPowerSmooth(motorPowers[3] = v3,voltage,multiplier[3]);
+        leftFront.setTargetPower(motorPowers[0] = v,voltage,multiplier[0]);
+        leftBack.setTargetPower(motorPowers[1] = v1,voltage,multiplier[1]);
+        rightBack.setTargetPower(motorPowers[2] = v2,voltage,multiplier[2]);
+        rightFront.setTargetPower(motorPowers[3] = v3,voltage,multiplier[3]);
     }
 }
