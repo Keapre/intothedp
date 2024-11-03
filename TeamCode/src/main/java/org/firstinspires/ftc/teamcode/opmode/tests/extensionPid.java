@@ -47,6 +47,7 @@ public class extensionPid extends LinearOpMode {
             extension.setPower(Utils.minMaxClip(power, -1, 1));
             telemetry.addData("error", error);
             telemetry.addData("power", power);
+            telemetry.addData("curentPos", encoder.getCurrentPosition());
             telemetry.addData("position", encoder.getCurrentPosition());
             telemetry.addData("feedforward", feedforward);
             telemetry.addData("angle", angle);
