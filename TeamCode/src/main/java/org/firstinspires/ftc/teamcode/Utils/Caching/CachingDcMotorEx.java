@@ -111,8 +111,19 @@ public class CachingDcMotorEx extends CachingDcMotor implements DcMotorEx {
     public void setCurrentAlert(double current, CurrentUnit unit) {
         delegate.setCurrentAlert(current, unit);
     }
+    public void setTargetPower(double power,double voltage,double multiplier){
+        if (lastPower == 0) {
+            lastZeroTime = System.currentTimeMillis();
+        }
+        power = Utils.minMaxClip(power, -1.0, 1.0);
+        double m = (System.currentTimeMillis() > SWITCH_FROM_STATIC_TO_KINETIC_FRICTION + lastZeroTime ?
+                minPowerToOvercomeKineticFriction : minPowerToOvercomeStaticFriction) * (12 / voltage);
+        power *= 1 - m;
+        this.power = power + m * Math.signum(power);
+        delegate.setPower(this.power * multiplier);
+    }
     double k = 0.7; // 0.5
-    public void setTargetPowerSmooth(double power,double voltage) {
+    public void setTargetPowerSmooth(double power,double voltage,double multiplier){
         if (lastPower == 0){
             lastZeroTime = System.currentTimeMillis();
         }
@@ -125,6 +136,7 @@ public class CachingDcMotorEx extends CachingDcMotor implements DcMotorEx {
         power *= 1-m;
         power = power + m * Math.signum(power);
         this.power = power*k + this.lastPower*(1-k);
+        delegate.setPower(this.power * multiplier);
     }
     @Override
     public boolean isOverCurrent() {

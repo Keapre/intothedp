@@ -143,6 +143,12 @@ public class MecanumDrive extends Subsystem {
             0.39695077434023707
     };
 
+    double[] multiplier = new double[] {
+            1.0,
+            1.0,
+            1.0,
+            1.0
+    };
     public boolean isAuto = false;
     final MotorFeedforward ffMotor = new MotorFeedforward(PARAMS.kS,PARAMS.kV/PARAMS.inPerTick,PARAMS.kA/ PARAMS.inPerTick);
     public final CachingDcMotorEx leftFront, leftBack, rightBack, rightFront;
@@ -574,14 +580,14 @@ public class MecanumDrive extends Subsystem {
 
     public void setMotorPowers(double v, double v1, double v2, double v3) {
         double voltage = voltageSensor.getVoltage();
-        leftFront.setPower(motorPowers[0] = v);
+/*        leftFront.setPower(motorPowers[0] = v);
         leftBack.setPower(motorPowers[1] = v1);
         rightBack.setPower(motorPowers[2] = v2);
-        rightFront.setPower(motorPowers[3] = v3);
+        rightFront.setPower(motorPowers[3] = v3);*/
 //
-//        leftFront.setTargetPowerSmooth(motorPowers[0] = v,voltage);
-//        leftBack.setTargetPowerSmooth(motorPowers[1] = v1,voltage);
-//        rightBack.setTargetPowerSmooth(motorPowers[2] = v2,voltage);
-//        rightFront.setTargetPowerSmooth(motorPowers[3] = v3,voltage);
+        leftFront.setTargetPower(motorPowers[0] = v,voltage,multiplier[0]);
+        leftBack.setTargetPower(motorPowers[1] = v1,voltage,multiplier[1]);
+        rightBack.setTargetPower(motorPowers[2] = v2,voltage,multiplier[2]);
+        rightFront.setTargetPower(motorPowers[3] = v3,voltage,multiplier[3]);
     }
 }

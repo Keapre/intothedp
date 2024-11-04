@@ -1,80 +1,125 @@
 package org.firstinspires.ftc.teamcode.Utils.Wrappers;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
+
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 /**
- * This is the Encoder class. This tracks the position of a motor of class DcMotorEx. The motor
- * must have an encoder attached. It can also get changes in position.
+ * Wraps a motor instance to provide corrected velocity counts and allow reversing independently of the corresponding
+ * slot's motor direction
  */
 public class Encoder {
+    private final static int CPS_STEP = 0x10000;
+
+    private static double inverseOverflow(double input, double estimate) {
+        // convert to uint16
+        int real = (int) input & 0xffff;
+        // initial, modulo-based correction: it can recover the remainder of 5 of the upper 16 bits
+        // because the velocity is always a multiple of 20 cps due to Expansion Hub's 50ms measurement window
+        real += ((real % 20) / 4) * CPS_STEP;
+        // estimate-based correction: it finds the nearest multiple of 5 to correct the upper bits by
+        real += Math.round((estimate - real) / (5 * CPS_STEP)) * 5 * CPS_STEP;
+        return real;
+    }
+
+    public enum Direction {
+        FORWARD(1),
+        REVERSE(-1);
+
+        private int multiplier;
+
+        Direction(int multiplier) {
+            this.multiplier = multiplier;
+        }
+
+        public int getMultiplier() {
+            return multiplier;
+        }
+    }
+
     private DcMotorEx motor;
-    private double previousPosition;
-    private double currentPosition;
-    private double multiplier;
+    private Long clock;
 
-    public final static double FORWARD = 1, REVERSE = -1;
+    private Direction direction;
+
+    private int lastPosition;
+    private int velocityEstimateIdx;
+    private double[] velocityEstimates;
+    private double lastUpdateTime;
+
+    public Encoder(DcMotorEx motor, Long clock) {
+        this.motor = motor;
+        this.clock = clock;
+
+        this.direction = Direction.FORWARD;
+
+        this.lastPosition = 0;
+        this.velocityEstimates = new double[3];
+        this.lastUpdateTime = clock;
+    }
+
+    public Encoder(DcMotorEx motor) {
+        this(motor, System.currentTimeMillis());
+    }
+
+    public Direction getDirection() {
+        return direction;
+    }
+
+    private int getMultiplier() {
+        return getDirection().getMultiplier() * (motor.getDirection() == DcMotorSimple.Direction.FORWARD ? 1 : -1);
+    }
 
     /**
-     * This creates a new Encoder from a DcMotorEx.
+     * Allows you to set the direction of the counts and velocity without modifying the motor's direction state
+     * @param direction either reverse or forward depending on if encoder counts should be negated
+     */
+    public void setDirection(Direction direction) {
+        this.direction = direction;
+    }
+
+    /**
+     * Gets the position from the underlying motor and adjusts for the set direction.
+     * Additionally, this method updates the velocity estimates used for compensated velocity
      *
-     * @param setMotor the motor this will be tracking
+     * @return encoder position
      */
-    public Encoder(DcMotorEx setMotor) {
-        motor = setMotor;
-        multiplier = FORWARD;
-        reset();
+    public int getCurrentPosition() {
+        int multiplier = getMultiplier();
+        int currentPosition = motor.getCurrentPosition() * multiplier;
+        if (currentPosition != lastPosition) {
+            double currentTime = System.currentTimeMillis();
+            double dt = currentTime - lastUpdateTime;
+            velocityEstimates[velocityEstimateIdx] = (currentPosition - lastPosition) / dt;
+            velocityEstimateIdx = (velocityEstimateIdx + 1) % 3;
+            lastPosition = currentPosition;
+            lastUpdateTime = currentTime;
+        }
+        return currentPosition;
     }
 
     /**
-     * This sets the direction/multiplier of the Encoder. Setting 1 or -1 will make the Encoder track
-     * forward or in reverse, respectively. Any multiple of either one will scale the Encoder's output
-     * by that amount.
+     * Gets the velocity directly from the underlying motor and compensates for the direction
+     * See {@link #getCorrectedVelocity} for high (>2^15) counts per second velocities (such as on REV Through Bore)
      *
-     * @param setMultiplier the multiplier/direction to set
+     * @return raw velocity
      */
-    public void setDirection(double setMultiplier) {
-        multiplier = setMultiplier;
+    public double getRawVelocity() {
+        int multiplier = getMultiplier();
+        return motor.getVelocity() * multiplier;
     }
 
     /**
-     * This resets the Encoder's position and the current and previous position in the code.
-     */
-    public void reset() {
-        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        previousPosition = motor.getCurrentPosition();
-        currentPosition = motor.getCurrentPosition();
-        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-    }
-
-    /**
-     * This updates the Encoder's tracked current position and previous position.
-     */
-    public void update() {
-        previousPosition = currentPosition;
-        currentPosition = motor.getCurrentPosition();
-    }
-
-    /**
-     * This returns the multiplier/direction of the Encoder.
+     * Uses velocity estimates gathered in {@link #getCurrentPosition} to estimate the upper bits of velocity
+     * that are lost in overflow due to velocity being transmitted as 16 bits.
+     * CAVEAT: must regularly call {@link #getCurrentPosition} for the compensation to work correctly.
      *
-     * @return returns the multiplier
+     * @return corrected velocity
      */
-    public double getMultiplier() {
-        return multiplier * (motor.getDirection() == DcMotorSimple.Direction.FORWARD ? 1 : -1);
-    }
-
-    /**
-     * This returns the change in position from the previous position to the current position. One
-     * important thing to note is that this encoder does not track velocity, only change in position.
-     * This is because I am using a pose exponential method of localization, which doesn't need the
-     * velocity of the encoders. Velocity of the robot is calculated in the localizer using an elapsed
-     * time timer there.
-     *
-     * @return returns the change in position of the Encoder
-     */
-    public double getDeltaPosition() {
-        return getMultiplier() * (currentPosition - previousPosition);
+    public double getCorrectedVelocity() {
+        double median = velocityEstimates[0] > velocityEstimates[1]
+                ? Math.max(velocityEstimates[1], Math.min(velocityEstimates[0], velocityEstimates[2]))
+                : Math.max(velocityEstimates[0], Math.min(velocityEstimates[1], velocityEstimates[2]));
+        return inverseOverflow(getRawVelocity(), median);
     }
 }
