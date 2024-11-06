@@ -31,6 +31,10 @@ public class OptimizedPDController {
         errorBuffer.clear();
     }
 
+    public void setPid(double kP,double kD) {
+        this.kp = kP;
+        this.kd = kD;
+    }
     public double compute(double setpoint, double measuredValue) {
         double currentTime = System.currentTimeMillis() / 1000.0; // Convert to seconds
         double error = setpoint - measuredValue;
@@ -53,7 +57,7 @@ public class OptimizedPDController {
 
         // Calculate output and apply square scaling
         double output = pTerm + dTerm;
-        output = Math.signum(output) * Math.pow(Math.abs(output), 2);
+        output = Math.sqrt(output);
 
         // Apply output limits (anti-windup)
         if (output > maxOutput) {
