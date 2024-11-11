@@ -1,23 +1,12 @@
 package org.firstinspires.ftc.teamcode.Utils.pubSub;
 
-import java.util.List;
+public interface Subsystem {
+    /**
+     * Run control code (e.g., read sensors and update motors)
+     * TODO: Return telemetry.
+     */
+    void update();
 
-public class Subsystem {
-    public boolean UPDATABLE = false;
-    public void update(){
-        noUpdate();
-    };
-
-    public void stop(){};
-    public void enable(){};
-
-    public void yesUpdate() {
-        UPDATABLE =true;
+    default void stop() {
     }
-
-    public void noUpdate() {
-        UPDATABLE = false;
-    }
-
-
 }

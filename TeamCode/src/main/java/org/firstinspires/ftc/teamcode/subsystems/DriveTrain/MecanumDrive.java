@@ -39,6 +39,7 @@ import com.acmerobotics.roadrunner.ftc.LynxFirmware;
 import com.acmerobotics.roadrunner.ftc.OverflowEncoder;
 import com.acmerobotics.roadrunner.ftc.PositionVelocityPair;
 import com.acmerobotics.roadrunner.ftc.RawEncoder;
+
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -66,7 +67,15 @@ import java.util.LinkedList;
 import java.util.List;
 
 @Config
-public class MecanumDrive extends Subsystem {
+public class MecanumDrive implements Subsystem {
+    @Override
+    public void update() {
+
+    }
+
+    public static double rotateNormal = 0.65;
+
+    public static double slowMode = 0.6;
     public static class Params {
         // IMU orientation
         // TODO: fill in these values based on
@@ -86,7 +95,7 @@ public class MecanumDrive extends Subsystem {
         public double kV = 0;
         public double kA = 0;
 
-        public  double rotateScale = 0.85;
+        public  double rotateScale = 0.6;
 
         // path profile parameters (in inches)
         public double maxWheelVel = 50;
@@ -425,17 +434,23 @@ public class MecanumDrive extends Subsystem {
         }
         double left_stick_x = gg.left_stick_x;
         double left_stick_y = gg.left_stick_y;
-        double right_stick_x = PARAMS.rotateScale * gg.right_stick_x;
-        double right_stick_y = PARAMS.rotateScale * gg.right_stick_y;
+        double right_stick_x = rotateNormal * gg.right_stick_x;
+        double right_stick_y = rotateNormal * gg.right_stick_y;
 
+        if(slow_mode) {
+            left_stick_x*=slowMode;
+            right_stick_y*=slowMode;
+            right_stick_x*=slowMode;
+            right_stick_y*=slowMode;
+        }
         motion = MecanumUtil.joystickToMotion(left_stick_x, left_stick_y,
                 right_stick_x, right_stick_y, reverseFront, customCurve);
 
         if (fieldCentric) {
             motion = motion.toFieldCentricMotion(pose.heading.toDouble());
         }
-        if(slow_mode) scale = 0.7;
-        MecanumUtil.Wheels wh = MecanumUtil.motionToWheelsFullSpeed(motion).scaleWheelPower(scale); // Use full forward speed on 19:1 motors
+
+        MecanumUtil.Wheels wh = MecanumUtil.motionToWheels(motion).scaleWheelPower(scale); // Use full forward speed on 19:1 motors
 /*        motorPowers[0] = ffMotor.compute(wh.frontLeft,PARAMS.maxProfileAccel);
         motorPowers[1] = ffMotor.compute(wh.backLeft,PARAMS.maxProfileAccel);
         motorPowers[2] = ffMotor.compute(wh.backRight,PARAMS.maxProfileAccel);
@@ -579,15 +594,14 @@ public class MecanumDrive extends Subsystem {
     }
 
     public void setMotorPowers(double v, double v1, double v2, double v3) {
-        double voltage = voltageSensor.getVoltage();
 /*        leftFront.setPower(motorPowers[0] = v);
         leftBack.setPower(motorPowers[1] = v1);
         rightBack.setPower(motorPowers[2] = v2);
         rightFront.setPower(motorPowers[3] = v3);*/
 //
-        leftFront.setTargetPower(motorPowers[0] = v,voltage,multiplier[0]);
-        leftBack.setTargetPower(motorPowers[1] = v1,voltage,multiplier[1]);
-        rightBack.setTargetPower(motorPowers[2] = v2,voltage,multiplier[2]);
-        rightFront.setTargetPower(motorPowers[3] = v3,voltage,multiplier[3]);
+        leftFront.setPower(motorPowers[0] = v);
+        leftBack.setPower(motorPowers[1] = v1);
+        rightBack.setPower(motorPowers[2] = v2);
+        rightFront.setPower(motorPowers[3] = v3);
     }
 }

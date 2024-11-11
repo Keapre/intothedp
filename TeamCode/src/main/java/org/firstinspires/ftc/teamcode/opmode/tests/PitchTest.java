@@ -33,7 +33,8 @@ public class PitchTest extends LinearOpMode {
     public static double sign = -1;
     public double getBatteryVoltage() {
         // Read the voltage from an analog input
-        double analogValue = hardwareMap.voltageSensor.get("Battery").getVoltage();
+        double analogValue  = hardwareMap.voltageSensor.iterator().next().getVoltage();
+
         // Return the voltage in volts
         return analogValue;
     }
@@ -122,7 +123,7 @@ public class PitchTest extends LinearOpMode {
         limitSwitch = hardwareMap.get(DigitalChannel.class, "limit");
         motorE = hardwareMap.get(DcMotorEx.class, "pivot1");
         motor = hardwareMap.get(DcMotorEx.class, "pivot2");
-        motor1 = hardwareMap.get(DcMotorEx.class,"extend");
+        motor1 = hardwareMap.get(DcMotorEx.class,"hang");
         drive = new Drive(hardwareMap,new Pose2d(0,0,0),false);
         encd = new Encoder(motorE);
         gg = new GamePadController(gamepad1);

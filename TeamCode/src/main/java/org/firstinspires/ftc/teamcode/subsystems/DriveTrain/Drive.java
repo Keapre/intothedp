@@ -26,6 +26,7 @@ public class Drive extends MecanumDrive{
     }
     public static Params PARAMS = new Params();
     public GoBildaPinpointDriverRR pinpoint;
+    public static boolean usePin = false;
     private Pose2d lastPinpointPose = pose;
     public Drive(HardwareMap hardwareMap, Pose2d pose, boolean isAuto) {
         super(hardwareMap, pose, isAuto);
@@ -65,8 +66,11 @@ public class Drive extends MecanumDrive{
 
             pinpoint.setPosition(pose);
         }
-        pinpoint.update();
-        pose = pinpoint.getPositionRR();
+       if(usePin){
+           pinpoint.update();
+           pose = pinpoint.getPositionRR();
+       }
+
         lastPinpointPose = pose;
 
         // RR standard
@@ -79,7 +83,7 @@ public class Drive extends MecanumDrive{
         FlightRecorder.write("PINPOINT_RAW_POSE",new FTCPoseMessage(pinpoint.getPosition()));
         FlightRecorder.write("PINPOINT_STATUS",pinpoint.getDeviceStatus());
 
-        return pinpoint.getVelocityRR();
+                                                                                                                                                         return null;
     }
 
     public static final class FTCPoseMessage {

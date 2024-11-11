@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.Utils.Utils;
 @Config
 public class Pitch {
 
-    public enum EXTENSIONPOS {
+    public enum PITCHPOS {
         UP(0),
         HIGH_BASKET(0),
         LOW_BASKET(0),
@@ -23,7 +23,7 @@ public class Pitch {
         DOWN(0);
 
         public double position;
-        EXTENSIONPOS(double x) {
+        PITCHPOS(double x) {
             position = x;
         }
     }
@@ -56,12 +56,13 @@ public class Pitch {
     public static double offset = 0;
     public static double currentPos = 0;
     public MODE mode = MODE.AUTO;
-    public EXTENSIONPOS target = EXTENSIONPOS.DOWN;
+    public PITCHPOS target = PITCHPOS.DOWN;
 
+    public double tickperDegree = 9.366695;
 
     public Pitch(HardwareMap hardwareMap,boolean isAutonomous) {
-        extension2 = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class,"extension2"),0.05);
-        extension1 = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class,"extension1"),0.05);
+        extension2 = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class,"pivot2"),0.05);
+        extension1 = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class,"pivot1"),0.05);
 
         initializeMotors();
 
@@ -70,7 +71,6 @@ public class Pitch {
         }
         currentPos = extension1.getCurrentPosition();
         offset = currentPos;
-        controller.setTolerance(2);
     }
 
     public void initializeMotors() {
@@ -83,15 +83,24 @@ public class Pitch {
         //REVERSE IF NEEDED
     }
 
+    public boolean atTarget() {
+        if(mode == MODE.AUTO) {
+            if(controller.atSetPoint()) return true;
+            else return false;
+        }
+        return false;
+    }
+    public boolean isAtPosition(PITCHPOS position) {
+        double targetCounts = calculateAngle() *tickperDegree ;
+        double currentPosition = extension1.getCurrentPosition();
+        return Math.abs(currentPosition - targetCounts) < (2 * tickperDegree); // Within 2 degrees
+    }
 
-    public void setTarget(EXTENSIONPOS pos) {
+    public void setTarget(PITCHPOS pos) {
         target = pos;
     }
-    double calculateAngle() {
+    public double calculateAngle() {
         double tempDegree = currentPos / Params.tickperDegree;
-        if(tempDegree > 90) {
-            tempDegree = 180 - tempDegree;
-        }
         return tempDegree;
     }
 

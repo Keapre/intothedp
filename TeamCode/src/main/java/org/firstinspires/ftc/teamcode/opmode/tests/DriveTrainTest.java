@@ -13,15 +13,19 @@ public class DriveTrainTest extends LinearOpMode {
 
     Drive drive;
     GamePadController gg;
+    long lastLoopFinish;
     @Override
     public void runOpMode() throws InterruptedException {
         drive = new Drive(hardwareMap,new Pose2d(0,0,0),false);
         gg = new GamePadController(gamepad1);
+        lastLoopFinish = System.currentTimeMillis();
         waitForStart();
         while(opModeIsActive()) {
             gg.update();
-            drive.setMotorPowersFromGamepad(gg,1.0,false,true);
+            drive.setMotorPowersFromGamepad(gg,0.8,false,true);
             telemetry.addData("slow_mode",drive.slow_mode);
+            telemetry.addData("Sample Rate (Hz) ",1/((double)(System.currentTimeMillis() - lastLoopFinish)/1000.0));
+            lastLoopFinish = System.currentTimeMillis();
             telemetry.update();
         }
     }

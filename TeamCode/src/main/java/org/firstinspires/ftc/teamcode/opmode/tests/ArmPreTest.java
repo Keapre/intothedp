@@ -95,20 +95,20 @@ public class ArmPreTest extends LinearOpMode {
     public static double tiltMidPos = 0.5;
     public static double lowTiltPos = 0;
     public static double highTiltPos = 1;
+    public long lastLoopFinish;
     tiltMode TiltMode = tiltMode.MID;
     @Override
     public void runOpMode() throws InterruptedException {
         ServoMode modeServo = ServoMode.OPEN;
 
+        lastLoopFinish = System.currentTimeMillis();
         tilt = hardwareMap.get(Servo.class,"tilt");
         limelight = hardwareMap.get(Limelight3A.class,"limeLight");
-        claw = hardwareMap.get(Servo.class,"Claw");
+        claw = hardwareMap.get(Servo.class,"claw");
         rotate = hardwareMap.get(Servo.class,"rotate");
         RotateMode rMode = RotateMode.ORIZONTAL;
         clSensor =new OPColorSensor(hardwareMap.get(ColorRangeSensor.class,"sensor"));
         gamepadd = new GamePadController(gamepad1);
-        limelight.setPollRateHz(100);
-        limelight.start();
         waitForStart();
 
         while(opModeIsActive()) {
@@ -214,6 +214,8 @@ public class ArmPreTest extends LinearOpMode {
             telemetry.addData("threeshold:",threesholdTransition);
             telemetry.addData("rotate mode",rMode);
             telemetry.addData("tilt",TiltMode);
+            telemetry.addData("Sample Rate (Hz) ",1/((double)(System.currentTimeMillis() - lastLoopFinish)/1000.0));
+            lastLoopFinish = System.currentTimeMillis();
             telemetry.update();
         }
 

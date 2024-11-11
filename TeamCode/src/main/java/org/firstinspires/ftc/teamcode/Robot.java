@@ -1,11 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
-
 import android.util.Log;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -15,9 +13,9 @@ import com.qualcomm.robotcore.util.MovingStatistics;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.ThreadPool;
 
-
 import org.firstinspires.ftc.teamcode.Utils.pubSub.Subsystem;
-import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.MecanumDrive;
+import org.firstinspires.ftc.teamcode.subsystems.Arm.Arm;
+import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.Drive;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,10 +28,10 @@ import java.util.concurrent.ExecutorService;
 public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarningSource {
     public static final String TAG = "Robot";
 
-    public MecanumDrive mecanum;
-    String chubName = "Control Hub";
-    String ehubName = "Expansion Hub 5";
-    Pose2d start = new Pose2d(0,0,Math.toRadians(90));
+
+    public Drive drive;
+//    public Arm arm;
+
     private LynxModule hub1;
     private LynxModule hub2;
 
@@ -44,7 +42,6 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
     public MovingStatistics top250, top100, top10;
     public Map<Subsystem, MovingStatistics> top100Subsystems = new HashMap<>();
 
-    public double hzLimit = 100;
     private boolean started;
 
     private static double getCurrentTime() {
@@ -53,16 +50,9 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
 
     private Runnable subsystemUpdateRunnable = () -> {
         double startTime, temp;
-        long finish,lastFinish;
-        boolean runNext = true;
         while (!Thread.currentThread().isInterrupted()) {
-            startTime = getCurrentTime();
-            if(!runNext) {
-                runNext = true;
-                continue;
-            }
             try {
-                // Get start time of update
+                startTime = getCurrentTime(); // Get start time of update
 //                hub1.clearBulkCache();
 //                hub2.clearBulkCache();
 //                hub1.getBulkData();
@@ -71,7 +61,7 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
                     if (subsystem == null) continue;
                     try {
                         double t = getCurrentTime();
-                        if(subsystem.UPDATABLE) subsystem.update();
+                        subsystem.update();
                         top100Subsystems.get(subsystem).add(getCurrentTime() - t);
                         subsystemsWithProblems.remove(subsystem);
                     } catch (Throwable t) {
@@ -81,13 +71,10 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
                             subsystemsWithProblems.add(subsystem);
                     }
                 }
-
                 temp = getCurrentTime() - startTime; // Calculate loop time
-                if( temp / 1000.0 < hzLimit) runNext = false;
                 top10.add(temp); // Add loop time to different statistics
                 top100.add(temp);
                 top250.add(temp);
-
             } catch (Throwable t) {
                 Log.wtf(TAG, t); // If we get here, then something really weird happened.
             }
@@ -103,8 +90,8 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
         dashboard = FtcDashboard.getInstance();
         dashboard.setTelemetryTransmissionInterval(25);
 
-        hub1 = opMode.hardwareMap.get(LynxModule.class, chubName);
-        hub2 = opMode.hardwareMap.get(LynxModule.class, ehubName);
+        hub1 = opMode.hardwareMap.get(LynxModule.class, "Control Hub");
+        hub2 = opMode.hardwareMap.get(LynxModule.class, "Expansion Hub 2");
 
         hub1.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         hub2.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
@@ -112,13 +99,13 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
         //region Initialize subsystems
         subsystems = new ArrayList<>();
         try {
-            mecanum = new MecanumDrive(opMode.hardwareMap,start,false);
-            subsystems.add(mecanum);
-            Log.w(TAG, "... intialized successfully");
-
+            drive = new Drive(opMode.hardwareMap, new Pose2d(0,0,0), isAutonomous);
+            subsystems.add(drive);
+            Log.w(TAG, "DriveTrain intialized successfully");
         } catch (Exception e) {
-            Log.w(TAG, "Failed to initialize ...: " + e.getMessage());
+            Log.w(TAG, "Failed to initialize DriveTrain: " + e.getMessage());
         }
+
         //endregion
         for (Subsystem subsystem : subsystems) {
             top100Subsystems.put(subsystem, new MovingStatistics(100));
