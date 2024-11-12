@@ -8,6 +8,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.Utils.Caching.CachingDcMotorEx;
 import org.firstinspires.ftc.teamcode.Utils.Utils;
+import org.firstinspires.ftc.teamcode.Utils.Wrappers.Encoder;
+import org.firstinspires.ftc.teamcode.Utils.Wrappers.WEncoder;
 
 @Config
 public class Pitch {
@@ -59,17 +61,20 @@ public class Pitch {
     public PITCHPOS target = PITCHPOS.DOWN;
 
     public double tickperDegree = 9.366695;
+    private WEncoder encoder;
 
     public Pitch(HardwareMap hardwareMap,boolean isAutonomous) {
         extension2 = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class,"pivot2"),0.05);
         extension1 = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class,"pivot1"),0.05);
 
+        encoder = new WEncoder(new Encoder(extension1));
+        encoder.setReversed();
         initializeMotors();
 
         if(isAutonomous) {
             mode = MODE.AUTO;
         }
-        currentPos = extension1.getCurrentPosition();
+        currentPos = encoder.getCurrentPosition();
         offset = currentPos;
     }
 
@@ -100,8 +105,7 @@ public class Pitch {
         target = pos;
     }
     public double calculateAngle() {
-        double tempDegree = currentPos / Params.tickperDegree;
-        return tempDegree;
+        return currentPos / Params.tickperDegree;
     }
 
     public void setPowerMotors(double power) {
@@ -125,9 +129,10 @@ public class Pitch {
     }
 
     public void update() {
-        currentPos = extension1.getCurrentPosition() - offset;
+        encoder.read();
+        currentPos = encoder.getCurrentPosition() - offset;
         angle = calculateAngle();
-        ff = Math.cos(angle) * Params.Kcos;
+        ff = Math.cos(Math.toRadians(angle)) * Params.Kcos;
         switch (mode) {
             case AUTO:
                 pid();

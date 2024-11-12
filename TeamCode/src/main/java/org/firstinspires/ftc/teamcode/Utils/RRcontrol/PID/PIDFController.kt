@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.Utils.RRcontrol.PID
 
-import com.acmerobotics.roadrunner.util.NanoClock
+import org.firstinspires.ftc.teamcode.Utils.GameStatitics.NanoClock
 import com.acmerobotics.roadrunner.util.epsilonEquals
 import kotlin.math.abs
 import kotlin.math.max

@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.Utils.RRcontrol.profile
 
 import com.acmerobotics.roadrunner.profile.MotionSegment
-import com.acmerobotics.roadrunner.util.DoubleProgression
+import org.firstinspires.ftc.teamcode.Utils.Wrappers.DoubleProgression
 import com.acmerobotics.roadrunner.util.MathUtil.solveQuadratic
 import com.acmerobotics.roadrunner.util.epsilonEquals
 import kotlin.math.abs
@@ -505,9 +505,9 @@ object MotionProfileGenerator {
     // execute a forward pass that consists of applying maximum acceleration starting at min(last velocity, max vel)
     // on a segment-by-segment basis
     private fun forwardPass(
-        start: MotionState,
-        displacements: DoubleProgression,
-        constraints: List<EvaluatedConstraint>
+            start: MotionState,
+            displacements: DoubleProgression,
+            constraints: List<EvaluatedConstraint>
     ): List<Pair<MotionState, Double>> {
         val forwardStates = mutableListOf<Pair<MotionState, Double>>()
 

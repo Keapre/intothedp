@@ -27,7 +27,7 @@ public class Arm implements Subsystem {
     GamePadController gg;
     private long lastUpdateTime;
     double extensionInput = 0;
-    private static final long UPDATE_INTERVAL_MS = 15; // Update every 10 ms
+    private static final long UPDATE_INTERVAL_MS = 15;
 
     public Arm(HardwareMap hardwareMap,boolean isAuto,GamePadController gg) {
         this.extensionSubsystem = new Extension(hardwareMap,false,this);
@@ -45,12 +45,10 @@ public class Arm implements Subsystem {
     public void update() {
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastUpdateTime < UPDATE_INTERVAL_MS) {
-            // Skip update to optimize loop time
             return;
         }
         lastUpdateTime = currentTime;
 
-        // Check for manual control activation
         if (manualControl) {
             currentState = FSMState.MANUAL_CONTROL;
             pitchSubsystem.mode = Pitch.MODE.MANUAL;
@@ -59,7 +57,6 @@ public class Arm implements Subsystem {
 
         switch (currentState) {
             case IDLE:
-                // Waiting for commands
                 break;
 
             case MANUAL_CONTROL:
@@ -94,7 +91,6 @@ public class Arm implements Subsystem {
                 break;
 
             case OPERATION_COMPLETE:
-                // Apply any target configurations (e.g., claw positions)
                 clawSubsystem.clawPos =targetState.clawpos;
                 clawSubsystem.rotateState=targetState.rotatePos;
                 clawSubsystem.tiltState=targetState.tiltState;
@@ -116,8 +112,7 @@ public class Arm implements Subsystem {
         extensionSubsystem.manualControl(extensionInput);
     }
     public void handleManualControl(GamePadController gg) {
-        // Allow joystick control of the extension and pitch
-        double extensionInput = -gg.left_trigger + gg.right_trigger; // Invert if necessary
+        double extensionInput = -gg.left_trigger + gg.right_trigger;
 
         if(gg.aOnce()) {
             if(clawSubsystem.clawPos == Claw.CLAWPOS.OPEN) clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
@@ -129,13 +124,10 @@ public class Arm implements Subsystem {
         if(gg.leftBumper()) {
             clawSubsystem.rotateState = clawSubsystem.rotateState.previous();
         }
-        // Manual control overrides PID control
     }
 
 
     private void updateCurrentStateFromSensors() {
-        // Update the current arm state based on sensor readings
-        // This method can be expanded as needed
 
     }
 
@@ -144,22 +136,18 @@ public class Arm implements Subsystem {
     private void planTransitionSteps() {
         transitionPlan.clear();
 
-        // Check if extension needs to retract
         if (extensionSubsystem.getCurrentPosition() > extensionSubsystem.offset + 10) {
             transitionPlan.add(FSMState.RETRACTING_EXTENSION);
         }
 
-        // Check if pitch needs adjustment
         if (!pitchSubsystem.isAtPosition(targetState.pitchAngle)) {
             transitionPlan.add(FSMState.ADJUSTING_PITCH);
         }
 
-        // Check if extension needs to extend
         if (Math.abs(extensionSubsystem.getCurrentPosition() - targetState.extensionTarget) > 10) {
             transitionPlan.add(FSMState.EXTENDING_EXTENSION);
         }
 
-        // Add operation complete state
         transitionPlan.add(FSMState.OPERATION_COMPLETE);
     }
 
