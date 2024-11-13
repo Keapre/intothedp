@@ -160,7 +160,7 @@ public class MecanumDrive implements Subsystem {
     };
     public boolean isAuto = false;
     final MotorFeedforward ffMotor = new MotorFeedforward(PARAMS.kS,PARAMS.kV/PARAMS.inPerTick,PARAMS.kA/ PARAMS.inPerTick);
-    public final CachingDcMotorEx leftFront, leftBack, rightBack, rightFront;
+    public final DcMotorEx leftFront, leftBack, rightBack, rightFront;
 
     public final VoltageSensor voltageSensor;
 
@@ -278,10 +278,10 @@ public class MecanumDrive implements Subsystem {
         else {
             usePinPoint = false;
         }
-        leftFront = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "leftFront"),0.05);
-        leftBack = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "leftBack"),0.05);
-        rightBack = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "rightBack"),0.05);
-        rightFront =new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "rightFront"),0.05);
+        leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
+        leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
+        rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
+        rightFront =hardwareMap.get(DcMotorEx.class, "rightFront");
 
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -426,6 +426,8 @@ public class MecanumDrive implements Subsystem {
             c.strokePolyline(xPoints, yPoints);
         }
     }
+
+
     public void setMotorPowersFromGamepad(GamePadController gg, double scale, boolean reverseFront, boolean customCurve) {
         MecanumUtil.Motion motion;
 

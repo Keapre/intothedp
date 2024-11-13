@@ -16,6 +16,8 @@ import com.qualcomm.robotcore.util.ThreadPool;
 import org.firstinspires.ftc.teamcode.Utils.pubSub.Subsystem;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Arm;
 import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.Drive;
+import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.MecanumDrive;
+import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.MecanumTest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,7 +31,7 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
     public static final String TAG = "Robot";
 
 
-    public Drive drive;
+    public MecanumTest drive;
 //    public Arm arm;
 
     private LynxModule hub1;
@@ -99,7 +101,7 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
         //region Initialize subsystems
         subsystems = new ArrayList<>();
         try {
-            drive = new Drive(opMode.hardwareMap, new Pose2d(0,0,0), isAutonomous);
+            drive = new MecanumTest(opMode.hardwareMap);
             subsystems.add(drive);
             Log.w(TAG, "DriveTrain intialized successfully");
         } catch (Exception e) {

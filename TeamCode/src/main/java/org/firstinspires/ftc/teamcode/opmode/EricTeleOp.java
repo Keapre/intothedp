@@ -9,12 +9,7 @@ import com.qualcomm.robotcore.util.MovingStatistics;
 
 import org.firstinspires.ftc.robotcore.internal.system.Misc;
 import org.firstinspires.ftc.teamcode.Robot;
-import org.firstinspires.ftc.teamcode.Utils.ArmStates.DEFAUlT;
-import org.firstinspires.ftc.teamcode.Utils.ArmStates.HIGHBASKET;
-import org.firstinspires.ftc.teamcode.Utils.ArmStates.INTAKING;
-import org.firstinspires.ftc.teamcode.Utils.ArmStates.SPECIMEN;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
-import org.firstinspires.ftc.teamcode.subsystems.Arm.Arm;
 
 @Photon
 @TeleOp(name = "eric e smech")
@@ -106,7 +101,7 @@ public class EricTeleOp extends OpMode {
 //        }
 //    }
     public void updateDrive() {
-        robot.drive.setMotorPowersFromGamepad(gg,1,false,true);
+        robot.drive.setMotorPowersFromGamepad(gg,1.0,false,true);
     }
     public void updateTelemetry() {
 //        telemetry.addLine("--------DRIVETRAIN------");
