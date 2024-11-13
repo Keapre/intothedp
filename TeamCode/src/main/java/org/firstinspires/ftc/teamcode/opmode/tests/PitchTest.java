@@ -169,6 +169,8 @@ public class PitchTest extends LinearOpMode {
             telemetry.addData("angle",Angle);
             telemetry.addData("wrapper Position",encd.getCurrentPosition());
             telemetry.addData("position", motorE.getCurrentPosition());
+            telemetry.addData("hz",(System.currentTimeMillis()-lastChecked)/1000);
+            lastChecked = System.currentTimeMillis();
             telemetry.update();
         }
     }

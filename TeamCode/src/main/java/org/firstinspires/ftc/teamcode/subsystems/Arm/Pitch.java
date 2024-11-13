@@ -55,7 +55,7 @@ public class Pitch {
 
     public static double ff = 0;
     public static double angle = 0;
-    public static double offset = 0;
+    public  double offset = 0;
     public static double currentPos = 0;
     public MODE mode = MODE.AUTO;
     public PITCHPOS target = PITCHPOS.DOWN;
@@ -88,6 +88,18 @@ public class Pitch {
         //REVERSE IF NEEDED
     }
 
+    public double getTrueCurrentPosition() {
+        encoder.read();
+        return encoder.getCurrentPosition();
+    }
+
+    public double getCurrentPos() {
+        return getTrueCurrentPosition() - offset;
+    }
+
+    public void setOffset(double offset) {
+        this.offset = offset;
+    }
     public boolean atTarget() {
         if(mode == MODE.AUTO) {
             if(controller.atSetPoint()) return true;
@@ -97,8 +109,7 @@ public class Pitch {
     }
     public boolean isAtPosition(PITCHPOS position) {
         double targetCounts = calculateAngle() *tickperDegree ;
-        double currentPosition = extension1.getCurrentPosition();
-        return Math.abs(currentPosition - targetCounts) < (2 * tickperDegree); // Within 2 degrees
+        return Math.abs(currentPos - targetCounts) < (2 * tickperDegree); // Within 2 degrees
     }
 
     public void setTarget(PITCHPOS pos) {

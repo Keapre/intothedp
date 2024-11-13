@@ -10,6 +10,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.Utils.Caching.CachingDcMotorEx;
 
 import org.firstinspires.ftc.teamcode.Utils.Utils;
+import org.firstinspires.ftc.teamcode.Utils.Wrappers.Encoder;
+import org.firstinspires.ftc.teamcode.Utils.Wrappers.WEncoder;
 
 @Config
 public class Extension {
@@ -58,11 +60,13 @@ public class Extension {
     boolean usePid = false;
     public PIDFController controller = new PIDFController(Params.kP,0,Params.kD,0);
 
+    WEncoder encoder;
     Arm arm;
     public Extension(HardwareMap hardwareMap,boolean isAuto,Arm arm) {
         this.arm = arm;
         motor = hardwareMap.get(DcMotorEx.class, "extend");
         motor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        encoder = new WEncoder(new Encoder(motor));
         motor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         if(isAuto) mode = MODE.AUTO;
         offset = motor.getCurrentPosition();
@@ -78,7 +82,7 @@ public class Extension {
         }
         controller.setPIDF(Params.kP, Params.kI, Params.kD, Params.kF);
 
-        power = controller.calculate(currentLength, target);
+        power = controller.calculate(currentPos, target);
     }
 
 
@@ -87,20 +91,27 @@ public class Extension {
         this.power = power;
         mode = MODE.MANUAL;
     }
+    public double getTrueCurrentPosition() {
+        encoder.read();
+        return encoder.getCurrentPosition();
+    }
 
+    public double getCurrentPos() {
+        return getTrueCurrentPosition() - offset;
+    }
     public boolean isAtZero() {
-        return Math.abs(motor.getCurrentPosition() - offset) < 10;
+        return Math.abs(currentPos - offset) < 10;
     }
 
     public boolean isAtPosition(double position) {
-        return Math.abs(motor.getCurrentPosition() - position) < 10;
+        return Math.abs(currentPos - position) < 10;
     }
 
     public double getCurrentPosition() {
         return motor.getCurrentPosition();
     }
     public void update() {
-        currentPos = motor.getCurrentPosition() - offset;
+        currentPos = getCurrentPos();
         currentLength = currentPos / Params.tickPerInch;
         double angle = arm.pitchSubsystem.calculateAngle();
         double ff = kCos * Math.toRadians(angle);
