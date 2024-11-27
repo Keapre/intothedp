@@ -9,10 +9,10 @@ import org.firstinspires.ftc.teamcode.subsystems.Arm.Pitch;
 public class INTAKING extends STATE{
     public INTAKING() {
         this.clawpos = Claw.CLAWPOS.OPEN;
-        this.rotatePos = Claw.ROTATESTATE.DEFAULT;
-        this.tiltState = Claw.TILTSTATE.DOWN;
+        this.rotatePos = Claw.RotateMode.ORIZONTAL;
+        this.tiltState = Claw.tiltMode.MID;
         this.extensionTarget = 0; // Needs to be determined experimentally
-        this.pitchAngle = Pitch.PITCHPOS.DOWN;
+        this.pitchAngle = 0;
     }
 
 }

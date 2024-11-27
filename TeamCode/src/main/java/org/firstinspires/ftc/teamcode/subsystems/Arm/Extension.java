@@ -65,7 +65,9 @@ public class Extension {
     public Extension(HardwareMap hardwareMap,boolean isAuto,Arm arm) {
         this.arm = arm;
         motor = hardwareMap.get(DcMotorEx.class, "extend");
+        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+
         encoder = new WEncoder(new Encoder(motor));
         motor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         if(isAuto) mode = MODE.AUTO;

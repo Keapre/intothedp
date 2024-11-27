@@ -19,7 +19,6 @@ import java.util.List;
 @TeleOp(name = "MiscociOuttake")
 public class ArmPreTest extends LinearOpMode {
 
-    Limelight3A limelight;
     Servo claw,rotate,tilt;
     OPColorSensor clSensor;
 
@@ -32,7 +31,7 @@ public class ArmPreTest extends LinearOpMode {
         length = Math.abs(points.get(0).get(1) - points.get(1).get(1)) + 1;
     }
 
-    public static double clawClosed = 0.45;
+    public static double clawClosed = 0.4;
     public static double clawOpened = 0.2;
     long lastChecked = System.currentTimeMillis();
     public static double threesholdTransition = 550;
@@ -41,8 +40,8 @@ public class ArmPreTest extends LinearOpMode {
 
     public static double ratioWidth = 1.0;
 
-    public static double verticalPose = 0.14;
-    public static double orizontalPose = 0.69;
+    public static double verticalPose = 0.17;
+    public static double orizontalPose = 0.73;
 
 
 
@@ -103,10 +102,9 @@ public class ArmPreTest extends LinearOpMode {
 
         lastLoopFinish = System.currentTimeMillis();
         tilt = hardwareMap.get(Servo.class,"tilt");
-        limelight = hardwareMap.get(Limelight3A.class,"limeLight");
         claw = hardwareMap.get(Servo.class,"claw");
         rotate = hardwareMap.get(Servo.class,"rotate");
-        RotateMode rMode = RotateMode.ORIZONTAL;
+            RotateMode rMode = RotateMode.ORIZONTAL;
         clSensor =new OPColorSensor(hardwareMap.get(ColorRangeSensor.class,"sensor"));
         gamepadd = new GamePadController(gamepad1);
         waitForStart();
@@ -145,28 +143,6 @@ public class ArmPreTest extends LinearOpMode {
                 }
             }
 
-            if(gamepadd.yOnce()) {
-                double maxConfidence = 0;
-                LLResult result = limelight.getLatestResult();
-                if (result!=null &&  result.isValid()) {
-                    List<LLResultTypes.DetectorResult> detections = result.getDetectorResults();
-                    for(LLResultTypes.DetectorResult detection : detections) {
-                        if(detection.getConfidence() > maxConfidence) {
-                            maxConfidence = detection.getConfidence();
-                            getDimensions(detection);
-                        }
-                    }
-                }
-                double ration = width/length;
-                if(ration < threesholdTransition) {
-                    rMode = RotateMode.VERTICAL;
-                }else {
-                    rMode = RotateMode.ORIZONTAL;
-                }
-                telemetry.addData("width:",threesholdTransition);
-                telemetry.addData("length:",threesholdTransition);
-
-            }
             switch (modeServo){
                 case CLOSED:
                     claw.setPosition(clawClosed);

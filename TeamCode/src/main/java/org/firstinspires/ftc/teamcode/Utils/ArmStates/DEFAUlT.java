@@ -9,10 +9,10 @@ import org.firstinspires.ftc.teamcode.subsystems.Arm.Pitch;
 public class DEFAUlT extends STATE {
     public DEFAUlT() {
         this.clawpos = Claw.CLAWPOS.CLOSE;
-        this.rotatePos = Claw.ROTATESTATE.DEFAULT;
-        this.tiltState = Claw.TILTSTATE.UP;
+        this.rotatePos = Claw.RotateMode.ORIZONTAL;
+        this.tiltState = Claw.tiltMode.DOWN;
         this.extensionTarget = 0; // Needs to be determined experimentally
-        this.pitchAngle = Pitch.PITCHPOS.DOWN;
+        this.pitchAngle =0;
     }
 
 

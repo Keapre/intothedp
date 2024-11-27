@@ -15,18 +15,18 @@ import org.firstinspires.ftc.teamcode.Utils.messages.PoseMessage;
 
 public class Drive extends MecanumDrive{
     public static class Params {
-        public double xOffset = -3.3071;
-        public double yOffset = -6.6142;
+        public double xOffset = -115;
+        public double yOffset = -2.5;
 
 
         public double encoderResolution = GoBildaPinpointDriverRR.goBILDA_4_BAR_POD;
 
-        public GoBildaPinpointDriver.EncoderDirection xDirection = GoBildaPinpointDriver.EncoderDirection.FORWARD;
-        public GoBildaPinpointDriver.EncoderDirection yDirection = GoBildaPinpointDriver.EncoderDirection.FORWARD;
+        public GoBildaPinpointDriver.EncoderDirection xDirection = GoBildaPinpointDriver.EncoderDirection.REVERSED;
+        public GoBildaPinpointDriver.EncoderDirection yDirection = GoBildaPinpointDriver.EncoderDirection.REVERSED;
     }
     public static Params PARAMS = new Params();
     public GoBildaPinpointDriverRR pinpoint;
-    public static boolean usePin = false;
+    public static boolean usePin = true;
     private Pose2d lastPinpointPose = pose;
     public Drive(HardwareMap hardwareMap, Pose2d pose, boolean isAuto) {
         super(hardwareMap, pose, isAuto);
@@ -34,7 +34,7 @@ public class Drive extends MecanumDrive{
         pinpoint = hardwareMap.get(GoBildaPinpointDriverRR.class,"odo");
 
         // RR localizer note: don't love this conversion (change driver?)
-        pinpoint.setOffsets(DistanceUnit.MM.fromInches(PARAMS.xOffset), DistanceUnit.MM.fromInches(PARAMS.yOffset));
+        pinpoint.setOffsets(PARAMS.xOffset, PARAMS.yOffset);
 
 
         pinpoint.setEncoderResolution(PARAMS.encoderResolution);

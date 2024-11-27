@@ -73,7 +73,7 @@ public class MecanumDrive implements Subsystem {
 
     }
 
-    public static double rotateNormal = 0.65;
+    public static double rotateNormal = 1;
 
     public static double slowMode = 0.6;
     public static class Params {
@@ -119,7 +119,7 @@ public class MecanumDrive implements Subsystem {
 
     public boolean slow_mode = false;
     public static boolean  usePinPoint = true;
-    public static boolean fieldCentric = false;
+    public static boolean fieldCentric = true;
     public static Params PARAMS = new Params();
     public static double xOffset = -13,yOffset = -35;
 
@@ -448,11 +448,13 @@ public class MecanumDrive implements Subsystem {
         motion = MecanumUtil.joystickToMotion(left_stick_x, left_stick_y,
                 right_stick_x, right_stick_y, reverseFront, customCurve);
 
+
+        updatePoseEstimate();
         if (fieldCentric) {
             motion = motion.toFieldCentricMotion(pose.heading.toDouble());
         }
 
-        MecanumUtil.Wheels wh = MecanumUtil.motionToWheels(motion).scaleWheelPower(scale); // Use full forward speed on 19:1 motors
+        MecanumUtil.Wheels wh = MecanumUtil.motionToWheelsFullSpeed(motion).scaleWheelPower(scale); // Use full forward speed on 19:1 motors
 /*        motorPowers[0] = ffMotor.compute(wh.frontLeft,PARAMS.maxProfileAccel);
         motorPowers[1] = ffMotor.compute(wh.backLeft,PARAMS.maxProfileAccel);
         motorPowers[2] = ffMotor.compute(wh.backRight,PARAMS.maxProfileAccel);

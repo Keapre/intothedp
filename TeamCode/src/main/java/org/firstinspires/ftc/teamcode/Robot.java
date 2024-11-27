@@ -32,7 +32,7 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
 
 
     public MecanumTest drive;
-//    public Arm arm;
+    public Arm arm;
 
     private LynxModule hub1;
     private LynxModule hub2;
@@ -106,6 +106,13 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
             Log.w(TAG, "DriveTrain intialized successfully");
         } catch (Exception e) {
             Log.w(TAG, "Failed to initialize DriveTrain: " + e.getMessage());
+        }
+        try {
+            arm = new Arm(opMode.hardwareMap,false);
+            subsystems.add(arm);
+            Log.w(TAG, "arm intialized successfully");
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to initialize Arm: " + e.getMessage());
         }
 
         //endregion

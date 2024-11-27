@@ -20,36 +20,37 @@ import org.firstinspires.ftc.teamcode.Utils.Wrappers.WEncoder;
 public class extensionPid extends LinearOpMode {
 
     public static double kP = 0, kI = 0, kD = 0;
-    PIDController pid = new PIDController(0, 0., 0);
+    PIDController pid = new PIDController(0, 0, 0);
     public static double kG = 10.18;
     public static double target = 0;
 
-    DcMotorEx extension = hardwareMap.get(DcMotorEx.class, "extension");
+    DcMotorEx extension = hardwareMap.get(DcMotorEx.class, "extend");
 
     public static double angle = 0;
 
 
     @Override
     public void runOpMode() throws InterruptedException {
-        WEncoder encoder = new WEncoder(new Encoder(extension));
+        extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        Encoder encoder = new Encoder(extension);
+        encoder.setDirection(Encoder.Direction.REVERSE);
         double offset = encoder.getCurrentPosition();
+
         extension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         extension.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         waitForStart();
         while (opModeIsActive()) {
             updatePID();
-            double feedforward = kG * Math.sin(angle);
 
             double error = target - (encoder.getCurrentPosition()-offset);
-            double power = sqrt(pid.calculate(error)) + feedforward;
+            double power=pid.calculate(error);
 
             extension.setPower(Utils.minMaxClip(power, -1, 1));
             telemetry.addData("error", error);
             telemetry.addData("power", power);
             telemetry.addData("curentPos", encoder.getCurrentPosition());
             telemetry.addData("position", encoder.getCurrentPosition());
-            telemetry.addData("feedforward", feedforward);
             telemetry.addData("angle", angle);
             telemetry.addData("target", target);
             telemetry.addData("kg", kG);

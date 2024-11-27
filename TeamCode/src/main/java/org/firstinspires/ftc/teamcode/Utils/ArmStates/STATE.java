@@ -4,12 +4,31 @@ import org.firstinspires.ftc.teamcode.subsystems.Arm.Claw;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Pitch;
 
 public class STATE {
-    public static Claw.CLAWPOS clawpos;
-    public static Claw.ROTATESTATE rotatePos;
+    public  Claw.CLAWPOS clawpos;
+    public  Claw.RotateMode rotatePos;
 
-    public static  Claw.TILTSTATE tiltState;
+    public   Claw.tiltMode tiltState;
 
-    public static double extensionTarget;
-    public static Pitch.PITCHPOS pitchAngle;
+    public  double extensionTarget;
+    public  double pitchAngle;
+
+
+    public double getPitchAngle() {
+        return pitchAngle;
+    }
+    public double getExtensionTarget() {
+        return extensionTarget;
+    }
+
+    public Claw.tiltMode getTilt() {
+        return tiltState;
+    }
+    public Claw.RotateMode getRotatePos() {
+        return rotatePos;
+    }
+
+    public Claw.CLAWPOS getClawpos() {
+        return clawpos;
+    }
 
 }

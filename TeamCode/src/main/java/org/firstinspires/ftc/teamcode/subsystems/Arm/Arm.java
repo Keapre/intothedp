@@ -1,18 +1,26 @@
 package org.firstinspires.ftc.teamcode.subsystems.Arm;
 
 
+import android.util.Log;
+
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.DEFAUlT;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.STATE;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 import org.firstinspires.ftc.teamcode.Utils.pubSub.Subsystem;
+import org.firstinspires.ftc.teamcode.opmode.tests.PitchTest;
+import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.MecanumTest;
+
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class Arm implements Subsystem {
     public  enum FSMState {
         IDLE,
         RETRACTING_EXTENSION,
         ADJUSTING_PITCH,
+        PRE_ADJUSTING_PITCH,
         EXTENDING_EXTENSION,
         MANUAL_CONTROL,
         OPERATION_COMPLETE
@@ -20,8 +28,12 @@ public class Arm implements Subsystem {
 
     public FSMState currentState = FSMState.IDLE;
     public STATE targetState;
+    public String TAG = "Robot";
+
+
     public boolean manualControl = false;
     public Extension extensionSubsystem;
+    public Queue<FSMState> transitionPlan;
     public Pitch pitchSubsystem;
     public Claw clawSubsystem;
     GamePadController gg;
@@ -29,76 +41,109 @@ public class Arm implements Subsystem {
     double extensionInput = 0;
     private static final long UPDATE_INTERVAL_MS = 15;
 
-    public Arm(HardwareMap hardwareMap,boolean isAuto,GamePadController gg) {
-        this.extensionSubsystem = new Extension(hardwareMap,false,this);
-        this.pitchSubsystem = new Pitch(hardwareMap,false);
-        this.clawSubsystem = new Claw(hardwareMap,false);
+    public Arm(HardwareMap hardwareMap,boolean isAuto) {
+        try {
+            extensionSubsystem = new Extension(hardwareMap,false,this);
+            Log.w("ARM", "Extenstion intialized successfully");
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to initialize Extension: " + e.getMessage());
+        }
+        try {
+            this.pitchSubsystem = new Pitch(hardwareMap,false,this);
+            Log.w(TAG, "Pitch intialized successfully");
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to initialize Pitch: " + e.getMessage());
+        }
+        try {
+            this.clawSubsystem = new Claw(hardwareMap,false);
+            Log.w(TAG, "Claw intialized successfully");
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to initialize Claw: " + e.getMessage());
+        }
+        transitionPlan = new LinkedList<>();
         setTargetState(new DEFAUlT());
-        this.gg = gg;
+
+        currentState = FSMState.IDLE;
+
     }
 
     public void setTargetState(STATE newState) {
-        this.targetState = newState;
+        targetState = newState;
         planTransitionSteps();
         currentState = nextStateInPlan();
     }
+    private void clearQueue() {
+        while(!transitionPlan.isEmpty()) {
+            transitionPlan.remove();
+        }
+    }
     public void update() {
         long currentTime = System.currentTimeMillis();
-        if (currentTime - lastUpdateTime < UPDATE_INTERVAL_MS) {
-            return;
-        }
+//        if (currentTime - lastUpdateTime < UPDATE_INTERVAL_MS) {
+//            return;
+//        }
         lastUpdateTime = currentTime;
+
 
         if (manualControl) {
             currentState = FSMState.MANUAL_CONTROL;
-            pitchSubsystem.mode = Pitch.MODE.MANUAL;
             extensionSubsystem.mode = Extension.MODE.MANUAL;
+            pitchSubsystem.isMotionProfileActive = false;
         }
 
         switch (currentState) {
             case IDLE:
+                pitchSubsystem.mode = Pitch.MODE.IDLE;
+                extensionSubsystem.mode = Extension.MODE.IDLE;
                 break;
 
             case MANUAL_CONTROL:
                 setPowerManual();
                 if (!manualControl) {
-                    pitchSubsystem.mode = Pitch.MODE.AUTO;
+                    pitchSubsystem.setMode(Pitch.MODE.IDLE);
                     extensionSubsystem.mode = Extension.MODE.AUTO;
-                    updateCurrentStateFromSensors();
                     currentState = FSMState.IDLE;
                 }
                 break;
 
             case RETRACTING_EXTENSION:
-                extensionSubsystem.target = 3;
+                extensionSubsystem.mode = Extension.MODE.AUTO;
+                extensionSubsystem.target = extensionSubsystem.offset + 5;
                 if (extensionSubsystem.isAtZero()) {
                     currentState = nextStateInPlan();
                 }
                 break;
+            case PRE_ADJUSTING_PITCH:
+                pitchSubsystem.setTarget(targetState.getPitchAngle());
+                pitchSubsystem.setMode(Pitch.MODE.AUTO);
+                pitchSubsystem.startMotionProfile(targetState.getPitchAngle());
+                currentState = nextStateInPlan();
+                break;
 
             case ADJUSTING_PITCH:
-                pitchSubsystem.target = (targetState.pitchAngle);
-                if (pitchSubsystem.isAtPosition(targetState.pitchAngle)) {
+                pitchSubsystem.setMode(Pitch.MODE.AUTO);
+                if (!pitchSubsystem.isMotionProfileActive) {
+                    pitchSubsystem.setMode(Pitch.MODE.IDLE);
                     currentState = nextStateInPlan();
                 }
+
                 break;
 
             case EXTENDING_EXTENSION:
-                extensionSubsystem.target =targetState.extensionTarget;
-                if (extensionSubsystem.isAtPosition(targetState.extensionTarget)) {
+                extensionSubsystem.mode = Extension.MODE.AUTO;
+                extensionSubsystem.target =targetState.getExtensionTarget();
+                if (extensionSubsystem.isAtPosition(targetState.getExtensionTarget())) {
                     currentState = nextStateInPlan();
                 }
                 break;
 
             case OPERATION_COMPLETE:
-                clawSubsystem.clawPos =targetState.clawpos;
-                clawSubsystem.rotateState=targetState.rotatePos;
-                clawSubsystem.tiltState=targetState.tiltState;
+                clawSubsystem.clawPos =targetState.getClawpos();
+                clawSubsystem.rotateState=targetState.getRotatePos();
+                clawSubsystem.tiltState=targetState.getTilt();
+                pitchSubsystem.mode= Pitch.MODE.IDLE;
 
-                currentState = FSMState.IDLE;
-                break;
 
-            default:
                 currentState = FSMState.IDLE;
                 break;
         }
@@ -112,17 +157,43 @@ public class Arm implements Subsystem {
         extensionSubsystem.manualControl(extensionInput);
     }
     public void handleManualControl(GamePadController gg) {
-        double extensionInput = -gg.left_trigger + gg.right_trigger;
+        extensionInput = gg.left_trigger + -gg.right_trigger;
 
         if(gg.aOnce()) {
             if(clawSubsystem.clawPos == Claw.CLAWPOS.OPEN) clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
             else clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
         }
-        if(gg.rightBumper()) {
-            clawSubsystem.rotateState = clawSubsystem.rotateState.next();
+        if(gg.dpadLeftOnce()) {
+            if(clawSubsystem.rotateState == Claw.RotateMode.VERTICAL) {
+                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
+            }else if(clawSubsystem.rotateState == Claw.RotateMode.ORIZONTAL) {
+                clawSubsystem.rotateState = Claw.RotateMode.VERTICAL;
+            }
         }
-        if(gg.leftBumper()) {
-            clawSubsystem.rotateState = clawSubsystem.rotateState.previous();
+        if(gg.dpadRightOnce()) {
+            if(clawSubsystem.rotateState == Claw.RotateMode.VERTICAL) {
+                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
+            }else if(clawSubsystem.rotateState == Claw.RotateMode.ORIZONTAL) {
+                clawSubsystem.rotateState = Claw.RotateMode.VERTICAL;
+            }
+        }
+        if(gg.dpadUpOnce()) {
+            if (clawSubsystem.tiltState == Claw.tiltMode.DOWN) {
+                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
+                clawSubsystem.tiltState = Claw.tiltMode.MID;
+            } else if (clawSubsystem.tiltState == Claw.tiltMode.MID) {
+                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
+                clawSubsystem.tiltState = Claw.tiltMode.UP;
+            }
+        }
+        if(gg.dpadDownOnce()) {
+            if(clawSubsystem.tiltState == Claw.tiltMode.UP) {
+                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
+                clawSubsystem.tiltState = Claw.tiltMode.MID;
+            }else if(clawSubsystem.tiltState == Claw.tiltMode.MID) {
+                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
+                clawSubsystem.tiltState = Claw.tiltMode.DOWN;
+            }
         }
     }
 
@@ -131,28 +202,29 @@ public class Arm implements Subsystem {
 
     }
 
-    private java.util.Queue<FSMState> transitionPlan = new java.util.LinkedList<>();
+
 
     private void planTransitionSteps() {
         transitionPlan.clear();
+//        if (extensionSubsystem.getCurrentPosition() > extensionSubsystem.offset + 10) {
+//            transitionPlan.add(FSMState.RETRACTING_EXTENSION);
+//        }
 
-        if (extensionSubsystem.getCurrentPosition() > extensionSubsystem.offset + 10) {
-            transitionPlan.add(FSMState.RETRACTING_EXTENSION);
-        }
+        transitionPlan.add(FSMState.PRE_ADJUSTING_PITCH);
+        transitionPlan.add(FSMState.ADJUSTING_PITCH);
 
-        if (!pitchSubsystem.isAtPosition(targetState.pitchAngle)) {
-            transitionPlan.add(FSMState.ADJUSTING_PITCH);
-        }
-
-        if (Math.abs(extensionSubsystem.getCurrentPosition() - targetState.extensionTarget) > 10) {
-            transitionPlan.add(FSMState.EXTENDING_EXTENSION);
-        }
+//        if (Math.abs(extensionSubsystem.getCurrentPosition() - targetState.extensionTarget) > 10) {
+//            transitionPlan.add(FSMState.EXTENDING_EXTENSION);
+//        }
 
         transitionPlan.add(FSMState.OPERATION_COMPLETE);
+
     }
 
     private FSMState nextStateInPlan() {
-        return transitionPlan.poll() != null ? transitionPlan.poll() : FSMState.IDLE;
+        FSMState peek = transitionPlan.peek();
+        if(peek==null) return FSMState.IDLE;
+        return transitionPlan.poll();
     }
 
     public FSMState getCurrentState() {

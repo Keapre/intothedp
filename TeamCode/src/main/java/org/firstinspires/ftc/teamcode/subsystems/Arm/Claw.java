@@ -5,98 +5,62 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.Utils.Caching.CachingServo;
+import org.firstinspires.ftc.teamcode.opmode.tests.PitchTest;
 
 @Config
 public class Claw {
-    CachingServo claw;
-    CachingServo rotate;
-    CachingServo tilt;
+    Servo claw;
+    Servo leftDiffy;
+    Servo rightDiffy;
 
     public boolean clawEnabled = true;
     public boolean rotateEnabled = true;
     public boolean tiltEnabled = true;
 
+    public static class DiffyPositions {
+        public double left = 0.0;
+        public double right = 0.0;
+
+        public DiffyPositions(double l,double r) {
+            left = l;
+            right = r;
+        }
+    };
+
+    public static DiffyPositions down_horizontal = new DiffyPositions(0.18,0.86);
+    public static DiffyPositions down_vertical = new DiffyPositions(0,0.66);
+    public static DiffyPositions mid = new DiffyPositions(0.82,0.23);
+    public static DiffyPositions up = new DiffyPositions(1,0);
     //TODO:
-    public static double clawOpen = 0.0;
-    public static double clawClose = 0.0;
+    public static double clawOpen = 0.35;
+    public static double clawClose = 0.69;
 
-    public static double left90 = 0.0;
-    public static double left45 = 0.0;
-    public static double defaultRotate = 0.0;
-    public static double right45 = 0.0;
-    public static double right90 = 0.0;
-
-
-    public static double tiltUp = 0.0;
-    public static double tiltDown = 0.0;
-    public static double tiltMid = 0.0;
     public enum CLAWPOS {
-        OPEN(clawOpen),
-        CLOSE(clawClose);
+        OPEN,
+        CLOSE
 
-        public double position;
-         CLAWPOS(double x) {
-            position = x;
-        }
+
     }
 
-    public enum ROTATESTATE {
-        //previous, current, next
+    public enum RotateMode {
+        VERTICAL,
+        ORIZONTAL;
 
-        LEFT90(left90){
-            @Override
-            public ROTATESTATE previous() {
-                return this;
-            }
-        },
-        LEFT45(left45),
-        DEFAULT(defaultRotate),
-        RIGHT45(right45),
-
-
-        RIGHT90(right90){
-            @Override
-            public ROTATESTATE next() {
-                return this;
-            }
-        };
-
-        public final double pos;
-
-        ROTATESTATE(double pos) {
-            this.pos = pos;
-        }
-
-        public ROTATESTATE previous() {
-            return values()[ordinal() - 1];
-        }
-
-        public ROTATESTATE next() {
-            return values()[ordinal() + 1];
-        }
+    }
+   public enum tiltMode {
+        UP,
+        MID,
+        DOWN
     }
 
-
-    public enum TILTSTATE {
-        UP(tiltUp),
-        MID(tiltMid),
-        DOWN(tiltDown);
-
-        public final double pos;
-
-        TILTSTATE(double pos) {
-            this.pos = pos;
-        }
-    }
-
-    public TILTSTATE tiltState = TILTSTATE.DOWN;
-    public ROTATESTATE rotateState = ROTATESTATE.DEFAULT;
+    public tiltMode tiltState = tiltMode.UP;
+    public RotateMode  rotateState = RotateMode.ORIZONTAL;
     public CLAWPOS clawPos = CLAWPOS.OPEN;
 
     public Claw(HardwareMap hardwareMap,boolean isAuto) {
-        this.claw = new CachingServo(hardwareMap.get(Servo.class, "claw"));
-        this.rotate = new CachingServo(hardwareMap.get(Servo.class, "rotate"));
-        this.tilt = new CachingServo(hardwareMap.get(Servo.class, "tilt"));
+        this.claw = hardwareMap.get(Servo.class, "claw");
+        this.leftDiffy = hardwareMap.get(Servo.class, "diffyLeft");
+        this.rightDiffy = hardwareMap.get(Servo.class, "diffyRight");
     }
 
 
@@ -104,19 +68,19 @@ public class Claw {
         clawPos = pos;
     }
 
-    public void setRotateState(ROTATESTATE state) {
+    public void setRotateState(RotateMode state) {
         rotateState = state;
     }
 
-    public void setTiltState(TILTSTATE state) {
+    public void setTiltState(tiltMode state) {
         tiltState = state;
     }
 
-    public TILTSTATE getTiltState(){
+    public tiltMode getTiltState(){
         return tiltState;
     }
 
-    public ROTATESTATE getRotateState(){
+    public RotateMode getRotateState(){
         return rotateState;
     }
 
@@ -128,51 +92,36 @@ public class Claw {
         if(clawEnabled) {
             switch (clawPos) {
                 case OPEN:
-                    claw.setPosition(CLAWPOS.OPEN.position);
+                    claw.setPosition(clawOpen);
                     break;
                 case CLOSE:
-                    claw.setPosition(CLAWPOS.CLOSE.position);
+                    claw.setPosition(clawClose);
                     break;
                 default:
                     break;
             }
         }
-        if(rotateEnabled) {
-            switch (rotateState) {
-                case LEFT90:
-                    rotate.setPosition(ROTATESTATE.LEFT90.pos);
-                    break;
-                case LEFT45:
-                    rotate.setPosition(ROTATESTATE.LEFT45.pos);
-                    break;
-                case DEFAULT:
-                    rotate.setPosition(ROTATESTATE.DEFAULT.pos);
-                    break;
-                case RIGHT45:
-                    rotate.setPosition(ROTATESTATE.RIGHT45.pos);
-                    break;
-                case RIGHT90:
-                    rotate.setPosition(ROTATESTATE.RIGHT90.pos);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        if(tiltEnabled) {
-            switch (tiltState) {
-                case UP:
-                    tilt.setPosition(TILTSTATE.UP.pos);
-                    break;
-                case MID:
-                    tilt.setPosition(TILTSTATE.MID.pos);
-                    break;
-                case DOWN:
-                    tilt.setPosition(TILTSTATE.DOWN.pos);
-                    break;
-                default:
-                    break;
-            }
+        switch (rotateState){
+            case VERTICAL:
+                rightDiffy.setPosition(down_vertical.right);
+                leftDiffy.setPosition(down_vertical.left);
+                break;
+            case ORIZONTAL:
+                switch (tiltState){
+                    case DOWN:
+                        leftDiffy.setPosition(down_horizontal.left);
+                        rightDiffy.setPosition(down_horizontal.right);
+                        break;
+                    case MID:
+                        rightDiffy.setPosition(mid.right);
+                        leftDiffy.setPosition(mid.left);
+                        break;
+                    case UP:
+                        rightDiffy.setPosition(up.right);
+                        leftDiffy.setPosition(up.left);
+                        break;
+                }
+                break;
         }
     }
 }
