@@ -18,8 +18,6 @@ import org.firstinspires.ftc.teamcode.Utils.Wrappers.AsymmetricMotionProfile;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.Encoder;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.WEncoder;
 
-import java.util.concurrent.TimeUnit;
-
 @Config
 public class Pitch {
 
@@ -44,9 +42,9 @@ public class Pitch {
         AUTO,
         IDLE
     }
-    public static double kV = 0.1;
+    public static double kV = 0.05;
     public static class Params {
-        public static double kP = 0.009;
+        public static double kP = 0.01;
         public static double kI = 0.0;
         public static double kD = 0.00025;
 
@@ -63,7 +61,7 @@ public class Pitch {
 
     // Motion profile variables
     public boolean isMotionProfileActive = false;
-    private double motionProfileTime =  0.0;
+    private double motionProfileTime = 0.0;
     private double motionProfileTotalTime = 0.0;
     private double motionProfileStartPosition = 0.0;
     private double motionProfileEndPosition = 0.0;
@@ -92,8 +90,8 @@ public class Pitch {
     public static double maxVelocityCounts = maxVelocity * Params.tickPerDegree;
     public static double maxAccelerationCounts = maxAcceleration * Params.tickPerDegree/* calculated max acceleration in counts/sec^2 */;
     public double target = 0;
-    ElapsedTime timer = new ElapsedTime();
 
+    ElapsedTime timer = new ElapsedTime();
     public boolean isAt0() {
         return Math.abs(currentPos-threeshouldO) < 6;
     }
@@ -192,21 +190,21 @@ public class Pitch {
     public void motionProfilePid() {
         double targetPosition = target;
         long currentTimeMillis = System.currentTimeMillis();
-        long deltaTime = (long) ((currentTimeMillis - lastUpdateTime)); // Convert to seconds
-        Log.d("delta",deltaTime + " " + currentTimeMillis + " " + lastUpdateTime);
+        double deltaTime = (currentTimeMillis - lastUpdateTime) / 1000.0; // Convert to seconds
         lastUpdateTime = currentTimeMillis;
-        //Log.d("time Delta",motionProfileTotalTime + " " + motionProfileTime + " " +currentTime);
+        Log.d("time Delta",motionProfileTotalTime + " " + motionProfileTime + " " + timer.seconds());
         if (isMotionProfileActive) {
-            motionProfileTime = timer.seconds();
-            if (motionProfileTime > motionProfileTotalTime) {
+            motionProfileTime += deltaTime;
+            if (timer.seconds() >= motionProfileTotalTime) {
                 motionProfileTime = motionProfileTotalTime;
                 isMotionProfileActive = false;
             }
+
             generateMotionProfileState(motionProfileTime);
 
             Log.d("pos", String.valueOf(targetPosition));
         }
-       // Log.d("Pitch Pid",targetPosition + " " + isMotionProfileActive + " " + currentTime);
+        Log.d("Pitch Pid",targetPosition + " " + isMotionProfileActive + " " + motionProfileTime);
 
 
         Log.d("Velocity",desiredVelocity + "");
@@ -231,6 +229,7 @@ public class Pitch {
         Log.d("time",motionProfileTotalTime + " " + motionProfileStartPosition + " " + motionProfileEndPosition);
         motionProfileTime = 0.0;
         timer.reset();
+        timer.startTime();
         isMotionProfileActive = true;
         Log.d("Pitch", "Starting motion profile:");
         Log.d("Pitch", "Start Position: " + motionProfileStartPosition);
@@ -383,3 +382,4 @@ public class Pitch {
 
 
 }
+
