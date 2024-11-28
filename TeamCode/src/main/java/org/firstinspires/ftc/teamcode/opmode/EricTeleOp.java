@@ -86,7 +86,7 @@ public class EricTeleOp extends OpMode {
             robot.arm.manualControl = false;
         }
         if(gg.bOnce()) {
-             if( robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
+             if(robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
                 robot.arm.setTargetState(INTAKING);
             }
         }
@@ -102,7 +102,8 @@ public class EricTeleOp extends OpMode {
         }
     }
     public void updateDrive() {
-        robot.drive.setMotorPowersFromGamepad(gg,1.0,false,true);
+        if(Math.abs(gg.left_stick_x) > 0.1 || Math.abs(gg.left_stick_y) > 0.1
+                || Math.abs(gg.right_stick_x) > 0.1) robot.drive.setMotorPowersFromGamepad(gg,1.0,false,true);
     }
     public void updateTelemetry() {
         telemetry.addLine();
@@ -128,5 +129,10 @@ public class EricTeleOp extends OpMode {
         addStatistics();
         telemetry.update();
         lastLoopFinish = System.currentTimeMillis();
+    }
+
+    @Override
+    public void stop() {
+        robot.stop();
     }
 }

@@ -78,12 +78,9 @@ public class Arm implements Subsystem {
         }
     }
     public void update() {
-        long currentTime = System.currentTimeMillis();
 //        if (currentTime - lastUpdateTime < UPDATE_INTERVAL_MS) {
 //            return;
 //        }
-        lastUpdateTime = currentTime;
-
 
         if (manualControl) {
             currentState = FSMState.MANUAL_CONTROL;
@@ -122,11 +119,10 @@ public class Arm implements Subsystem {
 
             case ADJUSTING_PITCH:
                 pitchSubsystem.setMode(Pitch.MODE.AUTO);
-                if (!pitchSubsystem.isMotionProfileActive) {
+                if (pitchSubsystem.isAtPosition(targetState.getPitchAngle())) {
                     pitchSubsystem.setMode(Pitch.MODE.IDLE);
                     currentState = nextStateInPlan();
                 }
-
                 break;
 
             case EXTENDING_EXTENSION:

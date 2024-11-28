@@ -4,7 +4,6 @@ import android.util.Log;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.controller.PIDController;
-import com.arcrobotics.ftclib.controller.PIDFController;
 import com.arcrobotics.ftclib.util.InterpLUT;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -14,9 +13,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Utils.Caching.CachingDcMotorEx;
 import org.firstinspires.ftc.teamcode.Utils.Utils;
-import org.firstinspires.ftc.teamcode.Utils.Wrappers.AsymmetricMotionProfile;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.Encoder;
-import org.firstinspires.ftc.teamcode.Utils.Wrappers.WEncoder;
+import org.firstinspires.ftc.teamcode.Utils.Wrappers.profile.AsymmetricMotionProfile;
+import org.firstinspires.ftc.teamcode.Utils.Wrappers.profile.ProfileConstraints;
+import org.firstinspires.ftc.teamcode.Utils.Wrappers.profile.ProfileState;
 
 @Config
 public class Pitch {
@@ -44,7 +44,7 @@ public class Pitch {
     }
     public static double kV = 0.05;
     public static class Params {
-        public static double kP = 0.01;
+        public static double kP = 0.013;
         public static double kI = 0.0;
         public static double kD = 0.00025;
 
@@ -55,8 +55,8 @@ public class Pitch {
 
     private long lastUpdateTime;
     // Motion profile parameters
-    public static double maxVelocity = 1000; // degrees per second
-    public static double maxAcceleration = 3500; // degrees per second squared
+    public static double maxVelocity = 5000; // degrees per second
+    public static double maxAcceleration = 5500; // degrees per second squared
     private double dt = 0.02; // Time step in seconds (50 Hz update rate)
 
     // Motion profile variables
@@ -97,6 +97,9 @@ public class Pitch {
     }
 
     public double tickperDegree = 6.10352;
+    AsymmetricMotionProfile profile;
+    ProfileConstraints constraints;
+    ProfileState state;
     private Encoder encoder;
     Arm arm;
 
@@ -124,6 +127,7 @@ public class Pitch {
         offset = currentPos;
         maxVelocityCounts = maxVelocity * tickperDegree;
         maxAccelerationCounts = maxAcceleration * tickperDegree/* calculated max acceleration in counts/sec^2 */;
+        constraints = new ProfileConstraints(maxAccelerationCounts,maxVelocityCounts, maxAccelerationCounts);
     }
 
     public void initializeMotors() {
@@ -144,19 +148,10 @@ public class Pitch {
         return getTrueCurrentPosition() - offset;
     }
 
-    public void setOffset(double offset) {
-        this.offset = offset;
-    }
-    public boolean atTarget() {
-        if(mode == MODE.AUTO) {
-            if(controller.atSetPoint()) return true;
-            else return false;
-        }
-        return false;
-    }
-    public boolean isAtPosition(double position) {
-        double targetCounts = position ;
-        return Math.abs(position -currentPos) < (2 * tickperDegree); // Within 2 degrees
+
+
+    public boolean isAtPosition(double target) {
+        return Math.abs(target -currentPos) <= 3;
     }
 
     public double desiredVelocity = 0,desiredPosition = 0;
@@ -167,10 +162,6 @@ public class Pitch {
         return currentPos / Params.tickPerDegree;
     }
 
-    public void setPowerMotors(double power) {
-        this.motor1Power = power;
-        this.motor2Power = power;
-    }
 
     public void checkForSwitch() {
         if(limitSwitch.getState()) {
@@ -192,21 +183,14 @@ public class Pitch {
         long currentTimeMillis = System.currentTimeMillis();
         double deltaTime = (currentTimeMillis - lastUpdateTime) / 1000.0; // Convert to seconds
         lastUpdateTime = currentTimeMillis;
-        Log.d("time Delta",motionProfileTotalTime + " " + motionProfileTime + " " + timer.seconds());
-        if (isMotionProfileActive) {
-            motionProfileTime += deltaTime;
-            if (timer.seconds() >= motionProfileTotalTime) {
-                motionProfileTime = motionProfileTotalTime;
-                isMotionProfileActive = false;
-            }
-
-            generateMotionProfileState(motionProfileTime);
-
-            Log.d("pos", String.valueOf(targetPosition));
-        }
-        Log.d("Pitch Pid",targetPosition + " " + isMotionProfileActive + " " + motionProfileTime);
-
-
+        Log.d("MotionProfileA",  "time " + timer.time());
+        Log.d("MotionProfileA","total Time" + motionProfile.totalTime);
+        state = motionProfile.calculate(timer.time());
+        Log.d("MotionProfileA ",motionProfile.toString());
+        desiredPosition = state.x;
+        Log.d("desired pos","desired " + desiredPosition);
+        desiredVelocity = state.v;
+        Log.d("pos", String.valueOf(targetPosition));
         Log.d("Velocity",desiredVelocity + "");
         motor1Power = controller.calculate(currentPos,desiredPosition) + kV * desiredVelocity;
         motor2Power = motor1Power;
@@ -222,112 +206,20 @@ public class Pitch {
     }
     public void startMotionProfile(double endPositionDegrees) {
 
+
         motionProfileStartPosition = currentPos;
         motionProfileEndPosition = endPositionDegrees;
-        double distance = motionProfileEndPosition - motionProfileStartPosition;
-        motionProfileTotalTime = calculateMotionProfileTotalTime(distance);
-        Log.d("time",motionProfileTotalTime + " " + motionProfileStartPosition + " " + motionProfileEndPosition);
         motionProfileTime = 0.0;
-        timer.reset();
-        timer.startTime();
+        timer = new ElapsedTime();
+        motionProfile = new AsymmetricMotionProfile(motionProfileStartPosition,motionProfileEndPosition,constraints);
         isMotionProfileActive = true;
-        Log.d("Pitch", "Starting motion profile:");
-        Log.d("Pitch", "Start Position: " + motionProfileStartPosition);
-        Log.d("Pitch", "End Position: " + motionProfileEndPosition);
-        Log.d("Pitch", "Distance: " + distance);
-        Log.d("Pitch", "Total Time: " + motionProfileTotalTime);
+        Log.d("MotionProfileA", "Starting motion profile:");
+        Log.d("MotionProfileA", "Start Position: " + motionProfileStartPosition);
+        Log.d("MotionProfileA", "End Position: " + motionProfileEndPosition);
+        Log.d("MotionProfileA", "Distance: " + motionProfile.distance);
+        Log.d("MotionProfileA", "Total Time: " + motionProfile.totalTime);
 
     }
-
-    private double calculateMotionProfileTotalTime(double distanceDegrees) {
-        double distance = Math.abs(distanceDegrees);
-        double timeToMaxVelocity = maxVelocityCounts / maxAccelerationCounts;
-
-        double distanceDuringAccel = 0.5 * maxAccelerationCounts * timeToMaxVelocity * timeToMaxVelocity;
-
-        double totalTime = 0;
-        if (distance < 2 * distanceDuringAccel) {
-            // Triangle profile (never reaches max velocity)
-            totalTime =  2 * Math.sqrt(distance / maxAccelerationCounts);
-        } else {
-            // Trapezoidal profile
-            double distanceAtConstantVelocity = distance - (2 * distanceDuringAccel);
-            double timeAtConstantVelocity = distanceAtConstantVelocity / maxVelocityCounts;
-            totalTime = 2 * timeToMaxVelocity + timeAtConstantVelocity;
-        }
-        Log.d("Pitch", "Calculated Motion Profile Total Time: " + totalTime);
-        return totalTime;
-    }
-
-    private void generateMotionProfileState(double time) {
-        double distance = motionProfileEndPosition - motionProfileStartPosition;
-        double direction = Math.signum(distance);
-        double absDistance = Math.abs(distance);
-
-        double timeToMaxVelocity = maxVelocityCounts / maxAccelerationCounts;
-        double distanceDuringAccel = 0.5 * maxAccelerationCounts * timeToMaxVelocity * timeToMaxVelocity;
-
-        double totalTime;
-
-        if (absDistance < 2 * distanceDuringAccel) {
-            // Triangle profile
-            timeToMaxVelocity = Math.sqrt(absDistance / maxAccelerationCounts);
-            totalTime = 2 * timeToMaxVelocity;
-
-            if (time < timeToMaxVelocity) {
-                // Acceleration phase
-                desiredPosition = motionProfileStartPosition + direction * 0.5 * maxAccelerationCounts * time * time;
-                desiredVelocity = direction * maxAccelerationCounts * time;
-                currentPhase = "Acceleration";
-            } else if (time <= totalTime) {
-                // Deceleration phase
-                double t = time - timeToMaxVelocity;
-                desiredPosition = motionProfileStartPosition + direction * (absDistance - 0.5 * maxAccelerationCounts * t * t);
-                desiredVelocity = direction * maxAccelerationCounts * (totalTime - time);
-                currentPhase = "Deceleration";
-            } else {
-                desiredPosition = motionProfileEndPosition;
-                desiredVelocity = 0.0;
-                currentPhase = "Completed";
-            }
-        } else {
-            // Trapezoidal profile
-            double timeAtConstantVelocity = (absDistance - (2 * distanceDuringAccel)) / maxVelocityCounts;
-            totalTime = 2 * timeToMaxVelocity + timeAtConstantVelocity;
-
-            if (time < timeToMaxVelocity) {
-                // Acceleration phase
-                desiredPosition = motionProfileStartPosition + direction * 0.5 * maxAccelerationCounts * time * time;
-                desiredVelocity = direction * maxAccelerationCounts * time;
-                currentPhase = "Acceleration";
-            } else if (time < (timeToMaxVelocity + timeAtConstantVelocity)) {
-                // Constant velocity phase
-                double accelDistance = distanceDuringAccel;
-                double constantVelocityTime = time - timeToMaxVelocity;
-                desiredPosition = motionProfileStartPosition + direction * (accelDistance + maxVelocityCounts * constantVelocityTime);
-                desiredVelocity = direction * maxVelocityCounts;
-                currentPhase = "Constant Velocity";
-            } else if (time <= totalTime) {
-                // Deceleration phase
-                double t = time - timeToMaxVelocity - timeAtConstantVelocity;
-                desiredPosition = motionProfileEndPosition - direction * 0.5 * maxAccelerationCounts * t * t;
-                desiredVelocity = direction * maxAccelerationCounts * (totalTime - time);
-                currentPhase = "Deceleration";
-            } else {
-                desiredPosition = motionProfileEndPosition;
-                desiredVelocity = 0.0;
-                currentPhase = "Completed";
-            }
-        }
-
-        // Logging
-        Log.d("MotionProfile", "Time: " + time);
-        Log.d("MotionProfile", "Phase: " + currentPhase);
-        Log.d("MotionProfile", "Desired Position: " + desiredPosition);
-        Log.d("MotionProfile", "Desired Velocity: " + desiredVelocity);
-    }
-
-
 
     public void update() {
         checkForSwitch();
@@ -348,18 +240,6 @@ public class Pitch {
 //                    extension2.setPower(Utils.minMaxClip(-1, 1, motor2Power));
 //                }
                 motionProfilePid();
-                if (isMotionProfileActive) {
-                    Log.d("Pitch", "Motion Profile Time: " + motionProfileTime);
-                    Log.d("Pitch", "Target Position: " + target);
-                    Log.d("Pitch", "Current Position: " + currentPos);
-
-                    // ... existing code ...
-                } else {
-                    mode = MODE.IDLE;
-
-                    Log.d("Pitch", "Motion Profile is not active.");
-                    break;
-                }
                 extension1.setPower(Utils.minMaxClip(-1, 1, motor1Power + ff));
                 extension2.setPower(Utils.minMaxClip(-1, 1, motor2Power + ff));
                 break;

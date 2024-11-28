@@ -96,7 +96,6 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
         hub2 = opMode.hardwareMap.get(LynxModule.class, "Expansion Hub 2");
 
         hub1.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
-        hub2.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
 
         //region Initialize subsystems
         subsystems = new ArrayList<>();

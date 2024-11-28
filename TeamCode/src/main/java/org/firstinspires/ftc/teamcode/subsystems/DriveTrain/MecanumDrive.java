@@ -428,43 +428,7 @@ public class MecanumDrive implements Subsystem {
     }
 
 
-    public void setMotorPowersFromGamepad(GamePadController gg, double scale, boolean reverseFront, boolean customCurve) {
-        MecanumUtil.Motion motion;
 
-        if(gg.leftStickButtonOnce()){
-            slow_mode = !slow_mode;
-        }
-        double left_stick_x = gg.left_stick_x;
-        double left_stick_y = gg.left_stick_y;
-        double right_stick_x = rotateNormal * gg.right_stick_x;
-        double right_stick_y = rotateNormal * gg.right_stick_y;
-
-        if(slow_mode) {
-            left_stick_x*=slowMode;
-            right_stick_y*=slowMode;
-            right_stick_x*=slowMode;
-            right_stick_y*=slowMode;
-        }
-        motion = MecanumUtil.joystickToMotion(left_stick_x, left_stick_y,
-                right_stick_x, right_stick_y, reverseFront, customCurve);
-
-
-        updatePoseEstimate();
-        if (fieldCentric) {
-            motion = motion.toFieldCentricMotion(pose.heading.toDouble());
-        }
-
-        MecanumUtil.Wheels wh = MecanumUtil.motionToWheelsFullSpeed(motion).scaleWheelPower(scale); // Use full forward speed on 19:1 motors
-/*        motorPowers[0] = ffMotor.compute(wh.frontLeft,PARAMS.maxProfileAccel);
-        motorPowers[1] = ffMotor.compute(wh.backLeft,PARAMS.maxProfileAccel);
-        motorPowers[2] = ffMotor.compute(wh.backRight,PARAMS.maxProfileAccel);
-        motorPowers[3] = ffMotor.compute(wh.frontRight,PARAMS.maxProfileAccel);*/
-        motorPowers[0] = wh.frontLeft;
-        motorPowers[1] = wh.backLeft;
-        motorPowers[2] = wh.backRight;
-        motorPowers[3] = wh.frontRight;
-        setMotorPowers(motorPowers[0],motorPowers[1],motorPowers[2],motorPowers[3]);
-    }
     public final class TurnAction implements Action {
         private final TimeTurn turn;
 
