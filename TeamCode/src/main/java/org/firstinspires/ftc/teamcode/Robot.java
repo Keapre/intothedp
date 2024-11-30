@@ -31,7 +31,7 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
     public static final String TAG = "Robot";
 
 
-    public MecanumTest drive;
+    public Drive drive;
     public Arm arm;
 
     private LynxModule hub1;
@@ -100,7 +100,7 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
         //region Initialize subsystems
         subsystems = new ArrayList<>();
         try {
-            drive = new MecanumTest(opMode.hardwareMap);
+            drive = new Drive(opMode.hardwareMap,new Pose2d(0,0,0),false);
             subsystems.add(drive);
             Log.w(TAG, "DriveTrain intialized successfully");
         } catch (Exception e) {

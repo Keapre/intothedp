@@ -54,6 +54,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.Utils.Caching.CachingDcMotorEx;
+import org.firstinspires.ftc.teamcode.Utils.Dashboard.Drawing;
 import org.firstinspires.ftc.teamcode.Utils.MecanumUtil;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 import org.firstinspires.ftc.teamcode.Utils.messages.DriveCommandMessage;
@@ -407,10 +408,10 @@ public class MecanumDrive implements Subsystem {
             drawPoseHistory(c);
 
             c.setStroke("#4CAF50");
-            org.firstinspires.ftc.teamcode.Drawing.drawRobot(c, txWorldTarget.value());
+            Drawing.drawRobot(c, txWorldTarget.value());
 
             c.setStroke("#3F51B5");
-            org.firstinspires.ftc.teamcode.Drawing.drawRobot(c, pose);
+            Drawing.drawRobot(c, pose);
 
             c.setStroke("#4CAF50FF");
             c.setStrokeWidth(1);
@@ -426,7 +427,47 @@ public class MecanumDrive implements Subsystem {
             c.strokePolyline(xPoints, yPoints);
         }
     }
+    public void setMotorPowersFromGamepad(GamePadController gg, double scale, boolean reverseFront, boolean customCurve) {
+        MecanumUtil.Motion motion;
 
+        if(gg.leftStickButtonOnce()){
+            slow_mode = !slow_mode;
+        }
+
+        double left_stick_x = gg.left_stick_x;
+        double left_stick_y = gg.left_stick_y;
+        double right_stick_x = gg.right_stick_x;
+        double right_stick_y = gg.right_stick_y;
+
+        if(slow_mode) {
+            left_stick_x*=slowMode;
+            right_stick_y*=slowMode;
+            right_stick_x*=slowMode;
+            right_stick_y*=slowMode;
+        }else {
+            right_stick_x*=rotateNormal;
+            right_stick_y*=rotateNormal;
+        }
+        motion = MecanumUtil.joystickToMotion(left_stick_x, left_stick_y,
+                right_stick_x, right_stick_y, reverseFront, customCurve);
+
+
+        updatePoseEstimate();
+        if (fieldCentric) {
+            motion = motion.toFieldCentricMotion(pose.heading.toDouble());
+        }
+
+        MecanumUtil.Wheels wh = MecanumUtil.motionToWheelsFullSpeed(motion).scaleWheelPower(scale); // Use full forward speed on 19:1 motors
+/*        motorPowers[0] = ffMotor.compute(wh.frontLeft,PARAMS.maxProfileAccel);
+        motorPowers[1] = ffMotor.compute(wh.backLeft,PARAMS.maxProfileAccel);
+        motorPowers[2] = ffMotor.compute(wh.backRight,PARAMS.maxProfileAccel);
+        motorPowers[3] = ffMotor.compute(wh.frontRight,PARAMS.maxProfileAccel);*/
+        motorPowers[0] = wh.frontLeft;
+        motorPowers[1] = wh.backLeft;
+        motorPowers[2] = wh.backRight;
+        motorPowers[3] = wh.frontRight;
+        setMotorPowers(motorPowers[0],motorPowers[1],motorPowers[2],motorPowers[3]);
+    }
 
 
     public final class TurnAction implements Action {
@@ -490,10 +531,10 @@ public class MecanumDrive implements Subsystem {
             drawPoseHistory(c);
 
             c.setStroke("#4CAF50");
-            org.firstinspires.ftc.teamcode.Drawing.drawRobot(c, txWorldTarget.value());
+            Drawing.drawRobot(c, txWorldTarget.value());
 
             c.setStroke("#3F51B5");
-            org.firstinspires.ftc.teamcode.Drawing.drawRobot(c, pose);
+            Drawing.drawRobot(c, pose);
 
             c.setStroke("#7C4DFFFF");
             c.fillCircle(turn.beginPose.position.x, turn.beginPose.position.y, 2);

@@ -43,9 +43,9 @@ public class Extension {
     }
 
     public static class Params {
-        public static double kP = 0.0;
+        public static double kP = 0.05 ;
         public static double kI = 0.0;
-        public static double kD = 0.0;
+        public static double kD = 0.0005;
         public static double kF = 0.0;
         public static double tickPerInch = 0.0;
     }
@@ -60,7 +60,7 @@ public class Extension {
     boolean usePid = false;
     public PIDFController controller = new PIDFController(Params.kP,0,Params.kD,0);
 
-    WEncoder encoder;
+    Encoder encoder;
     Arm arm;
     public Extension(HardwareMap hardwareMap,boolean isAuto,Arm arm) {
         this.arm = arm;
@@ -68,23 +68,20 @@ public class Extension {
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
 
-        encoder = new WEncoder(new Encoder(motor));
+        encoder = new Encoder(motor);
+        encoder.setDirection(Encoder.Direction.REVERSE);
         motor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        if(isAuto) mode = MODE.AUTO;
-        offset = motor.getCurrentPosition();
+        offset = encoder.getCurrentPosition();
     }
 
     public void setPower(double power) {
         this.power = power;
     }
     public void pidUpdate() {
-        controller.setSetPoint(target);
-        if(controller.atSetPoint()) {
-            mode = MODE.IDLE;
-        }
         controller.setPIDF(Params.kP, Params.kI, Params.kD, Params.kF);
 
-        power = controller.calculate(currentPos, target);
+        double error = target - (encoder.getCurrentPosition() - offset);
+        power = controller.calculate(error);
     }
 
 
@@ -94,7 +91,6 @@ public class Extension {
         mode = MODE.MANUAL;
     }
     public double getTrueCurrentPosition() {
-        encoder.read();
         return encoder.getCurrentPosition();
     }
 
@@ -102,7 +98,7 @@ public class Extension {
         return getTrueCurrentPosition() - offset;
     }
     public boolean isAtZero() {
-        return Math.abs(currentPos - offset) < 10;
+        return Math.abs(target-currentPos) < 25;
     }
 
     public boolean isAtPosition(double position) {
@@ -116,19 +112,18 @@ public class Extension {
         currentPos = getCurrentPos();
         currentLength = currentPos / Params.tickPerInch;
         double angle = arm.pitchSubsystem.calculateAngle();
-        double ff = kCos * Math.toRadians(angle);
+
         switch (mode) {
             case AUTO:
                 pidUpdate();
-                motor.setPower(power + ff);
+
+                motor.setPower(Utils.minMaxClip(power,-0.2,0.4));
                 break;
             case MANUAL:
-                motor.setPower(Utils.minMaxClip(-1,1,power + ff));
+                motor.setPower(Utils.minMaxClip(-1,1,power));
                 break;
             case IDLE:
-                motor.setPower(ff);
-                break;
-            default:
+                motor.setPower(0);
                 break;
         }
     }

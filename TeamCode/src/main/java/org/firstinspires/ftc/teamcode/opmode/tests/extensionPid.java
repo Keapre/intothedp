@@ -24,13 +24,14 @@ public class extensionPid extends LinearOpMode {
     public static double kG = 10.18;
     public static double target = 0;
 
-    DcMotorEx extension = hardwareMap.get(DcMotorEx.class, "extend");
+    DcMotorEx extension;
 
     public static double angle = 0;
 
 
     @Override
     public void runOpMode() throws InterruptedException {
+        extension = hardwareMap.get(DcMotorEx.class, "extend");
         extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         Encoder encoder = new Encoder(extension);
         encoder.setDirection(Encoder.Direction.REVERSE);

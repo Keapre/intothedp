@@ -27,13 +27,13 @@ public class Claw {
         }
     };
 
-    public static DiffyPositions down_horizontal = new DiffyPositions(0.18,0.86);
-    public static DiffyPositions down_vertical = new DiffyPositions(0,0.66);
+    public static DiffyPositions down_horizontal = new DiffyPositions(0.22,0.81);
+    public static DiffyPositions down_vertical = new DiffyPositions(0.03,0.62);
     public static DiffyPositions mid = new DiffyPositions(0.82,0.23);
     public static DiffyPositions up = new DiffyPositions(1,0);
     //TODO:
-    public static double clawOpen = 0.35;
-    public static double clawClose = 0.69;
+    public static double clawOpen = 0.39;
+    public static double clawClose = 0.8;
 
     public enum CLAWPOS {
         OPEN,
@@ -47,7 +47,7 @@ public class Claw {
         ORIZONTAL;
 
     }
-   public enum tiltMode {
+    public enum tiltMode {
         UP,
         MID,
         DOWN
@@ -96,8 +96,6 @@ public class Claw {
                     break;
                 case CLOSE:
                     claw.setPosition(clawClose);
-                    break;
-                default:
                     break;
             }
         }

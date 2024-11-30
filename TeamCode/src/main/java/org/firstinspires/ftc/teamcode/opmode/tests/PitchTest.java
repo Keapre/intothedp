@@ -41,8 +41,8 @@ public class PitchTest extends LinearOpMode {
     public static double tickPerDegree = 6.10352;
     public static double kGpowerInceput = 0.06;
     public static double kGpowerFinal = 0.18;
-    public static double clawClosed = 0.69;
-    public static double clawOpened = 0.35;
+    public static double clawClosed = 0.48;
+    public static double clawOpened = 0;
     long lastChecked = System.currentTimeMillis();
     public static double threesholdTransition = 550;
     public static double clawThreeshold = 15;
@@ -144,7 +144,7 @@ public class PitchTest extends LinearOpMode {
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        encd = new Encoder(motorE);;
+        encd = new Encoder(motorE);
         encoderExtension = new Encoder(hardwareMap.get(DcMotorEx.class,"hang"));
         Mode mode = Mode.idle;
         limitSwitch.setMode(DigitalChannel.Mode.INPUT);
@@ -221,7 +221,7 @@ public class PitchTest extends LinearOpMode {
             }else {
                 mode = Mode.idle;
             }
-            double powerSAL = -gg.left_trigger + gg.right_trigger;
+            double powerSAL = gg.left_trigger  - gg.right_trigger;
             switch (modeServo){
                 case CLOSED:
                     claw.setPosition(clawClosed);
@@ -239,14 +239,14 @@ public class PitchTest extends LinearOpMode {
             }
             switch (rMode){
                 case VERTICAL:
-                    diffyRight.setPosition(0.66);
-                    diffyLeft.setPosition(0);
+                    diffyRight.setPosition(0.62);
+                    diffyLeft.setPosition(0.03);
                     break;
                 case ORIZONTAL:
                     switch (TiltMode){
                         case DOWN:
-                            diffyLeft.setPosition(0.18); //0.18
-                            diffyRight.setPosition(0.86);//0.86
+                            diffyLeft.setPosition(0.22); //0.18
+                            diffyRight.setPosition(0.81);//0.86
                             //
                             break;
                         case MID:

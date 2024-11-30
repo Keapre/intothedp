@@ -50,7 +50,7 @@ public class Pitch {
 
         public static double tickPerDegree = 6.10352;
 
-        public static double Kcos = 0.16;
+        public static double Kcos = 0.3;
     }
 
     private long lastUpdateTime;
@@ -112,8 +112,6 @@ public class Pitch {
         limitSwitch = hardwareMap.get(DigitalChannel.class, "limit");
         limitSwitch.setMode(DigitalChannel.Mode.INPUT);
         extension1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        extension1.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-        extension2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         encoder = new Encoder(extension1);
         lut.add(-50,kGpowerInceput);
         lut.add(850,kGpowerFinal);
@@ -192,7 +190,7 @@ public class Pitch {
         desiredVelocity = state.v;
         Log.d("pos", String.valueOf(targetPosition));
         Log.d("Velocity",desiredVelocity + "");
-        motor1Power = controller.calculate(currentPos,desiredPosition) + kV * desiredVelocity;
+        motor1Power = controller.calculate(currentPos,desiredPosition);
         motor2Power = motor1Power;
 
     }
@@ -229,7 +227,7 @@ public class Pitch {
         ff = Math.cos(Math.toRadians(angle)) * Params.Kcos;
         switch (mode) {
             case AUTO:
-//                pid();
+                pid();
 //                if(target==0 && isAt0()) {
 //                    extension2.setPower(0);
 //                    extension1.setPower(0);
@@ -238,10 +236,9 @@ public class Pitch {
 //                else {
 //                    extension1.setPower(Utils.minMaxClip(-1, 1, motor1Power));
 //                    extension2.setPower(Utils.minMaxClip(-1, 1, motor2Power));
-//                }
-                motionProfilePid();
-                extension1.setPower(Utils.minMaxClip(-1, 1, motor1Power + ff));
-                extension2.setPower(Utils.minMaxClip(-1, 1, motor2Power + ff));
+//                }motionProfilePid();
+                extension1.setPower(Utils.minMaxClip(motor1Power + ff, -0.5, 0.6));
+                extension2.setPower(Utils.minMaxClip(motor2Power+ff,-0.5, 0.6));
                 break;
             case MANUAL:
                 extension1.setPower(Utils.minMaxClip(-1,1,motor1Power + ff));
@@ -262,4 +259,3 @@ public class Pitch {
 
 
 }
-

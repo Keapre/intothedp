@@ -47,12 +47,12 @@ public class EricTeleOp extends OpMode {
     }
     private boolean isManualControlActivated() {
         return Math.abs(gg.left_trigger) > 0.1 || Math.abs(gg.right_trigger) > 0.1 || gg.aOnce() ||
-                 gg.dpadUpOnce() || gg.dpadDownOnce() || gg.dpadLeftOnce() || gg.dpadRightOnce();
+                gg.dpadUpOnce() || gg.dpadDownOnce() || gg.dpadLeftOnce() || gg.dpadRightOnce() || gg.leftBumperOnce() || gg.rightBumperOnce();
     }
 
     private boolean manualControlDeactivated() {
         return Math.abs(gg.left_trigger) < 0.1 && Math.abs(gg.right_trigger) < 0.1 && !gg.aOnce() &&
-                !gg.dpadUpOnce() && !gg.dpadDownOnce() && !gg.dpadLeftOnce() && !gg.dpadRightOnce();
+                !gg.dpadUpOnce() && !gg.dpadDownOnce() && !gg.dpadLeftOnce() && !gg.dpadRightOnce() && !gg.leftBumperOnce() && !gg.rightBumperOnce();
     }
 
 
@@ -86,24 +86,23 @@ public class EricTeleOp extends OpMode {
             robot.arm.manualControl = false;
         }
         if(gg.bOnce()) {
-             if(robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
+            if(robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
                 robot.arm.setTargetState(INTAKING);
             }
         }
         if (gg.yOnce()) {
-                 if( robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
-                robot.arm.setTargetState(HIGHBASKET);
+            if( robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
+                robot.arm.setTargetState(SPECIMEN);
             }
         }
         if(gg.xOnce()) {
-                if( robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
-                robot.arm.setTargetState(SPECIMEN);
+            if( robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
+                robot.arm.setTargetState(HIGHBASKET);
             }
         }
     }
     public void updateDrive() {
-        if(Math.abs(gg.left_stick_x) > 0.1 || Math.abs(gg.left_stick_y) > 0.1
-                || Math.abs(gg.right_stick_x) > 0.1) robot.drive.setMotorPowersFromGamepad(gg,1.0,false,true);
+         robot.drive.setMotorPowersFromGamepad(gg,1.0,false,true);
     }
     public void updateTelemetry() {
         telemetry.addLine();
@@ -120,6 +119,7 @@ public class EricTeleOp extends OpMode {
         telemetry.addData("target pitch",robot.arm.pitchSubsystem.target);
         telemetry.addData("pitch mode",robot.arm.pitchSubsystem.mode);
 
+        telemetry.addData("extend mode",robot.arm.extensionSubsystem.mode);
         telemetry.addData("Claw pos",robot.arm.clawSubsystem.clawPos);
         telemetry.addData("Claw state",robot.arm.clawSubsystem.tiltState);
         telemetry.addData("motion profile over",robot.arm.pitchSubsystem.isMotionProfileActive);
@@ -131,8 +131,4 @@ public class EricTeleOp extends OpMode {
         lastLoopFinish = System.currentTimeMillis();
     }
 
-    @Override
-    public void stop() {
-        robot.stop();
-    }
 }
