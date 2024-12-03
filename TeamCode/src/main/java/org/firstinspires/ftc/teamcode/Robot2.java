@@ -18,6 +18,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Arm.Arm;
 import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.Drive;
 import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.MecanumTest;
+import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.P2Pdrive;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,11 +28,11 @@ import java.util.concurrent.ExecutorService;
 
 
 @Config
-public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarningSource {
+public class Robot2 implements OpModeManagerNotifier.Notifications, GlobalWarningSource {
     public static final String TAG = "Robot";
 
 
-    public Drive drive;
+    public P2Pdrive drive;
     public Arm arm;
 
     private LynxModule hub1;
@@ -83,7 +84,7 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
         }
     };
 
-    public Robot(OpMode opMode, boolean isAutonomous) {
+    public Robot2(OpMode opMode, boolean isAutonomous,Pose2d startPose) {
         // Initialize statistics
         top10 = new MovingStatistics(10);
         top100 = new MovingStatistics(100);
@@ -100,7 +101,7 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
         //region Initialize subsystems
         subsystems = new ArrayList<>();
         try {
-            drive = new Drive(opMode.hardwareMap,new Pose2d(0,0,Math.toRadians(270)),false);
+            drive = new P2Pdrive(opMode.hardwareMap,startPose,true);
             subsystems.add(drive);
             Log.w(TAG, "DriveTrain intialized successfully");
         } catch (Exception e) {

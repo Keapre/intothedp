@@ -6,13 +6,13 @@ import org.firstinspires.ftc.teamcode.subsystems.Arm.Claw;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Pitch;
 
 @Config
-public class SPECIMEN extends STATE{
-    public SPECIMEN() {
-        this.clawpos = Claw.CLAWPOS.CLOSE;
+public class SPECIMENGARD extends STATE{
+    public SPECIMENGARD() {
+        this.clawpos = Claw.CLAWPOS.OPEN;
         this.rotatePos = Claw.RotateMode.ORIZONTAL;
-        this.tiltState = Claw.tiltMode.DOWN;
-        this.extensionTarget = 430; // Needs to be determined experimentally //si dupa scazi 125
-        this.pitchAngle = 320;
+        this.tiltState = Claw.tiltMode.MID;
+        this.extensionTarget = 345; // Needs to be determined experimentally //si dupa scazi 125
+        this.pitchAngle = 95;
     }
 
 }

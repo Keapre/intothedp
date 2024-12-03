@@ -42,24 +42,23 @@ public class Extension {
         IDLE
     }
 
-    public static class Params {
-        public static double kP = 0.05 ;
+        public static double kP = 0.002;
         public static double kI = 0.0;
-        public static double kD = 0.0005;
+        public static double kD = 0.000;
         public static double kF = 0.0;
         public static double tickPerInch = 0.0;
-    }
 
     public double power = 0;
     public double target = 0;
     public double currentPos = 0;
     public double offset = 0;
     public double currentLength = 0;
-    public static double kCos = 0;
+    public static double kCos = 0.3;
     public MODE mode = MODE.AUTO;
     boolean usePid = false;
-    public PIDFController controller = new PIDFController(Params.kP,0,Params.kD,0);
+    public PIDFController controller = new PIDFController(kP,0,kD,0);
 
+    public static int sign = 1;
     Encoder encoder;
     Arm arm;
     public Extension(HardwareMap hardwareMap,boolean isAuto,Arm arm) {
@@ -69,7 +68,6 @@ public class Extension {
         motor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
 
         encoder = new Encoder(motor);
-        encoder.setDirection(Encoder.Direction.REVERSE);
         motor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         offset = encoder.getCurrentPosition();
     }
@@ -78,15 +76,15 @@ public class Extension {
         this.power = power;
     }
     public void pidUpdate() {
-        controller.setPIDF(Params.kP, Params.kI, Params.kD, Params.kF);
+        controller.setPIDF(kP, kI, kD, kF);
 
         double error = target - (encoder.getCurrentPosition() - offset);
-        power = controller.calculate(error);
+        power = controller.calculate(encoder.getCurrentPosition()-offset,target);
+        power*=-1;
     }
 
 
     public void manualControl(double power) {
-        motor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         this.power = power;
         mode = MODE.MANUAL;
     }
@@ -98,11 +96,14 @@ public class Extension {
         return getTrueCurrentPosition() - offset;
     }
     public boolean isAtZero() {
-        return Math.abs(target-currentPos) < 25;
+        return Math.abs(target-currentPos) < 500;
     }
 
+    public boolean isRetracted() {
+        return Math.abs(currentPos-offset) <=650;
+    }
     public boolean isAtPosition(double position) {
-        return Math.abs(currentPos - position) < 10;
+        return Math.abs(currentPos - position) < 50;
     }
 
     public double getCurrentPosition() {
@@ -110,20 +111,24 @@ public class Extension {
     }
     public void update() {
         currentPos = getCurrentPos();
-        currentLength = currentPos / Params.tickPerInch;
+        currentLength = currentPos /tickPerInch;
         double angle = arm.pitchSubsystem.calculateAngle();
 
+        double ff = Math.sin(arm.pitchSubsystem.calculateAngle()) * kCos;
+        ff = Utils.minMaxClip(ff,0,1);
+        ff*=-1;
         switch (mode) {
             case AUTO:
+                mode = MODE.AUTO;
                 pidUpdate();
 
-                motor.setPower(Utils.minMaxClip(power,-0.2,0.4));
+                motor.setPower(Utils.minMaxClip(power + ff,-0.95,0.95));
                 break;
             case MANUAL:
                 motor.setPower(Utils.minMaxClip(-1,1,power));
                 break;
             case IDLE:
-                motor.setPower(0);
+                motor.setPower(-0.05);
                 break;
         }
     }

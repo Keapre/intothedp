@@ -50,7 +50,7 @@ public class Pitch {
 
         public static double tickPerDegree = 6.10352;
 
-        public static double Kcos = 0.3;
+        public static double Kcos = 0.2;
     }
 
     private long lastUpdateTime;
@@ -75,12 +75,12 @@ public class Pitch {
 
     public PIDController controller = new PIDController(Params.kP, Params.kI, Params.kD);
 
-    public static double ff = 0;
+    public  double ff = 0;
     public static double angle = 0;
 
     DigitalChannel limitSwitch;
     public  double offset = 0;
-    InterpLUT lut = new InterpLUT();
+    InterpLUT lut = null;
     public static double currentPos = 0;
     public MODE mode = MODE.AUTO;
     public static double kGpowerInceput = 0.05;
@@ -102,6 +102,9 @@ public class Pitch {
     ProfileState state;
     private Encoder encoder;
     Arm arm;
+    public static double gardFeedforwd = 0.1;
+    public static double specimenFeedforwd = 0.115;
+    public static double basketFeedforwd = 0;
 
     AsymmetricMotionProfile motionProfile;
     public Pitch(HardwareMap hardwareMap,boolean isAutonomous,Arm arm) {
@@ -113,9 +116,6 @@ public class Pitch {
         limitSwitch.setMode(DigitalChannel.Mode.INPUT);
         extension1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         encoder = new Encoder(extension1);
-        lut.add(-50,kGpowerInceput);
-        lut.add(850,kGpowerFinal);
-        lut.createLUT();
         initializeMotors();
 
         if(isAutonomous) {
@@ -149,7 +149,7 @@ public class Pitch {
 
 
     public boolean isAtPosition(double target) {
-        return Math.abs(target -currentPos) <= 3;
+        return Math.abs(target -currentPos) <= 7;
     }
 
     public double desiredVelocity = 0,desiredPosition = 0;
@@ -224,7 +224,20 @@ public class Pitch {
         currentPos = encoder.getCurrentPosition() - offset;
         angle = calculateAngle();
 //        ff = Math.cos(Math.toRadians(angle)) * lut.get(Utils.minMaxClip(arm.extensionSubsystem.getCurrentPos(),0,699));
-        ff = Math.cos(Math.toRadians(angle)) * Params.Kcos;
+        switch ((int) target) {
+            case 0:
+                ff = 0;
+                break;
+            case 95:
+                ff = gardFeedforwd;
+                break;
+            case 345:
+                ff = specimenFeedforwd;
+                break;
+            case 555:
+                ff = basketFeedforwd;
+                break;
+        }
         switch (mode) {
             case AUTO:
                 pid();
@@ -237,14 +250,25 @@ public class Pitch {
 //                    extension1.setPower(Utils.minMaxClip(-1, 1, motor1Power));
 //                    extension2.setPower(Utils.minMaxClip(-1, 1, motor2Power));
 //                }motionProfilePid();
-                extension1.setPower(Utils.minMaxClip(motor1Power + ff, -0.5, 0.6));
-                extension2.setPower(Utils.minMaxClip(motor2Power+ff,-0.5, 0.6));
+                extension1.setPower(Utils.minMaxClip(motor1Power, -0.5, 0.6));
+                extension2.setPower(Utils.minMaxClip(motor2Power,-0.5, 0.6));
                 break;
             case MANUAL:
                 extension1.setPower(Utils.minMaxClip(-1,1,motor1Power + ff));
                 extension2.setPower(Utils.minMaxClip(-1,1,motor2Power + ff));
                 break;
             case IDLE:
+                if(lut == null && target == 320) {
+                    lut = new InterpLUT();
+                    lut.add(arm.extensionSubsystem.getCurrentPos(),specimenFeedforwd);
+                    lut.add(arm.extensionSubsystem.getCurrentPos() + 22000,0.22);
+                    lut.createLUT();
+                }else if(target!=320) {
+                    lut = null;
+                }
+                if(target == 320) {
+                    ff = lut.get(arm.extensionSubsystem.getCurrentPos());
+                }
                 if(target == 0) {
                     extension1.setPower(0);
                     extension2.setPower(0);

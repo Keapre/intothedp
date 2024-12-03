@@ -21,19 +21,21 @@ public class Claw {
         public double left = 0.0;
         public double right = 0.0;
 
-        public DiffyPositions(double l,double r) {
+        public DiffyPositions(double l, double r) {
             left = l;
             right = r;
         }
-    };
+    }
 
-    public static DiffyPositions down_horizontal = new DiffyPositions(0.22,0.81);
-    public static DiffyPositions down_vertical = new DiffyPositions(0.03,0.62);
-    public static DiffyPositions mid = new DiffyPositions(0.82,0.23);
-    public static DiffyPositions up = new DiffyPositions(1,0);
+    ;
+
+    public static DiffyPositions down_horizontal = new DiffyPositions(0.22, 0.81);
+    public static DiffyPositions down_vertical = new DiffyPositions(0.03, 0.62);
+    public static DiffyPositions mid = new DiffyPositions(0.82, 0.23);
+    public static DiffyPositions up = new DiffyPositions(1, 0);
     //TODO:
     public static double clawOpen = 0.39;
-    public static double clawClose = 0.8;
+    public static double clawClose = 0.83;
 
     public enum CLAWPOS {
         OPEN,
@@ -47,6 +49,7 @@ public class Claw {
         ORIZONTAL;
 
     }
+
     public enum tiltMode {
         UP,
         MID,
@@ -54,10 +57,10 @@ public class Claw {
     }
 
     public tiltMode tiltState = tiltMode.UP;
-    public RotateMode  rotateState = RotateMode.ORIZONTAL;
-    public CLAWPOS clawPos = CLAWPOS.OPEN;
+    public RotateMode rotateState = RotateMode.ORIZONTAL;
+    public CLAWPOS clawPos = CLAWPOS.CLOSE;
 
-    public Claw(HardwareMap hardwareMap,boolean isAuto) {
+    public Claw(HardwareMap hardwareMap, boolean isAuto) {
         this.claw = hardwareMap.get(Servo.class, "claw");
         this.leftDiffy = hardwareMap.get(Servo.class, "diffyLeft");
         this.rightDiffy = hardwareMap.get(Servo.class, "diffyRight");
@@ -76,50 +79,47 @@ public class Claw {
         tiltState = state;
     }
 
-    public tiltMode getTiltState(){
+    public tiltMode getTiltState() {
         return tiltState;
     }
 
-    public RotateMode getRotateState(){
+    public RotateMode getRotateState() {
         return rotateState;
     }
 
-    public CLAWPOS getClawPos(){
+    public CLAWPOS getClawPos() {
         return clawPos;
     }
 
     public void update() {
-        if(clawEnabled) {
-            switch (clawPos) {
-                case OPEN:
-                    claw.setPosition(clawOpen);
-                    break;
-                case CLOSE:
-                    claw.setPosition(clawClose);
-                    break;
-            }
-        }
-        switch (rotateState){
-            case VERTICAL:
-                rightDiffy.setPosition(down_vertical.right);
-                leftDiffy.setPosition(down_vertical.left);
+        switch (clawPos) {
+            case OPEN:
+                claw.setPosition(clawOpen);
                 break;
-            case ORIZONTAL:
-                switch (tiltState){
-                    case DOWN:
-                        leftDiffy.setPosition(down_horizontal.left);
-                        rightDiffy.setPosition(down_horizontal.right);
-                        break;
-                    case MID:
-                        rightDiffy.setPosition(mid.right);
-                        leftDiffy.setPosition(mid.left);
-                        break;
-                    case UP:
-                        rightDiffy.setPosition(up.right);
-                        leftDiffy.setPosition(up.left);
-                        break;
+            case CLOSE:
+                claw.setPosition(clawClose);
+                break;
+        }
+        switch (tiltState) {
+            case DOWN:
+                if(rotateState == RotateMode.VERTICAL){
+                    leftDiffy.setPosition(down_vertical.left);
+                    rightDiffy.setPosition(down_vertical.right);
+                }
+                else {
+                    leftDiffy.setPosition(down_horizontal.left);
+                    rightDiffy.setPosition(down_horizontal.right);
                 }
                 break;
+            case MID:
+                rightDiffy.setPosition(mid.right);
+                leftDiffy.setPosition(mid.left);
+                break;
+            case UP:
+                rightDiffy.setPosition(up.right);
+                leftDiffy.setPosition(up.left);
+                break;
+
         }
     }
 }

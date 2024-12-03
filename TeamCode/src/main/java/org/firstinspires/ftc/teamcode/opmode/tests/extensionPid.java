@@ -19,11 +19,12 @@ import org.firstinspires.ftc.teamcode.Utils.Wrappers.WEncoder;
 @TeleOp(name = "extensionPid", group = "Tests")
 public class extensionPid extends LinearOpMode {
 
-    public static double kP = 0, kI = 0, kD = 0;
+    public static double kP = 0.002, kI = 0, kD = 0;
     PIDController pid = new PIDController(0, 0, 0);
     public static double kG = 10.18;
     public static double target = 0;
 
+    public static double sign = -   1;
     DcMotorEx extension;
 
     public static double angle = 0;
@@ -34,7 +35,6 @@ public class extensionPid extends LinearOpMode {
         extension = hardwareMap.get(DcMotorEx.class, "extend");
         extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         Encoder encoder = new Encoder(extension);
-        encoder.setDirection(Encoder.Direction.REVERSE);
         double offset = encoder.getCurrentPosition();
 
         extension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -44,14 +44,15 @@ public class extensionPid extends LinearOpMode {
         while (opModeIsActive()) {
             updatePID();
 
+            double pos = (encoder.getCurrentPosition() - offset);
             double error = target - (encoder.getCurrentPosition()-offset);
-            double power=pid.calculate(error);
-
-            extension.setPower(Utils.minMaxClip(power, -1, 1));
+            double power=pid.calculate(pos,target);
+            power*=sign;
+            extension.setPower(Utils.minMaxClip(power, -0.5, 0.5    ));
             telemetry.addData("error", error);
             telemetry.addData("power", power);
             telemetry.addData("curentPos", encoder.getCurrentPosition());
-            telemetry.addData("position", encoder.getCurrentPosition());
+            telemetry.addData("position", encoder.getCurrentPosition()-offset);
             telemetry.addData("angle", angle);
             telemetry.addData("target", target);
             telemetry.addData("kg", kG);

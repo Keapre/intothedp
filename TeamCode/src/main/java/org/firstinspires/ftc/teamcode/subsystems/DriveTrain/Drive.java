@@ -76,25 +76,24 @@ public class Drive extends MecanumDrive{
         double right_stick_x = gg.right_stick_x;
         double right_stick_y = gg.right_stick_y;
 
-        if(slow_mode) {
-            left_stick_x*=slowMode;
-            right_stick_y*=slowMode;
-            right_stick_x*=slowMode;
-            right_stick_y*=slowMode;
-        }else {
-            right_stick_x*=rotateNormal;
-            right_stick_y*=rotateNormal;
-        }
         motion = MecanumUtil.joystickToMotion(left_stick_x, left_stick_y,
                 right_stick_x, right_stick_y, reverseFront, customCurve);
-
 
         updatePoseEstimate();
         if (fieldCentric) {
             motion = motion.toFieldCentricMotion(pose.heading.toDouble());
         }
+        MecanumUtil.Wheels wh;
+        if(slow_mode) {
+            wh = MecanumUtil.motionToWheelsFullSpeed(motion).scaleWheelPower(0.6);
+        }else {
+            right_stick_x*=rotateNormal;
+            right_stick_y*=rotateNormal;
+            wh = MecanumUtil.motionToWheelsFullSpeed(motion).scaleWheelPower(1);
+        }
 
-        MecanumUtil.Wheels wh = MecanumUtil.motionToWheelsFullSpeed(motion).scaleWheelPower(scale); // Use full forward speed on 19:1 motors
+
+
 /*        motorPowers[0] = ffMotor.compute(wh.frontLeft,PARAMS.maxProfileAccel);
         motorPowers[1] = ffMotor.compute(wh.backLeft,PARAMS.maxProfileAccel);
         motorPowers[2] = ffMotor.compute(wh.backRight,PARAMS.maxProfileAccel);

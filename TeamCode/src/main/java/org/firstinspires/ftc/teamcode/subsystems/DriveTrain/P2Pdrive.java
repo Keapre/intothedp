@@ -23,11 +23,11 @@ public class P2Pdrive extends Drive{
     private ElapsedTime timer;
     private ElapsedTime stable;
 
-    public static double STABLE_MS = 75;
+    public static double STABLE_MS = 100;
     public static double DEAD_MS = 1500;
 
-    private final double  MAX_TRANSLATIONAL_SPEED = 1;
-    private final double  MAX_ROTATIONAL_SPEED = 0.75;
+    private final double  MAX_TRANSLATIONAL_SPEED = 0.7;
+    private final double  MAX_ROTATIONAL_SPEED = 0.5;
     private final double X_GAIN = 1.40;
 
     public Pose targetPose;
@@ -49,7 +49,7 @@ public class P2Pdrive extends Drive{
     public static PIDFController hController = new PIDFController(hP, 0.0, hD, 0);
 
     public Pose2d targetPose2d;
-    public static double ALLOWED_TRANSLATIONAL_ERROR = 1;
+    public static double ALLOWED_TRANSLATIONAL_ERROR = 2;
     public static double ALLOWED_HEADING_ERROR = 0.02;
 
 

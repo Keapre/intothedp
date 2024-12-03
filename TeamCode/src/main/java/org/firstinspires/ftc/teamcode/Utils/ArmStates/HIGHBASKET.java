@@ -7,8 +7,8 @@ public class HIGHBASKET extends STATE {
     public HIGHBASKET() {
         this.clawpos = Claw.CLAWPOS.CLOSE;
         this.rotatePos = Claw.RotateMode.ORIZONTAL;
-        this.tiltState = Claw.tiltMode.UP;
-        this.extensionTarget = 1200; // Needs to be determined experimentally
+        this.tiltState = Claw.tiltMode.MID;
+        this.extensionTarget = 0; // Needs to be determined experimentally
         this.pitchAngle = 555;
     }
 }
