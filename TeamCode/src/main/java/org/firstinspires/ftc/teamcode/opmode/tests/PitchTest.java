@@ -150,15 +150,17 @@ public class PitchTest extends LinearOpMode {
         limitSwitch.setMode(DigitalChannel.Mode.INPUT);
         double ff = 0;
         lut.createLUT();
+        double position = motorE.getCurrentPosition();
         double offset = motorE.getCurrentPosition();
-        double offsetExtension = -motor1.getCurrentPosition();
-        encoderExtension.setDirection(Encoder.Direction.REVERSE);
+        double offsetExtension = motor1.getCurrentPosition();
         waitForStart();
         while (opModeIsActive()) {
             gg.update();
             drive.setMotorPowersFromGamepad(gg,1.0,false,true);
 
+            position = motor1.getCurrentPosition()-offsetExtension;
             double Angle = angle(motorE.getCurrentPosition() - offset);
+            position-=Math.sin(Math.toRadians(Angle))*(-33);
             if(gg.aOnce()) {
                 if(modeServo == ServoMode.CLOSED){
                     modeServo = ServoMode.OPEN;
@@ -279,7 +281,7 @@ public class PitchTest extends LinearOpMode {
             telemetry.addData("tilt",TiltMode);
             telemetry.addData("Wrapperencoder extension without ",encoderExtension.getCurrentPosition());
             telemetry.addData("Wrapperencoder extension",encoderExtension.getCurrentPosition()-offsetExtension);
-            telemetry.addData("encoder extension",(-motor1.getCurrentPosition())-offsetExtension);
+            telemetry.addData("encoder extension",position);
             telemetry.addData("offset extension",offsetExtension);
             telemetry.addData("power",power);
             telemetry.addData("ff",ff);

@@ -14,17 +14,20 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import org.firstinspires.ftc.teamcode.Utils.Utils;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.Encoder;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.WEncoder;
+import org.firstinspires.ftc.teamcode.subsystems.Arm.Pitch;
+import org.opencv.core.Mat;
 
 @Config
 @TeleOp(name = "extensionPid", group = "Tests")
 public class extensionPid extends LinearOpMode {
 
-    public static double kP = 0.002, kI = 0, kD = 0;
+    public static double kP = 0.02, kI = 0, kD = 0.0005;
     PIDController pid = new PIDController(0, 0, 0);
-    public static double kG = 10.18;
+    public static double kG = 0.1;
     public static double target = 0;
 
     public static double sign = -   1;
+    Pitch pitch;
     DcMotorEx extension;
 
     public static double angle = 0;
@@ -36,8 +39,9 @@ public class extensionPid extends LinearOpMode {
         extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         Encoder encoder = new Encoder(extension);
         double offset = encoder.getCurrentPosition();
-
         extension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        encoder.setDirection(Encoder.Direction.REVERSE);
         extension.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         waitForStart();
@@ -46,9 +50,11 @@ public class extensionPid extends LinearOpMode {
 
             double pos = (encoder.getCurrentPosition() - offset);
             double error = target - (encoder.getCurrentPosition()-offset);
-            double power=pid.calculate(pos,target);
+            double ff = Math.sin(Math.toRadians(angle)) *kG;
+            double power=pid.calculate(pos,target) + ff;
+            power+=ff;
             power*=sign;
-            extension.setPower(Utils.minMaxClip(power, -0.5, 0.5    ));
+            extension.setPower(Utils.minMaxClip(power, -1, 0.75));
             telemetry.addData("error", error);
             telemetry.addData("power", power);
             telemetry.addData("curentPos", encoder.getCurrentPosition());

@@ -6,9 +6,12 @@ import com.arcrobotics.ftclib.controller.PIDFController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.R;
 import org.firstinspires.ftc.teamcode.Utils.Caching.CachingDcMotorEx;
 
+import org.firstinspires.ftc.teamcode.Utils.GameStatitics.Timer;
 import org.firstinspires.ftc.teamcode.Utils.Utils;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.Encoder;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.WEncoder;
@@ -16,7 +19,7 @@ import org.firstinspires.ftc.teamcode.Utils.Wrappers.WEncoder;
 @Config
 public class Extension {
 
-    DcMotorEx motor;
+   public  DcMotorEx motor;
     public enum EXTENSIONLENGTH {
         MIN(0),
 
@@ -35,6 +38,8 @@ public class Extension {
         }
     }
 
+    public static double retractedThreeshold = 10;
+    public static double pointThreeshold = 6;
 
     public enum MODE {
         MANUAL,
@@ -42,9 +47,9 @@ public class Extension {
         IDLE
     }
 
-        public static double kP = 0.002;
+        public static double kP = 0.025;
         public static double kI = 0.0;
-        public static double kD = 0.000;
+        public static double kD = 0.0005;
         public static double kF = 0.0;
         public static double tickPerInch = 0.0;
 
@@ -53,7 +58,8 @@ public class Extension {
     public double currentPos = 0;
     public double offset = 0;
     public double currentLength = 0;
-    public static double kCos = 0.3;
+    public static double kCos = 0.2;
+    public static double basePower = 0;
     public MODE mode = MODE.AUTO;
     boolean usePid = false;
     public PIDFController controller = new PIDFController(kP,0,kD,0);
@@ -61,6 +67,8 @@ public class Extension {
     public static int sign = 1;
     Encoder encoder;
     Arm arm;
+    ElapsedTime timer = null;
+    double valueTimer = 0;
     public Extension(HardwareMap hardwareMap,boolean isAuto,Arm arm) {
         this.arm = arm;
         motor = hardwareMap.get(DcMotorEx.class, "extend");
@@ -68,10 +76,12 @@ public class Extension {
         motor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
 
         encoder = new Encoder(motor);
+        encoder.setDirection(Encoder.Direction.REVERSE);
         motor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         offset = encoder.getCurrentPosition();
     }
 
+    double previous_angle = 0;
     public void setPower(double power) {
         this.power = power;
     }
@@ -79,58 +89,81 @@ public class Extension {
         controller.setPIDF(kP, kI, kD, kF);
 
         double error = target - (encoder.getCurrentPosition() - offset);
-        power = controller.calculate(encoder.getCurrentPosition()-offset,target);
-        power*=-1;
+        power = controller.calculate(currentPos,target);
+
     }
+
 
 
     public void manualControl(double power) {
         this.power = power;
         mode = MODE.MANUAL;
     }
-    public double getTrueCurrentPosition() {
-        return encoder.getCurrentPosition();
-    }
 
-    public double getCurrentPos() {
-        return getTrueCurrentPosition() - offset;
+    public double getPosition() {
+        return currentPos;
     }
     public boolean isAtZero() {
         return Math.abs(target-currentPos) < 500;
     }
 
     public boolean isRetracted() {
-        return Math.abs(currentPos-offset) <=650;
+        return Math.abs(currentPos-offset) <=retractedThreeshold;
     }
     public boolean isAtPosition(double position) {
-        return Math.abs(currentPos - position) < 50;
+        return Math.abs(currentPos - position) < pointThreeshold;
     }
+    public static double valueSHit = 36;
 
+    public double getTimer() {
+        if(timer==null) return 0;
+        return timer.time();
+    }
     public double getCurrentPosition() {
-        return motor.getCurrentPosition();
+        return currentPos;
     }
-    public void update() {
-        currentPos = getCurrentPos();
-        currentLength = currentPos /tickPerInch;
-        double angle = arm.pitchSubsystem.calculateAngle();
+    public double getTrueCurrentPosition() {
+        return encoder.getCurrentPosition();
+    }
 
-        double ff = Math.sin(arm.pitchSubsystem.calculateAngle()) * kCos;
+    public double getCurrentPos(double angle) {
+        return getTrueCurrentPosition() - offset - (Math.sin(Math.toRadians(angle)) * valueSHit);
+    }
+
+    public void update() {
+        double angle = arm.pitchSubsystem.calculateAngle();
+        currentPos = getCurrentPos(angle);
+        if(arm.currentState == Arm.FSMState.RETRACTING_EXTENSION) {
+            if(timer == null) {
+                timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+                valueTimer = currentPos;
+            }
+            if(Math.abs(currentPos-valueTimer)>4){
+                timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+                valueTimer = currentPos;
+            }
+        }
+        else {
+            timer = null;
+        }
+        double ff = Math.sin(Math.toRadians(arm.pitchSubsystem.calculateAngle())) * kCos;
         ff = Utils.minMaxClip(ff,0,1);
-        ff*=-1;
         switch (mode) {
             case AUTO:
                 mode = MODE.AUTO;
                 pidUpdate();
-
-                motor.setPower(Utils.minMaxClip(power + ff,-0.95,0.95));
+                power+=ff;
+                power*=-1;
+                motor.setPower(Utils.minMaxClip(power - basePower,-1, 0.75));
                 break;
             case MANUAL:
-                motor.setPower(Utils.minMaxClip(-1,1,power));
+                motor.setPower(Utils.minMaxClip(-1,1,power - basePower));
                 break;
             case IDLE:
-                motor.setPower(-0.05);
+                motor.setPower(basePower);
                 break;
         }
+        previous_angle = angle;
     }
 
 }

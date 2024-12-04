@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.MovingStatistics;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.internal.system.Misc;
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.DEFAUlT;
@@ -14,6 +15,7 @@ import org.firstinspires.ftc.teamcode.Utils.ArmStates.HIGHBASKET;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.INTAKING;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.SPECIMEN;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.SPECIMENGARD;
+import org.firstinspires.ftc.teamcode.Utils.ArmStates.SPECIMENTELEOP;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.STATE;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Arm;
@@ -28,6 +30,7 @@ public class EricTeleOp extends OpMode {
     double test = 0;
     long lastLoopFinish;
 
+    STATE SpeciemnTeleOp = new SPECIMENTELEOP();
     STATE DEFAULT = new DEFAUlT();
     STATE HIGHBASKET = new HIGHBASKET();
     STATE INTAKING = new INTAKING();
@@ -49,12 +52,14 @@ public class EricTeleOp extends OpMode {
     }
     private boolean isManualControlActivated() {
         return Math.abs(gg.left_trigger) > 0.1 || Math.abs(gg.right_trigger) > 0.1 || gg.aOnce() ||
-                gg.dpadUpOnce() || gg.dpadDownOnce() || gg.dpadLeftOnce() || gg.dpadRightOnce() || gg.leftBumperOnce() || gg.rightBumperOnce();
+                gg.dpadUpOnce() || gg.dpadDownOnce() || gg.dpadLeftOnce() || gg.dpadRightOnce() || gg.leftBumperOnce()
+                || gg.rightBumperOnce() || gg.guideOnce() || gg.startOnce() || gg.backOnce();
     }
 
     private boolean manualControlDeactivated() {
         return Math.abs(gg.left_trigger) < 0.1 && Math.abs(gg.right_trigger) < 0.1 && !gg.aOnce() &&
-                !gg.dpadUpOnce() && !gg.dpadDownOnce() && !gg.dpadLeftOnce() && !gg.dpadRightOnce() && !gg.leftBumperOnce() && !gg.rightBumperOnce();
+                !gg.dpadUpOnce() && !gg.dpadDownOnce() && !gg.dpadLeftOnce() && !gg.dpadRightOnce()
+                && !gg.leftBumperOnce() && !gg.rightBumperOnce() && !gg.guideOnce() && !gg.startOnce() && !gg.backOnce();
     }
 
 
@@ -80,11 +85,6 @@ public class EricTeleOp extends OpMode {
     }
 
     public void updateArm() {
-        if(robot.arm.extensionSubsystem.isRetracted()) {
-            robot.drive.slow_mode = false;
-        }else {
-            robot.drive.slow_mode = true;
-        }
         if(isManualControlActivated()) {
             robot.arm.handleManualControl(gg);
             robot.arm.manualControl = true;
@@ -98,7 +98,7 @@ public class EricTeleOp extends OpMode {
         }
         if (gg.yOnce()) {
             if( robot.arm.getCurrentState() == Arm.FSMState.IDLE && robot.arm.targetState == specimengard) {
-                robot.arm.setTargetState(specimenbar);
+                robot.arm.setTargetState(SpeciemnTeleOp);
             }else if(robot.arm.getCurrentState() == Arm.FSMState.IDLE && robot.arm.targetState != specimengard) {
                 robot.arm.setTargetState(specimengard);
             }
@@ -119,14 +119,17 @@ public class EricTeleOp extends OpMode {
         telemetry.addData("ARM CURRENT STATE",robot.arm.getCurrentState());
         telemetry.addData("ARM MANUAL CONTROL",robot.arm.manualControl);
         telemetry.addLine();
+        telemetry.addData("useRetract",robot.arm.useRetractAuto);
         telemetry.addData("Extension power",robot.arm.extensionSubsystem.power);
         telemetry.addData("Extension pos",robot.arm.extensionSubsystem.currentPos);
+        telemetry.addData("extension offset",robot.arm.extensionSubsystem.offset);
         telemetry.addData("Pith angle",robot.arm.pitchSubsystem.calculateAngle());
         telemetry.addData("Pith pos",robot.arm.pitchSubsystem.getCurrentPos());
         telemetry.addData("target angle",robot.arm.targetState.getPitchAngle());
         telemetry.addData("target pitch",robot.arm.pitchSubsystem.target);
         telemetry.addData("pitch mode",robot.arm.pitchSubsystem.mode);
 
+        telemetry.addData("timer",robot.arm.extensionSubsystem.getTimer());
         telemetry.addData("extend mode",robot.arm.extensionSubsystem.mode);
         telemetry.addData("Claw pos",robot.arm.clawSubsystem.clawPos);
         telemetry.addData("Claw state",robot.arm.clawSubsystem.tiltState);

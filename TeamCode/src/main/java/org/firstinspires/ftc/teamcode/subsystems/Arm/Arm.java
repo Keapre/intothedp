@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.subsystems.Arm;
 
 import android.util.Log;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.util.InterpLUT;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -16,6 +17,7 @@ import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.MecanumTest;
 import java.util.LinkedList;
 import java.util.Queue;
 
+@Config
 public class Arm implements Subsystem {
     public  enum FSMState {
         IDLE,
@@ -36,6 +38,8 @@ public class Arm implements Subsystem {
     public Extension extensionSubsystem;
     public Queue<FSMState> transitionPlan;
     public Pitch pitchSubsystem;
+    public static double timerthreeshold = 100;
+
     public Claw clawSubsystem;
     GamePadController gg;
     private long lastUpdateTime;
@@ -68,6 +72,7 @@ public class Arm implements Subsystem {
 
     }
 
+    public boolean useRetractAuto = true;
     InterpLUT lut = null;
     public double desiredExtension = 0;
 
@@ -76,6 +81,12 @@ public class Arm implements Subsystem {
         desiredExtension = targetState.getExtensionTarget();
 
         planTransitionSteps();
+        currentState = nextStateInPlan();
+    }
+    public void changeExtension(double extension) {
+        transitionPlan.clear();
+        transitionPlan.add(FSMState.EXTENDING_EXTENSION);
+        desiredExtension = extension;
         currentState = nextStateInPlan();
     }
     public void setAutoTargetState(STATE newState) {
@@ -104,13 +115,14 @@ public class Arm implements Subsystem {
         }
         switch (currentState) {
             case IDLE:
-                if(targetState.getPitchAngle()!=555) pitchSubsystem.mode = Pitch.MODE.IDLE;
+                if(targetState.getPitchAngle()==0) pitchSubsystem.mode = Pitch.MODE.IDLE;
                 break;
             case RETRACTING_EXTENSION:
                 clawSubsystem.tiltState=targetState.tiltState;
                 extensionSubsystem.mode = Extension.MODE.AUTO;
                 extensionSubsystem.target = extensionSubsystem.offset;
-                if (extensionSubsystem.isRetracted()){
+                if (extensionSubsystem.isRetracted() || extensionSubsystem.getTimer() >=timerthreeshold){
+                    extensionSubsystem.offset = extensionSubsystem.currentPos;
                     extensionSubsystem.mode = Extension.MODE.IDLE;
                     currentState = nextStateInPlan();
                 }
@@ -125,16 +137,16 @@ public class Arm implements Subsystem {
             case ADJUSTING_PITCH:
                 pitchSubsystem.setMode(Pitch.MODE.AUTO);
                 if (pitchSubsystem.isAtPosition(targetState.getPitchAngle())){
-
-                    if(targetState.getPitchAngle()!=555) pitchSubsystem.setMode(Pitch.MODE.IDLE);
+                    //extensionSubsystem.updateKerem(pitchSubsystem.calculateAngle());
+                    if(targetState.getPitchAngle()==0) pitchSubsystem.setMode(Pitch.MODE.IDLE);
                     currentState = nextStateInPlan();
                 }
                 break;
 
             case EXTENDING_EXTENSION:
                 extensionSubsystem.mode = Extension.MODE.AUTO;
-                extensionSubsystem.target = desiredExtension;
-                if (extensionSubsystem.isAtZero()) {
+                extensionSubsystem.target = extensionSubsystem.offset +  desiredExtension;
+                if (extensionSubsystem.isAtPosition(extensionSubsystem.offset +  desiredExtension)) {
                     currentState = nextStateInPlan();
                 }
                 break;
@@ -143,7 +155,7 @@ public class Arm implements Subsystem {
 //                clawSubsystem.clawPos =targetState.getClawpos();
                 clawSubsystem.rotateState=targetState.getRotatePos();
                 clawSubsystem.tiltState=targetState.getTilt();
-                if(targetState.getPitchAngle()!=555) pitchSubsystem.mode= Pitch.MODE.IDLE;
+                if(targetState.getPitchAngle()==0) pitchSubsystem.mode= Pitch.MODE.IDLE;
                 currentState = FSMState.IDLE;
                 break;
         }
@@ -153,7 +165,13 @@ public class Arm implements Subsystem {
     }
 
 
+    private void resetMode() {
+        transitionPlan.clear();
+        currentState = FSMState.IDLE;
+        extensionSubsystem.mode = Extension.MODE.IDLE;
+        pitchSubsystem.mode = Pitch.MODE.IDLE;
 
+    }
     private void setPowerManual() {
         extensionSubsystem.manualControl(extensionInput);
     }
@@ -163,8 +181,12 @@ public class Arm implements Subsystem {
         if(Math.abs(gg.left_trigger) > 0.1 || Math.abs(gg.right_trigger) > 0.1) {
             setPowerManual();
         }
-        else {
-            extensionSubsystem.mode = Extension.MODE.IDLE;
+
+        if(gg.backOnce()) {
+            useRetractAuto = !useRetractAuto;
+        }
+        if(gg.startOnce()) {
+            extensionSubsystem.offset = extensionSubsystem.currentPos;
         }
         if(gg.aOnce()) {
             if(clawSubsystem.clawPos == Claw.CLAWPOS.OPEN) clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
@@ -211,6 +233,9 @@ public class Arm implements Subsystem {
             }
         }
 
+        if(gg.guideOnce()) {
+            resetMode();
+        }
         if(gg.leftBumperOnce()) {
             if(clawSubsystem.tiltState == Claw.tiltMode.DOWN && clawSubsystem.rotateState == Claw.RotateMode.VERTICAL) {
                 clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
@@ -245,7 +270,7 @@ public class Arm implements Subsystem {
 
     private void planTransitionSteps() {
         transitionPlan.clear();
-        transitionPlan.add(FSMState.RETRACTING_EXTENSION);
+        if(useRetractAuto) transitionPlan.add(FSMState.RETRACTING_EXTENSION);
 
         transitionPlan.add(FSMState.PRE_ADJUSTING_PITCH);
         transitionPlan.add(FSMState.ADJUSTING_PITCH);

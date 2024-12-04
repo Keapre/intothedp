@@ -62,7 +62,7 @@ public class Specinem extends LinearOpMode {
                     Log.d("AutoInfo","driveMode" + String.valueOf(robot.drive.driveMode));
                     Log.d("AutoInfo","pose" + robot.drive.pose.toString());
                     Log.d("AutoInfo","pitchPose" + String.valueOf(robot.arm.pitchSubsystem.getCurrentPos()));
-                    Log.d("AutoInfo","extensionPose" + String.valueOf(robot.arm.extensionSubsystem.getCurrentPos()));
+                    Log.d("AutoInfo","extensionPose" + String.valueOf(robot.arm.extensionSubsystem.getCurrentPosition()));
                     Log.d("AutoInfo","pose" + robot.drive.pose.toString());
                     robot.sleep(0.001);
                 }

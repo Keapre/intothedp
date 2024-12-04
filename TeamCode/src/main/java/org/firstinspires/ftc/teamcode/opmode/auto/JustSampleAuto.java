@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmode.auto;
 
 import android.util.Log;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -20,55 +21,93 @@ import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.P2Pdrive;
 
 import java.util.ArrayList;
 
-@Autonomous(name = "0+4")
+@Config
+@Autonomous(name = "1+3")
 public class JustSampleAuto extends LinearOpMode {
 
     Path first,parkPath;
     Pose2d startPose = new Pose2d(7, 60.5, Math.toRadians(270));
     Pose2d specimenDrop = new Pose2d(5, 36.5, Math.toRadians(270));
-    Pose2d bucketFirst = new Pose2d(55,47,Math.toRadians(250));
+    Pose2d bucketFirst = new Pose2d(55,45,Math.toRadians(253));
     Pose2d transition = new Pose2d(23,46,Math.toRadians(265));
-    Pose2d bucketSecond = new Pose2d(57,45,Math.toRadians(270));
-    Pose2d bucketThird = new Pose2d(57,45,Math.toRadians(295));
+    Pose2d bucketSecond = new Pose2d(58,43,Math.toRadians(270));
+    Pose2d bucketThird = new Pose2d(56.6,50,Math.toRadians(285));
     Pose2d trans = new Pose2d(5,48,Math.toRadians(270));
 
-    Pose2d scoreBasket2 = new Pose2d(57,56.7,Math.toRadians(235));
+    Pose2d scoreBasket2 = new Pose2d(55.5,56,Math.toRadians(223));
+    Pose2d scoreBasket2_2 = new Pose2d(57,56.7,Math.toRadians(235));
     Pose2d scoreBasket1 = new Pose2d(52,52,Math.toRadians(243));
+    Pose2d scoreBasket1_1 = new Pose2d(52,52,Math.toRadians(243));
     SPECIMEN specimen = new SPECIMEN();
     INTAKING intaking = new INTAKING();
     INTAKING intaking2 = new INTAKING();
     INTAKING intaking3 = new INTAKING();
     DEFAUlT def = new DEFAUlT();
-    private double firstBucketExtension = 22709;
-    private double secondBucketExtension = 19709;
-    private double thirdBucketExtension = 26209;
+    public static double firstBucketExtension = 340;
+    public static double secondBucketExtension = 260;
+    public static  double thirdBucketExtension = 490;
+    public static  double diff = 185;
 
-    private double basketLength = 35800;
-    public static  double speciemExtension = 23000;
+    public static double basketLength = 560;
+    public static  double speciemExtension = 425;
     HIGHBASKET high = new HIGHBASKET();
     HIGHBASKET high2 = new HIGHBASKET();
+    HIGHBASKET high3 = new HIGHBASKET();
     Robot2 robot = null;
     ArrayList<Pose> toBucket = new ArrayList<Pose>();
     ArrayList<Pose> toPark = new ArrayList<Pose>();
 
-    Pose2d park = new Pose2d(-55,-55,Math.toRadians(90));
+    Pose2d park = new Pose2d(25,9,Math.toRadians(180));
 
 
-    void placePreload() {
+    void placeSpecimen() {
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
         robot.arm.clawSubsystem.tiltState = Claw.tiltMode.DOWN;
-        robot.arm.setAutoTargetState(high);
-        robot.arm.changeDesiredExtension(basketLength);
+        robot.arm.setAutoTargetState(specimen);
+        robot.arm.changeDesiredExtension(speciemExtension);
+        while(robot.arm.currentState != Arm.FSMState.IDLE) {
+            telemetry.addData("extension",robot.arm.extensionSubsystem.currentPos);
+            telemetry.update();
+            robot.sleep(0.001);
+        }
+        robot.drive.setTargetPose(specimenDrop);
+
+        while(robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE && opModeIsActive() && !isStopRequested()) {
+            robot.sleep(0.001);
+        }
+
+
+//        while((robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE || robot.arm.currentState != Arm.FSMState.IDLE) && opModeIsActive() && !isStopRequested()) {
+//            telemetry.addData("arm state",robot.arm.currentState);
+//            telemetry.addData("drive state",robot.drive.driveMode);
+//            Log.d("AutoInfo","arm state" + String.valueOf(robot.arm.currentState));
+//            Log.d("AutoInfo","driveMode" + String.valueOf(robot.drive.driveMode));
+//            Log.d("AutoInfo","pose" + robot.drive.pose.toString());
+//            Log.d("AutoInfo","pitchPose" + String.valueOf(robot.arm.pitchSubsystem.getCurrentPos()));
+//            Log.d("AutoInfo","extensionPose" + String.valueOf(robot.arm.extensionSubsystem.getCurrentPosition()));
+//            Log.d("AutoInfo","pose" + robot.drive.pose.toString());
+//            robot.sleep(0.001);
+//        }
+        robot.sleep(0.2);
+        robot.arm.changeExtension(speciemExtension-diff);
+        while(robot.arm.currentState != Arm.FSMState.IDLE) {
+            robot.sleep(0.001);
+        }
+        robot.sleep(0.1);
+        robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
+        robot.sleep(0.25);
+        robot.arm.setAutoTargetState(intaking);
+        ElapsedTime time = null;
+        while(robot.arm.currentState != Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
+            robot.sleep(0.001);
+        }
+    }
+
+    void placePrelaod() {
         robot.drive.setTargetPose(scoreBasket1);
-        while((robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE || robot.arm.currentState != Arm.FSMState.IDLE) && opModeIsActive() && !isStopRequested()) {
-            telemetry.addData("arm state",robot.arm.currentState);
-            telemetry.addData("drive state",robot.drive.driveMode);
-            Log.d("AutoInfo","arm state" + String.valueOf(robot.arm.currentState));
-            Log.d("AutoInfo","driveMode" + String.valueOf(robot.drive.driveMode));
-            Log.d("AutoInfo","pose" + robot.drive.pose.toString());
-            Log.d("AutoInfo","pitchPose" + String.valueOf(robot.arm.pitchSubsystem.getCurrentPos()));
-            Log.d("AutoInfo","extensionPose" + String.valueOf(robot.arm.extensionSubsystem.getCurrentPos()));
-            Log.d("AutoInfo","pose" + robot.drive.pose.toString());
+        robot.arm.setAutoTargetState(high);
+        robot.arm.changeExtension(basketLength);
+        while((robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE || robot.arm.currentState != Arm.FSMState.IDLE) &&  opModeIsActive() && !isStopRequested()) {
             robot.sleep(0.001);
         }
         robot.sleep(0.1);
@@ -77,7 +116,6 @@ public class JustSampleAuto extends LinearOpMode {
         while(robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE && opModeIsActive() && !isStopRequested()) {
             robot.sleep(0.001);
         }
-
 
 
         robot.sleep(0.1);
@@ -91,9 +129,13 @@ public class JustSampleAuto extends LinearOpMode {
         while(robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE && opModeIsActive() && !isStopRequested()) {
             robot.sleep(0.001);
         }
-
+        robot.arm.setAutoTargetState(intaking2);
+        while(robot.arm.currentState != Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
+            telemetry.addData("arm state",robot.arm.currentState);
+            telemetry.addData("drive state",robot.drive.driveMode);
+            robot.sleep(0.001);
+        }
     }
-
     void firstBucket() {
         robot.drive.setTargetPose(first);
 
@@ -107,14 +149,9 @@ public class JustSampleAuto extends LinearOpMode {
         while(robot.arm.currentState != Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
             telemetry.addData("arm state",robot.arm.currentState);
             telemetry.addData("drive state",robot.drive.driveMode);
-            Log.d("AutoInfo","arm state" + String.valueOf(robot.arm.currentState));
-            Log.d("AutoInfo","driveMode" + String.valueOf(robot.drive.driveMode));
-            Log.d("AutoInfo","pose" + robot.drive.pose.toString());
-            Log.d("AutoInfo","pitchPose" + String.valueOf(robot.arm.pitchSubsystem.getCurrentPos()));
-            Log.d("AutoInfo","extensionPose" + String.valueOf(robot.arm.extensionSubsystem.getCurrentPos()));
-            Log.d("AutoInfo","pose" + robot.drive.pose.toString());
             robot.sleep(0.001);
         }
+        robot.sleep(0.3);
         robot.arm.clawSubsystem.tiltState = Claw.tiltMode.DOWN;
         robot.sleep(0.3);
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
@@ -165,7 +202,7 @@ public class JustSampleAuto extends LinearOpMode {
 
 
 
-        robot.sleep(0.25);
+        robot.sleep(0.3);
         robot.arm.clawSubsystem.tiltState = Claw.tiltMode.DOWN;
         robot.sleep(0.25);
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
@@ -217,7 +254,7 @@ public class JustSampleAuto extends LinearOpMode {
             robot.sleep(0.001);
         }
 
-        robot.sleep(0.25);
+        robot.sleep(0.3);
         robot.arm.clawSubsystem.tiltState = Claw.tiltMode.DOWN;
         robot.sleep(0.25);
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
@@ -232,7 +269,7 @@ public class JustSampleAuto extends LinearOpMode {
         robot.sleep(0.2);
 
 
-        robot.drive.setTargetPose(new Pose2d(scoreBasket2.position.x+2,scoreBasket2.position.x,scoreBasket2.heading.toDouble()));
+        robot.drive.setTargetPose(new Pose2d(scoreBasket2.position.x,scoreBasket2.position.x,scoreBasket2.heading.toDouble()));
         while(robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE && opModeIsActive() && !isStopRequested()) {
             robot.sleep(0.001);
         }
@@ -264,7 +301,7 @@ public class JustSampleAuto extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         toBucket.add(new Pose(transition));
         toBucket.add(new Pose(bucketFirst));
-        toPark.add(new Pose(new Pose2d(-55,-36,Math.toRadians(320))));
+        toPark.add(new Pose(new Pose2d(41,26,Math.toRadians(270))));
         toPark.add(new Pose(park));
         first = new Path(toBucket);
         parkPath = new Path(toPark);
@@ -281,11 +318,11 @@ public class JustSampleAuto extends LinearOpMode {
             robot.stop();
         }
 
-        placePreload();
+        placePrelaod();
         firstBucket();
         secondBucket();
         thirdBasket();
-        //park();
+        park();
         robot.stop();
 
     }

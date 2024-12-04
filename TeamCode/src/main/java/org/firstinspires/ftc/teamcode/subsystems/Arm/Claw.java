@@ -35,7 +35,7 @@ public class Claw {
     public static DiffyPositions up = new DiffyPositions(1, 0);
     //TODO:
     public static double clawOpen = 0.39;
-    public static double clawClose = 0.83;
+    public static double clawClose = 0.81;
 
     public enum CLAWPOS {
         OPEN,

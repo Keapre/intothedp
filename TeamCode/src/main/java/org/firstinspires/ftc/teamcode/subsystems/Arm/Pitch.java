@@ -149,7 +149,7 @@ public class Pitch {
 
 
     public boolean isAtPosition(double target) {
-        return Math.abs(target -currentPos) <= 7;
+        return Math.abs(target -currentPos) <= 12;
     }
 
     public double desiredVelocity = 0,desiredPosition = 0;
@@ -223,7 +223,7 @@ public class Pitch {
         checkForSwitch();
         currentPos = encoder.getCurrentPosition() - offset;
         angle = calculateAngle();
-//        ff = Math.cos(Math.toRadians(angle)) * lut.get(Utils.minMaxClip(arm.extensionSubsystem.getCurrentPos(),0,699));
+
         switch ((int) target) {
             case 0:
                 ff = 0;
@@ -231,13 +231,17 @@ public class Pitch {
             case 95:
                 ff = gardFeedforwd;
                 break;
-            case 345:
+            case 230:
+                ff = specimenFeedforwd;
+                break;
+            case 320:
                 ff = specimenFeedforwd;
                 break;
             case 555:
                 ff = basketFeedforwd;
                 break;
         }
+        ff = Math.cos(Math.toRadians(angle)) * gardFeedforwd;
         switch (mode) {
             case AUTO:
                 pid();
@@ -250,25 +254,25 @@ public class Pitch {
 //                    extension1.setPower(Utils.minMaxClip(-1, 1, motor1Power));
 //                    extension2.setPower(Utils.minMaxClip(-1, 1, motor2Power));
 //                }motionProfilePid();
-                extension1.setPower(Utils.minMaxClip(motor1Power, -0.5, 0.6));
-                extension2.setPower(Utils.minMaxClip(motor2Power,-0.5, 0.6));
+                extension1.setPower(Utils.minMaxClip(motor1Power + ff, -0.5, 0.6));
+                extension2.setPower(Utils.minMaxClip(motor2Power + ff,-0.5, 0.6));
                 break;
             case MANUAL:
                 extension1.setPower(Utils.minMaxClip(-1,1,motor1Power + ff));
                 extension2.setPower(Utils.minMaxClip(-1,1,motor2Power + ff));
                 break;
             case IDLE:
-                if(lut == null && target == 320) {
-                    lut = new InterpLUT();
-                    lut.add(arm.extensionSubsystem.getCurrentPos(),specimenFeedforwd);
-                    lut.add(arm.extensionSubsystem.getCurrentPos() + 22000,0.22);
-                    lut.createLUT();
-                }else if(target!=320) {
-                    lut = null;
-                }
-                if(target == 320) {
-                    ff = lut.get(arm.extensionSubsystem.getCurrentPos());
-                }
+//                if(lut == null && target == 320) {
+//                    lut = new InterpLUT();
+//                    lut.add(arm.extensionSubsystem.getCurrentPosition(),specimenFeedforwd);
+//                    lut.add(arm.extensionSubsystem.currentPos + 500,0.22);
+//                    lut.createLUT();
+//                }
+//                if(target!=320) {
+//                    lut = null;
+//                }else {
+//                    ff = lut.get(arm.extensionSubsystem.currentPos);
+//                }
                 if(target == 0) {
                     extension1.setPower(0);
                     extension2.setPower(0);
