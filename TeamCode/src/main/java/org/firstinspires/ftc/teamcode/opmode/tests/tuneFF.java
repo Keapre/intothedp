@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.opmode.tests;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+@Disabled
 
 public class tuneFF extends LinearOpMode {
 

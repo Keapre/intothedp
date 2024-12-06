@@ -22,24 +22,24 @@ import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.P2Pdrive;
 
 import java.util.ArrayList;
 
-
+@Disabled
 @Config
-@Autonomous(name = "1+3")
-public class speciemSampleAuto extends LinearOpMode {
+@Autonomous(name = "Red 1+3")
+public class RedSpecSample extends LinearOpMode {
 
     Path first,parkPath;
-    Pose2d startPose = new Pose2d(7, 60.5, Math.toRadians(270));
-    Pose2d specimenDrop = new Pose2d(5, 36.5, Math.toRadians(270));
-    Pose2d bucketFirst = new Pose2d(55,45,Math.toRadians(253));
-    Pose2d transition = new Pose2d(23,46,Math.toRadians(265));
-    Pose2d bucketSecond = new Pose2d(58,43,Math.toRadians(272));
-    Pose2d bucketThird = new Pose2d(56.6,50,Math.toRadians(289));
+    Pose2d startPose = new Pose2d(7, -60.5,- Math.toRadians(270));
+    Pose2d specimenDrop = new Pose2d(5, -36.5,- Math.toRadians(270));
+    Pose2d bucketFirst = new Pose2d(55,-45,-Math.toRadians(253));
+    Pose2d transition = new Pose2d(23,-46,-Math.toRadians(265));
+    Pose2d bucketSecond = new Pose2d(58,-43,-Math.toRadians(272));
+    Pose2d bucketThird = new Pose2d(56.6,-50,-Math.toRadians(289));
     Pose2d trans = new Pose2d(5,48,Math.toRadians(270));
 
-    Pose2d scoreBasket2 = new Pose2d(55.5,56,Math.toRadians(223));
-    Pose2d scoreBasket2_2 = new Pose2d(57,56.7,Math.toRadians(235));
-    Pose2d scoreBasket1 = new Pose2d(52,52,Math.toRadians(243));
-    Pose2d scoreBasket1_1 = new Pose2d(52,52,Math.toRadians(243));
+    Pose2d scoreBasket2 = new Pose2d(55.5,-56,-Math.toRadians(223));
+    Pose2d scoreBasket2_2 = new Pose2d(57,-56.7,-Math.toRadians(235));
+    Pose2d scoreBasket1 = new Pose2d(52,-52,-Math.toRadians(243));
+    Pose2d scoreBasket1_1 = new Pose2d(52,-52,-Math.toRadians(243));
     SPECIMEN specimen = new SPECIMEN();
     INTAKING intaking = new INTAKING();
     INTAKING intaking2 = new INTAKING();
@@ -47,9 +47,8 @@ public class speciemSampleAuto extends LinearOpMode {
     DEFAUlT def = new DEFAUlT();
     public static double firstBucketExtension = 340;
     public static double secondBucketExtension = 260;
-    public static double parklength = 135;
     public static  double thirdBucketExtension = 520;
-    public static  double diff = 125;
+    public static  double diff = 130;
 
     public static double basketLength = 560;
     public static  double speciemExtension = 400;
@@ -60,7 +59,7 @@ public class speciemSampleAuto extends LinearOpMode {
     ArrayList<Pose> toBucket = new ArrayList<Pose>();
     ArrayList<Pose> toPark = new ArrayList<Pose>();
 
-    Pose2d park = new Pose2d(25,9,Math.toRadians(180));
+    Pose2d park = new Pose2d(25,-9,-Math.toRadians(180));
 
 
     void placeSpecimen() {
@@ -203,13 +202,9 @@ public class speciemSampleAuto extends LinearOpMode {
 
     }
     void secondBucket() {
-        robot.arm.setAutoTargetState(intaking3);
-        while(robot.arm.currentState!= Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
-            robot.sleep(0.001);
-        }
         robot.drive.setTargetPose(bucketSecond);
-
-        while(robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE &&  opModeIsActive() && !isStopRequested()) {
+        robot.arm.setAutoTargetState(intaking3);
+        while((robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE || robot.arm.currentState != Arm.FSMState.IDLE) &&  opModeIsActive() && !isStopRequested()) {
             telemetry.addData("extension",robot.arm.extensionSubsystem.currentPos);
             telemetry.addData("robot arm",robot.arm.currentState);
             telemetry.addData("robot dt",robot.drive.driveMode);
@@ -288,18 +283,14 @@ public class speciemSampleAuto extends LinearOpMode {
 
     }
     void thirdBasket() {
-        robot.arm.setAutoTargetState(intaking3);
-        while(robot.arm.currentState!= Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
-            robot.sleep(0.001);
-        }
         robot.drive.setTargetPose(bucketThird);
-
-        while(robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE &&  opModeIsActive() && !isStopRequested()) {
+        robot.arm.setAutoTargetState(intaking3);
+        while((robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE || robot.arm.currentState != Arm.FSMState.IDLE) &&  opModeIsActive() && !isStopRequested()) {
             telemetry.addData("extension",robot.arm.extensionSubsystem.currentPos);
             telemetry.addData("robot arm",robot.arm.currentState);
-            telemetry.addData("robot dt",robot.drive.driveMode);
             telemetry.addData("pose",robot.drive.currentPose);
 
+            telemetry.addData("robot dt",robot.drive.driveMode);
             telemetry.update();
             robot.sleep(0.001);
         }
@@ -375,13 +366,12 @@ public class speciemSampleAuto extends LinearOpMode {
         while( robot.arm.currentState!= Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
             robot.sleep(0.001);
         }
-        robot.arm.clawSubsystem.tiltState = Claw.tiltMode.MID;
-
-        robot.sleep(0.1);
         robot.drive.setTargetPose(parkPath);
-        robot.arm.setAutoTargetState(specimen);
-        robot.arm.changeDesiredExtension(parklength);
-        while((robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE ||  robot.arm.currentState!= Arm.FSMState.IDLE) && opModeIsActive() && !isStopRequested()) {
+        while(robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE && opModeIsActive() && !isStopRequested()) {
+            robot.sleep(0.001);
+        }
+        robot.arm.setAutoTargetState(intaking);
+        while( robot.arm.currentState!= Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
             robot.sleep(0.001);
         }
     }
@@ -395,14 +385,14 @@ public class speciemSampleAuto extends LinearOpMode {
         parkPath = new Path(toPark);
         robot = new Robot2(this,true,startPose);
 
-        robot.start();
+
 
         while (!isStarted()) {
             if (isStopRequested()) {
                 robot.stop();
             }
         }
-
+        robot.start();
         if (isStopRequested()) {
             robot.stop();
         }

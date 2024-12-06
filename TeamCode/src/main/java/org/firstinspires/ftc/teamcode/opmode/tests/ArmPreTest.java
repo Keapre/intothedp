@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorRangeSensor;
@@ -15,6 +16,7 @@ import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 
 import java.util.List;
 
+@Disabled
 @Config
 @TeleOp(name = "MiscociOuttake")
 public class ArmPreTest extends LinearOpMode {

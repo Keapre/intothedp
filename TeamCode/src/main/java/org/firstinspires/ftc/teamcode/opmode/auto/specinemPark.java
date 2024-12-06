@@ -4,7 +4,6 @@ import android.util.Log;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -21,9 +20,9 @@ import org.firstinspires.ftc.teamcode.subsystems.Arm.Claw;
 import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.P2Pdrive;
 
 import java.util.ArrayList;
-@Disabled
-@Autonomous(name = "4 + 0")
-public class Specinem extends LinearOpMode {
+
+@Autonomous(name = "1 + 0 (park)")
+public class specinemPark extends LinearOpMode {
     Robot2 robot = null;
     Path firstSample,secondSample,thirdSample;
     Pose2d startPose = new Pose2d(-9.375536460576095, 60.81076314130167, Math.toRadians(270));
@@ -44,7 +43,7 @@ public class Specinem extends LinearOpMode {
     Pose2d moveThirdPos2 = new Pose2d(-53.65807240403544, 42.32089786078986, Math.toRadians(145));
 
     public static double moveExtension = 23000;
-    public static double diff = 175;
+    public static double diff = 130;
 
     ArrayList<Pose> pathforsample1 = new ArrayList<Pose>() {
         {
@@ -67,7 +66,8 @@ public class Specinem extends LinearOpMode {
     };
 
 
-    public static double speciemExtension = 425;
+    Pose2d park = new Pose2d(-40,59,Math.toRadians(180));
+    public static double speciemExtension = 400;
     SPECIMEN specimen = new SPECIMEN();
     SPECIMENGARD gard = new SPECIMENGARD();
     INTAKING intaking = new INTAKING();
@@ -88,7 +88,7 @@ public class Specinem extends LinearOpMode {
             telemetry.update();
             robot.sleep(0.001);
         }
-        robot.drive.setTargetPose(specinem1);
+        robot.drive.setTargetPose(specimen4);
 
         while (robot.drive.driveMode != P2Pdrive.DriveMode.IDLE && opModeIsActive() && !isStopRequested()) {
             robot.sleep(0.001);
@@ -130,12 +130,12 @@ public class Specinem extends LinearOpMode {
     }
 
     void moveSample2() {
-            robot.arm.clawSubsystem.tiltState = Claw.tiltMode.MID;
-            robot.drive.setTargetPose(secondSample);
+        robot.arm.clawSubsystem.tiltState = Claw.tiltMode.MID;
+        robot.drive.setTargetPose(secondSample);
 
-            while (robot.drive.driveMode != P2Pdrive.DriveMode.IDLE && opModeIsActive() && !isStopRequested()) {
-                robot.sleep(0.001);
-            }
+        while (robot.drive.driveMode != P2Pdrive.DriveMode.IDLE && opModeIsActive() && !isStopRequested()) {
+            robot.sleep(0.001);
+        }
     }
 
     void moveSample3() {
@@ -215,6 +215,17 @@ public class Specinem extends LinearOpMode {
         }
     }
 
+    void park() {
+        robot.drive.setTargetPose(park);
+        while ((robot.drive.driveMode != P2Pdrive.DriveMode.IDLE || robot.arm.currentState != Arm.FSMState.IDLE) && opModeIsActive() && !isStopRequested()) {
+            robot.sleep(0.001);
+        }
+        robot.arm.setAutoTargetState(intaking);
+        ElapsedTime time = null;
+        while (robot.arm.currentState != Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
+            robot.sleep(0.001);
+        }
+    }
     void placeFourSpecimen() {
         robot.drive.setTargetPose(pickUpspot);
         robot.arm.setAutoTargetState(gard);
@@ -269,13 +280,14 @@ public class Specinem extends LinearOpMode {
         }
 
         placeSpecimen();
-        moveSample1();
-        moveSample2();
-        moveSample3();
+        //moveSample1();
+        //moveSample2();
+        //moveSample3();
         //placeSecondSpecimen();
         //placeThirdSpecimen();
         //placeFourSpecimen();
 
+        park();
         robot.sleep(0.2);
         robot.stop();
     }

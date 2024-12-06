@@ -166,7 +166,9 @@ public class Extension {
                 raw_power = 0;
                 motor.setPower(Utils.minMaxClip(-1,1,power + basePower));
                 break;
-
+            case RAW_POWER:
+                motor.setPower(raw_power);
+                break;
             case IDLE:
                 raw_power = 0;
                 if(arm.targetState.getPitchAngle() == 555) {

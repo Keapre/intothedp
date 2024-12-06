@@ -18,21 +18,20 @@ import org.firstinspires.ftc.teamcode.Utils.ArmStates.SPECIMENGARD;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.SPECIMENTELEOP;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.STATE;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
-import org.firstinspires.ftc.teamcode.Utils.geometry.Pose;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Arm;
 
 
 
-@TeleOp(name = "TeleOp Blue")
-public class EricTeleOp extends OpMode {
+@TeleOp(name = "TeleOp Red")
+public class TeleOpRed extends OpMode {
     Robot robot;
     GamePadController gg;
-   Pose2d startPose =  new Pose2d(0,0,Math.toRadians(270));
 
     double test = 0;
     long lastLoopFinish;
 
     STATE SpeciemnTeleOp = new SPECIMENTELEOP();
+    Pose2d startPose = new Pose2d(0,0,-Math.toRadians(270));
     STATE DEFAULT = new DEFAUlT();
     STATE HIGHBASKET = new HIGHBASKET();
     STATE INTAKING = new INTAKING();
@@ -112,7 +111,7 @@ public class EricTeleOp extends OpMode {
         }
     }
     public void updateDrive() {
-         robot.drive.setMotorPowersFromGamepad(gg,1.0,false,true);
+        robot.drive.setMotorPowersFromGamepad(gg,1.0,false,true);
     }
     public void updateTelemetry() {
         telemetry.addLine();

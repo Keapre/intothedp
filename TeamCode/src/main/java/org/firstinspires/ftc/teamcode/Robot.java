@@ -83,7 +83,7 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
         }
     };
 
-    public Robot(OpMode opMode, boolean isAutonomous) {
+    public Robot(OpMode opMode, boolean isAutonomous,Pose2d startPose) {
         // Initialize statistics
         top10 = new MovingStatistics(10);
         top100 = new MovingStatistics(100);
@@ -100,7 +100,7 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
         //region Initialize subsystems
         subsystems = new ArrayList<>();
         try {
-            drive = new Drive(opMode.hardwareMap,new Pose2d(0,0,Math.toRadians(270)),false);
+            drive = new Drive(opMode.hardwareMap,startPose,false);
             subsystems.add(drive);
             Log.w(TAG, "DriveTrain intialized successfully");
         } catch (Exception e) {

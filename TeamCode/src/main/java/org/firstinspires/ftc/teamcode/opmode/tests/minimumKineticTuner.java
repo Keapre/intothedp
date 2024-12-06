@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode.opmode.tests;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.Utils.Caching.CachingDcMotorEx;
 
+@Disabled
 
 public class minimumKineticTuner {
     private CachingDcMotorEx[] motors;

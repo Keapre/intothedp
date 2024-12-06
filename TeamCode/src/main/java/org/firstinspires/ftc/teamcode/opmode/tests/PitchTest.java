@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.util.InterpLUT;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -18,6 +19,7 @@ import org.firstinspires.ftc.teamcode.Utils.Utils;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.Encoder;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.Drive;
+@Disabled
 
 @Config
 @TeleOp(name = "halloween party::)))))")

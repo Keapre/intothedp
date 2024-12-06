@@ -7,6 +7,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.arcrobotics.ftclib.util.InterpLUT;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -19,6 +20,8 @@ import org.firstinspires.ftc.teamcode.Utils.Wrappers.ArmVelocityCalculator;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.Encoder;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.WEncoder;
+
+@Disabled
 
 @Config
 @TeleOp(name = "PitchPid", group = "Tests")

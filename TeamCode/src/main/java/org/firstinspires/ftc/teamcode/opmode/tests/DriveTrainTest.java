@@ -1,12 +1,14 @@
 package org.firstinspires.ftc.teamcode.opmode.tests;
 
 import com.acmerobotics.roadrunner.Pose2d;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.Drive;
 import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.MecanumDrive;
+@Disabled
 
 @TeleOp(name = "drivetraintest")
 public class DriveTrainTest extends LinearOpMode {

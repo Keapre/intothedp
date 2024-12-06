@@ -22,7 +22,7 @@ import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.P2Pdrive;
 import java.util.ArrayList;
 
 @Config
-@Autonomous(name = "Blue 0+4")
+@Autonomous(name = "0+4")
 public class JustSampleAuto extends LinearOpMode {
 
     Path first,parkPath;
@@ -30,8 +30,9 @@ public class JustSampleAuto extends LinearOpMode {
     Pose2d startPose = new Pose2d(32, 60.3, Math.toRadians(270));
     Robot2 robot = null;
     Pose2d scoreBasket2 = new Pose2d(55.5,56,Math.toRadians(223));
-
+    Pose2d scoreBasket2_2 = new Pose2d(57,56.7,Math.toRadians(235));
     Pose2d scoreBasket1 = new Pose2d(52,52,Math.toRadians(243));
+    Pose2d scoreBasket1_1 = new Pose2d(52,52,Math.toRadians(243));
 
     Pose2d bucketFirst = new Pose2d(55,45,Math.toRadians(253));
 
@@ -49,6 +50,7 @@ public class JustSampleAuto extends LinearOpMode {
 
     public static double firstBucketExtension = 344;
     public static double basketLength = 560;
+    public static double parklength = 135;
     public static double secondBucketExtension = 260;
     public static  double thirdBucketExtension = 515;
     Pose2d park = new Pose2d(25,9,Math.toRadians(180));
@@ -104,9 +106,13 @@ public class JustSampleAuto extends LinearOpMode {
         }
     }
     public void firstBucket() {
-        robot.drive.setTargetPose(bucketFirst);
         robot.arm.setAutoTargetState(intaking);
-        while((robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE || robot.arm.currentState != Arm.FSMState.IDLE) &&  opModeIsActive() && !isStopRequested()) {
+        while(robot.arm.currentState!= Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
+            robot.sleep(0.001);
+        }
+        robot.drive.setTargetPose(bucketFirst);
+
+        while(robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE &&  opModeIsActive() && !isStopRequested()) {
             telemetry.addData("extension",robot.arm.extensionSubsystem.currentPos);
             telemetry.addData("robot arm",robot.arm.currentState);
             telemetry.addData("robot dt",robot.drive.driveMode);
@@ -186,9 +192,13 @@ public class JustSampleAuto extends LinearOpMode {
     }
 
     public void secondBucket() {
-        robot.drive.setTargetPose(bucketSecond);
         robot.arm.setAutoTargetState(intaking);
-        while((robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE || robot.arm.currentState != Arm.FSMState.IDLE) &&  opModeIsActive() && !isStopRequested()) {
+        while(robot.arm.currentState!= Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
+            robot.sleep(0.001);
+        }
+        robot.drive.setTargetPose(bucketSecond);
+
+        while(robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE &&  opModeIsActive() && !isStopRequested()) {
             telemetry.addData("extension",robot.arm.extensionSubsystem.currentPos);
             telemetry.addData("robot arm",robot.arm.currentState);
             telemetry.addData("robot dt",robot.drive.driveMode);
@@ -268,9 +278,13 @@ public class JustSampleAuto extends LinearOpMode {
     }
 
     public void thirdBasket() {
-        robot.drive.setTargetPose(bucketThird);
         robot.arm.setAutoTargetState(intaking);
-        while((robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE || robot.arm.currentState != Arm.FSMState.IDLE) &&  opModeIsActive() && !isStopRequested()) {
+        while(robot.arm.currentState!= Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
+            robot.sleep(0.001);
+        }
+        robot.drive.setTargetPose(bucketThird);
+
+        while(robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE &&  opModeIsActive() && !isStopRequested()) {
             telemetry.addData("extension",robot.arm.extensionSubsystem.currentPos);
             telemetry.addData("robot arm",robot.arm.currentState);
             telemetry.addData("robot dt",robot.drive.driveMode);
@@ -279,7 +293,6 @@ public class JustSampleAuto extends LinearOpMode {
             telemetry.update();
             robot.sleep(0.001);
         }
-
         robot.arm.setAutoTargetState(intaking);
         robot.arm.changeDesiredExtension(thirdBucketExtension);
         while(robot.arm.currentState!= Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
@@ -354,12 +367,12 @@ public class JustSampleAuto extends LinearOpMode {
         while( robot.arm.currentState!= Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
             robot.sleep(0.001);
         }
+        robot.arm.clawSubsystem.tiltState = Claw.tiltMode.MID;
+        robot.sleep(0.1);
         robot.drive.setTargetPose(parkPath);
-        while(robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE && opModeIsActive() && !isStopRequested()) {
-            robot.sleep(0.001);
-        }
-        robot.arm.setAutoTargetState(intaking);
-        while( robot.arm.currentState!= Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
+        robot.arm.setAutoTargetState(specinem);
+        robot.arm.changeDesiredExtension(parklength);
+        while((robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE ||  robot.arm.currentState!= Arm.FSMState.IDLE) && opModeIsActive() && !isStopRequested()) {
             robot.sleep(0.001);
         }
     }
@@ -373,12 +386,13 @@ public class JustSampleAuto extends LinearOpMode {
         toBucket.add(new Pose(44.1,50,Math.toRadians(234)));
         toBucket.add(new Pose(scoreBasket2));
         first = new Path(toBucket);
+        robot.start();
         while (!isStarted()) {
             if (isStopRequested()) {
                 robot.stop();
             }
         }
-        robot.start();
+
         if (isStopRequested()) {
             robot.stop();
         }

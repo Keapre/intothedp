@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.PIDController;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -17,6 +18,8 @@ import org.firstinspires.ftc.teamcode.Utils.Wrappers.Encoder;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.WEncoder;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Pitch;
 import org.opencv.core.Mat;
+
+@Disabled
 
 @Config
 @TeleOp(name = "extensionPid", group = "Tests")
