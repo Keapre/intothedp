@@ -106,15 +106,8 @@ public class Drive extends MecanumDrive{
     }
     @Override
     public PoseVelocity2d updatePoseEstimate() {
-        if (lastPinpointPose != pose) {
-
-            pinpoint.setPosition(pose);
-        }
-        usePin = fieldCentric;
-        if(usePin){
-            pinpoint.update();
-            pose = pinpoint.getPositionRR();
-        }
+        pinpoint.update();
+        pose = pinpoint.getPositionRR();
 
         lastPinpointPose = pose;
 
@@ -128,7 +121,7 @@ public class Drive extends MecanumDrive{
         FlightRecorder.write("PINPOINT_RAW_POSE",new FTCPoseMessage(pinpoint.getPosition()));
         FlightRecorder.write("PINPOINT_STATUS",pinpoint.getDeviceStatus());
 
-        return null;
+        return pinpoint.getVelocityRR();
     }
 
     public static final class FTCPoseMessage {

@@ -26,8 +26,8 @@ public class P2Pdrive extends Drive{
     public static double STABLE_MS = 100;
     public static double DEAD_MS = 1500;
 
-    private final double  MAX_TRANSLATIONAL_SPEED = 0.7;
-    private final double  MAX_ROTATIONAL_SPEED = 0.5;
+    private  double  MAX_TRANSLATIONAL_SPEED = 0.7;
+    private  double  MAX_ROTATIONAL_SPEED = 0.5;
     private final double X_GAIN = 1.40;
 
     public Pose targetPose;
@@ -49,7 +49,7 @@ public class P2Pdrive extends Drive{
     public static PIDFController hController = new PIDFController(hP, 0.0, hD, 0);
 
     public Pose2d targetPose2d;
-    public static double ALLOWED_TRANSLATIONAL_ERROR = 2;
+    public static double ALLOWED_TRANSLATIONAL_ERROR = 1;
     public static double ALLOWED_HEADING_ERROR = 0.02;
 
 
@@ -95,7 +95,7 @@ public class P2Pdrive extends Drive{
     public boolean isFinishedTransition(Pose currentPose) {
         Pose delta = targetPose.subtract(currentPose);
 
-        if (delta.toVec2D().magnitude() > ALLOWED_TRANSLATIONAL_ERROR + 6
+        if (delta.toVec2D().magnitude() > ALLOWED_TRANSLATIONAL_ERROR + 11
                 || Math.abs(delta.heading) > ALLOWED_HEADING_ERROR + 2.5) {
             stable.reset();
         }
@@ -115,6 +115,8 @@ public class P2Pdrive extends Drive{
         FtcDashboard.getInstance().sendTelemetryPacket(packet);
         currentPose = new Pose(pose);
         if(!path.isLast()) {
+            MAX_TRANSLATIONAL_SPEED = 0.9;
+            MAX_ROTATIONAL_SPEED = 0.7;
             //transition
             if(isFinishedTransition(currentPose)) {
                 timer = null;
@@ -124,6 +126,8 @@ public class P2Pdrive extends Drive{
             }
         }
         if(path.isLast()) {
+            MAX_TRANSLATIONAL_SPEED = 0.6;
+            MAX_ROTATIONAL_SPEED = 0.45;
             if(isFinishedLast(currentPose)) {
                 timer = null;
                 stable = null;

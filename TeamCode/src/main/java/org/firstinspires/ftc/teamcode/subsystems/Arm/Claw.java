@@ -29,13 +29,13 @@ public class Claw {
 
     ;
 
-    public static DiffyPositions down_horizontal = new DiffyPositions(0.22, 0.81);
-    public static DiffyPositions down_vertical = new DiffyPositions(0.03, 0.62);
-    public static DiffyPositions mid = new DiffyPositions(0.82, 0.23);
-    public static DiffyPositions up = new DiffyPositions(1, 0);
+    public static DiffyPositions down_horizontal = new DiffyPositions(0.27, 0.76);
+    public static DiffyPositions down_vertical = new DiffyPositions(0.09, 0.58);
+    public static DiffyPositions mid = new DiffyPositions(0.82, 0.21);
+    public static DiffyPositions up = new DiffyPositions(1, 0.03);
     //TODO:
-    public static double clawOpen = 0.39;
-    public static double clawClose = 0.81;
+    public static double clawOpen = 0.3;
+    public static double clawClose = 0.85;
 
     public enum CLAWPOS {
         OPEN,

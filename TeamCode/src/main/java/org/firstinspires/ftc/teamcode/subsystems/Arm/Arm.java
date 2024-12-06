@@ -77,6 +77,7 @@ public class Arm implements Subsystem {
     public double desiredExtension = 0;
 
     public void setTargetState(STATE newState) {
+        previousState = targetState;
         targetState = newState;
         desiredExtension = targetState.getExtensionTarget();
 
@@ -121,6 +122,10 @@ public class Arm implements Subsystem {
                 clawSubsystem.tiltState=targetState.tiltState;
                 extensionSubsystem.mode = Extension.MODE.AUTO;
                 extensionSubsystem.target = extensionSubsystem.offset;
+                if(previousState.getPitchAngle() == 0) {
+
+                }
+                if(previousState.getPitchAngle() == 555) extensionSubsystem.target = extensionSubsystem.offset + 35;
                 if (extensionSubsystem.isRetracted() || extensionSubsystem.getTimer() >=timerthreeshold){
                     extensionSubsystem.offset = extensionSubsystem.currentPos;
                     extensionSubsystem.mode = Extension.MODE.IDLE;

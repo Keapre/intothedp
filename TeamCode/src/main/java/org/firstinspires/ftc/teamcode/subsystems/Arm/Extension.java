@@ -38,18 +38,19 @@ public class Extension {
         }
     }
 
-    public static double retractedThreeshold = 10;
-    public static double pointThreeshold = 6;
+    public static double retractedThreeshold = 15;
+    public static double pointThreeshold = 20;
 
     public enum MODE {
         MANUAL,
+        RAW_POWER,
         AUTO,
         IDLE
     }
 
-        public static double kP = 0.025;
+        public static double kP = 0.04;
         public static double kI = 0.0;
-        public static double kD = 0.0005;
+        public static double kD = 0.0007;
         public static double kF = 0.0;
         public static double tickPerInch = 0.0;
 
@@ -58,7 +59,7 @@ public class Extension {
     public double currentPos = 0;
     public double offset = 0;
     public double currentLength = 0;
-    public static double kCos = 0.2;
+    public static double kCos = 0.03;
     public static double basePower = 0;
     public MODE mode = MODE.AUTO;
     boolean usePid = false;
@@ -81,6 +82,11 @@ public class Extension {
         offset = encoder.getCurrentPosition();
     }
 
+    public static double raw_power = 0;
+
+    public void changeRawPower(double power) {
+        raw_power = power;
+    }
     double previous_angle = 0;
     public void setPower(double power) {
         this.power = power;
@@ -93,6 +99,7 @@ public class Extension {
 
     }
 
+    public double ff = 0;
 
 
     public void manualControl(double power) {
@@ -108,7 +115,7 @@ public class Extension {
     }
 
     public boolean isRetracted() {
-        return Math.abs(currentPos-offset) <=retractedThreeshold;
+        return Math.abs(currentPos-target) <=retractedThreeshold;
     }
     public boolean isAtPosition(double position) {
         return Math.abs(currentPos - position) < pointThreeshold;
@@ -133,7 +140,7 @@ public class Extension {
     public void update() {
         double angle = arm.pitchSubsystem.calculateAngle();
         currentPos = getCurrentPos(angle);
-        if(arm.currentState == Arm.FSMState.RETRACTING_EXTENSION) {
+        if(arm.currentState == Arm.FSMState.RETRACTING_EXTENSION || arm.currentState == Arm.FSMState.EXTENDING_EXTENSION) {
             if(timer == null) {
                 timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
                 valueTimer = currentPos;
@@ -146,21 +153,28 @@ public class Extension {
         else {
             timer = null;
         }
-        double ff = Math.sin(Math.toRadians(arm.pitchSubsystem.calculateAngle())) * kCos;
-        ff = Utils.minMaxClip(ff,0,1);
         switch (mode) {
             case AUTO:
+                raw_power = 0;
                 mode = MODE.AUTO;
                 pidUpdate();
-                power+=ff;
                 power*=-1;
+                power+=ff;
                 motor.setPower(Utils.minMaxClip(power - basePower,-1, 0.75));
                 break;
             case MANUAL:
-                motor.setPower(Utils.minMaxClip(-1,1,power - basePower));
+                raw_power = 0;
+                motor.setPower(Utils.minMaxClip(-1,1,power + basePower));
                 break;
+
             case IDLE:
-                motor.setPower(basePower);
+                raw_power = 0;
+                if(arm.targetState.getPitchAngle() == 555) {
+                    motor.setPower(-0.05);
+                }
+                else {
+                    motor.setPower(0);
+                }
                 break;
         }
         previous_angle = angle;

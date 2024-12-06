@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.Utils.Utils;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.Encoder;
@@ -21,7 +22,8 @@ import org.opencv.core.Mat;
 @TeleOp(name = "extensionPid", group = "Tests")
 public class extensionPid extends LinearOpMode {
 
-    public static double kP = 0.02, kI = 0, kD = 0.0005;
+    Servo claw;
+    public static double kP = 0.036, kI = 0, kD = 0.0006;
     PIDController pid = new PIDController(0, 0, 0);
     public static double kG = 0.1;
     public static double target = 0;
@@ -32,9 +34,14 @@ public class extensionPid extends LinearOpMode {
 
     public static double angle = 0;
 
+    public static double threeshold = 18;
+    boolean atThreeshold(double position) {
+        return Math.abs(target-position) <= threeshold;
+    }
 
     @Override
     public void runOpMode() throws InterruptedException {
+        claw = hardwareMap.get(Servo.class,"claw");
         extension = hardwareMap.get(DcMotorEx.class, "extend");
         extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         Encoder encoder = new Encoder(extension);
@@ -45,15 +52,17 @@ public class extensionPid extends LinearOpMode {
         extension.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         waitForStart();
+        claw.setPosition(0.85);
         while (opModeIsActive()) {
             updatePID();
 
             double pos = (encoder.getCurrentPosition() - offset);
             double error = target - (encoder.getCurrentPosition()-offset);
-            double ff = Math.sin(Math.toRadians(angle)) *kG;
-            double power=pid.calculate(pos,target) + ff;
-            power+=ff;
+            double power=pid.calculate(pos,target);
             power*=sign;
+            if(atThreeshold(pos)) {
+                power = 0;
+            }
             extension.setPower(Utils.minMaxClip(power, -1, 0.75));
             telemetry.addData("error", error);
             telemetry.addData("power", power);

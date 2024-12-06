@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.opmode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.outoftheboxrobotics.photoncore.Photon;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.MovingStatistics;
@@ -120,6 +119,7 @@ public class EricTeleOp extends OpMode {
         telemetry.addData("ARM MANUAL CONTROL",robot.arm.manualControl);
         telemetry.addLine();
         telemetry.addData("useRetract",robot.arm.useRetractAuto);
+        telemetry.addData("ff",robot.arm.extensionSubsystem.ff);
         telemetry.addData("Extension power",robot.arm.extensionSubsystem.power);
         telemetry.addData("Extension pos",robot.arm.extensionSubsystem.currentPos);
         telemetry.addData("extension offset",robot.arm.extensionSubsystem.offset);
