@@ -39,6 +39,7 @@ public class Arm implements Subsystem {
     private long lastUpdateTime;
     double extensionInput = 0;
     private static final long UPDATE_INTERVAL_MS = 15;
+    public static double lengthLimitAt0 = 600;
 
     public Arm(HardwareMap hardwareMap, boolean isAuto) {
         try {
@@ -152,7 +153,7 @@ public class Arm implements Subsystem {
 
             case EXTENDING_EXTENSION:
                 extensionSubsystem.mode = Extension.MODE.AUTO;
-                if(desiredExtension == 0){
+                if (desiredExtension == 0) {
                     currentState = nextStateInPlan();
                     break;
                 }
@@ -190,6 +191,15 @@ public class Arm implements Subsystem {
 
     public void handleManualControl(GamePadController gg) {
         extensionInput = gg.left_trigger + -gg.right_trigger;
+
+
+        if(pitchSubsystem.calculateAngle() == 0 && extensionInput<-0.1) {
+            if (Math.abs((extensionSubsystem.offset + lengthLimitAt0) - extensionSubsystem.currentPos) < 40) {
+                extensionInput = 0;
+            }
+        }
+
+
 
         if (Math.abs(gg.left_trigger) > 0.1 || Math.abs(gg.right_trigger) > 0.1) {
             setPowerManual();

@@ -29,15 +29,14 @@ public class JustSampleAuto extends LinearOpMode {
     //Pose2d startPose = new Pose2d(32, 60.3, Math.toRadians(270));
     Pose2d startPose = new Pose2d(32, 60.3, Math.toRadians(270));
     Robot2 robot = null;
-    Pose2d scoreBasket2 = new Pose2d(55.5,56,Math.toRadians(223));
+    Pose2d scoreBasket2 = new Pose2d(57,57.5,Math.toRadians(223));
     Pose2d scoreBasket2_2 = new Pose2d(57,56.7,Math.toRadians(235));
     Pose2d scoreBasket1 = new Pose2d(52,52,Math.toRadians(243));
     Pose2d scoreBasket1_1 = new Pose2d(52,52,Math.toRadians(243));
 
-    Pose2d bucketFirst = new Pose2d(55,45,Math.toRadians(253));
-
-    Pose2d bucketSecond = new Pose2d(58,43,Math.toRadians(272));
-
+    Pose2d bucketFirst = new Pose2d(55,45,Math.toRadians(250));
+    Pose2d transition = new Pose2d(23,46,Math.toRadians(265));
+    Pose2d bucketSecond = new Pose2d(58,43,Math.toRadians(270));
     Pose2d bucketThird = new Pose2d(56.6,50,Math.toRadians(289));
 
     ArrayList<Pose> toPark = new ArrayList<Pose>();
@@ -48,11 +47,11 @@ public class JustSampleAuto extends LinearOpMode {
     HIGHBASKET high = new HIGHBASKET();
     SPECIMEN specinem = new SPECIMEN();
 
-    public static double firstBucketExtension = 344;
-    public static double basketLength = 560;
+    public static double basketLength = 573;
+    public static double firstBucketExtension = 352;
+    public static double secondBucketExtension = 264;
     public static double parklength = 135;
-    public static double secondBucketExtension = 260;
-    public static  double thirdBucketExtension = 515;
+    public static  double thirdBucketExtension = 520;
     Pose2d park = new Pose2d(25,9,Math.toRadians(180));
 
 
@@ -362,16 +361,16 @@ public class JustSampleAuto extends LinearOpMode {
 
     }
 
-    public void park() {
+    void park() {
         robot.arm.setAutoTargetState(intaking);
         while( robot.arm.currentState!= Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
             robot.sleep(0.001);
         }
         robot.arm.clawSubsystem.tiltState = Claw.tiltMode.MID;
+
         robot.sleep(0.1);
         robot.drive.setTargetPose(parkPath);
-        robot.arm.setAutoTargetState(specinem);
-        robot.arm.changeDesiredExtension(parklength);
+        robot.arm.setAutoTargetState(intaking);
         while((robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE ||  robot.arm.currentState!= Arm.FSMState.IDLE) && opModeIsActive() && !isStopRequested()) {
             robot.sleep(0.001);
         }

@@ -29,14 +29,14 @@ public class speciemSampleAuto extends LinearOpMode {
 
     Path first,parkPath;
     Pose2d startPose = new Pose2d(7, 60.5, Math.toRadians(270));
-    Pose2d specimenDrop = new Pose2d(5, 36.5, Math.toRadians(270));
-    Pose2d bucketFirst = new Pose2d(55,45,Math.toRadians(253));
+    Pose2d specimenDrop = new Pose2d(2.5, 36.5, Math.toRadians(270));
+    Pose2d bucketFirst = new Pose2d(55,45,Math.toRadians(250));
     Pose2d transition = new Pose2d(23,46,Math.toRadians(265));
-    Pose2d bucketSecond = new Pose2d(58,43,Math.toRadians(272));
+    Pose2d bucketSecond = new Pose2d(58,43,Math.toRadians(270));
     Pose2d bucketThird = new Pose2d(56.6,50,Math.toRadians(289));
     Pose2d trans = new Pose2d(5,48,Math.toRadians(270));
 
-    Pose2d scoreBasket2 = new Pose2d(55.5,56,Math.toRadians(223));
+    Pose2d scoreBasket2 = new Pose2d(56,56.5,Math.toRadians(223));
     Pose2d scoreBasket2_2 = new Pose2d(57,56.7,Math.toRadians(235));
     Pose2d scoreBasket1 = new Pose2d(52,52,Math.toRadians(243));
     Pose2d scoreBasket1_1 = new Pose2d(52,52,Math.toRadians(243));
@@ -45,14 +45,14 @@ public class speciemSampleAuto extends LinearOpMode {
     INTAKING intaking2 = new INTAKING();
     INTAKING intaking3 = new INTAKING();
     DEFAUlT def = new DEFAUlT();
-    public static double firstBucketExtension = 340;
-    public static double secondBucketExtension = 260;
+    public static double firstBucketExtension = 345;
+    public static double secondBucketExtension = 264;
     public static double parklength = 135;
     public static  double thirdBucketExtension = 520;
-    public static  double diff = 125;
+    public static  double diff = 135;
 
     public static double basketLength = 560;
-    public static  double speciemExtension = 400;
+    public static  double speciemExtension = 410;
     HIGHBASKET high = new HIGHBASKET();
     HIGHBASKET high2 = new HIGHBASKET();
     HIGHBASKET high3 = new HIGHBASKET();
@@ -379,8 +379,7 @@ public class speciemSampleAuto extends LinearOpMode {
 
         robot.sleep(0.1);
         robot.drive.setTargetPose(parkPath);
-        robot.arm.setAutoTargetState(specimen);
-        robot.arm.changeDesiredExtension(parklength);
+        robot.arm.setAutoTargetState(intaking);
         while((robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE ||  robot.arm.currentState!= Arm.FSMState.IDLE) && opModeIsActive() && !isStopRequested()) {
             robot.sleep(0.001);
         }

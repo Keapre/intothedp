@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmode;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.MovingStatistics;
@@ -21,7 +22,7 @@ import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Arm;
 
 
-
+@Disabled
 @TeleOp(name = "TeleOp Red")
 public class TeleOpRed extends OpMode {
     Robot robot;
