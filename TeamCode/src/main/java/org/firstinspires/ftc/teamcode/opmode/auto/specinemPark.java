@@ -25,7 +25,7 @@ import java.util.ArrayList;
 public class specinemPark extends LinearOpMode {
     Robot2 robot = null;
     Path firstSample,secondSample,thirdSample;
-    Pose2d startPose = new Pose2d(-9.375536460576095, 60.81076314130167, Math.toRadians(270));
+    Pose2d startPose = new Pose2d(-15.92, 61.34, Math.toRadians(270));
     Pose2d specinem1 = new Pose2d(-3.544303713821051, 36.5, Math.toRadians(270));
     Pose2d specimen2 = new Pose2d(-5.280821191982961, 36.5, Math.toRadians(270));
     Pose2d specimen3 = new Pose2d(-6.280821191982961, 36.5, Math.toRadians(270));
@@ -277,6 +277,10 @@ public class specinemPark extends LinearOpMode {
         }
         if (isStopRequested()) {
             robot.stop();
+        }
+        ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+        while(timer.time() < 10000 && opModeIsActive() && !isStopRequested()) {
+            robot.sleep(0.01);
         }
 
         placeSpecimen();

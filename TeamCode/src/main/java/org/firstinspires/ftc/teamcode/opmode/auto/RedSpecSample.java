@@ -50,7 +50,7 @@ public class RedSpecSample extends LinearOpMode {
     public static  double thirdBucketExtension = 520;
     public static  double diff = 130;
 
-    public static double basketLength = 560;
+    public static double basketLength = 570;
     public static  double speciemExtension = 400;
     HIGHBASKET high = new HIGHBASKET();
     HIGHBASKET high2 = new HIGHBASKET();
@@ -59,7 +59,7 @@ public class RedSpecSample extends LinearOpMode {
     ArrayList<Pose> toBucket = new ArrayList<Pose>();
     ArrayList<Pose> toPark = new ArrayList<Pose>();
 
-    Pose2d park = new Pose2d(25,-9,-Math.toRadians(180));
+    Pose2d park = new Pose2d(30,-9,-Math.toRadians(180));
 
 
     void placeSpecimen() {
@@ -395,6 +395,11 @@ public class RedSpecSample extends LinearOpMode {
         robot.start();
         if (isStopRequested()) {
             robot.stop();
+        }
+
+        ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+        while(timer.time() < 8000 && opModeIsActive() && !isStopRequested()) {
+            robot.sleep(0.01);
         }
 
         placeSpecimen();

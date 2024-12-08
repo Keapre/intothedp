@@ -406,6 +406,10 @@ public class speciemSampleAuto extends LinearOpMode {
             robot.stop();
         }
 
+        ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+        while(timer.time() < 6500 && opModeIsActive() && !isStopRequested()) {
+            robot.sleep(0.01);
+        }
         placeSpecimen();
         firstBucket();
         secondBucket();

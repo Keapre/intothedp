@@ -29,8 +29,8 @@ public class Claw {
 
     ;
 
-    public static DiffyPositions down_horizontal = new DiffyPositions(0.26, 0.76);
-    public static DiffyPositions down_vertical = new DiffyPositions(0.07, 0.58);
+    public static DiffyPositions down_horizontal = new DiffyPositions(0.29, 0.73);
+    public static DiffyPositions down_vertical = new DiffyPositions(0.12, 0.53);
     public static DiffyPositions mid = new DiffyPositions(0.83, 0.18);
     public static DiffyPositions up = new DiffyPositions(1, 0);
     //TODO:
