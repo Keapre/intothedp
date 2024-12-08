@@ -270,11 +270,6 @@ public class MecanumDrive implements Subsystem {
 
         this.isAuto = isAuto;
         LynxFirmware.throwIfModulesAreOutdated(hardwareMap);
-
-        for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
-            module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
-        }
-
         if(isAuto) usePinPoint = true;
         else {
             usePinPoint = false;

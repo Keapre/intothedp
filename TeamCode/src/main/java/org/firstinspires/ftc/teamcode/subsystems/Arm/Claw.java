@@ -9,9 +9,9 @@ import org.firstinspires.ftc.teamcode.opmode.tests.PitchTest;
 
 @Config
 public class Claw {
-    Servo claw;
-    Servo leftDiffy;
-    Servo rightDiffy;
+    CachingServo claw;
+    CachingServo leftDiffy;
+    CachingServo rightDiffy;
 
     public boolean clawEnabled = true;
     public boolean rotateEnabled = true;
@@ -61,9 +61,9 @@ public class Claw {
     public CLAWPOS clawPos = CLAWPOS.CLOSE;
 
     public Claw(HardwareMap hardwareMap, boolean isAuto) {
-        this.claw = hardwareMap.get(Servo.class, "claw");
-        this.leftDiffy = hardwareMap.get(Servo.class, "diffyLeft");
-        this.rightDiffy = hardwareMap.get(Servo.class, "diffyRight");
+        this.claw = new CachingServo(hardwareMap.get(Servo.class, "claw"));
+        this.leftDiffy = new CachingServo(hardwareMap.get(Servo.class, "diffyLeft"));
+        this.rightDiffy = new CachingServo(hardwareMap.get(Servo.class, "diffyRight"));
     }
 
 

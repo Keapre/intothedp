@@ -112,6 +112,10 @@ public class EricTeleOp extends OpMode {
         }
     }
     public void updateDrive() {
+        if(gg.left_stick_x == 0 && gg.left_stick_y == 0 && gg.right_stick_x == 0 && gg.right_stick_y == 0) {
+            robot.drive.setMotorPowers(0,0,0,0);
+            return;
+        }
         robot.drive.setMotorPowersFromGamepad(gg,1.0,false,true);
     }
     public void updateTelemetry() {
@@ -121,25 +125,22 @@ public class EricTeleOp extends OpMode {
         telemetry.addData("ARM CURRENT STATE",robot.arm.getCurrentState());
         telemetry.addData("ARM MANUAL CONTROL",robot.arm.manualControl);
         telemetry.addLine();
-        telemetry.addData("true current pos",robot.arm.extensionSubsystem.getTrueCurrentPosition());
         telemetry.addData("useRetract",robot.arm.useRetractAuto);
         telemetry.addData("ff",robot.arm.extensionSubsystem.ff);
         telemetry.addData("Extension power",robot.arm.extensionSubsystem.power);
         telemetry.addData("Extension pos",robot.arm.extensionSubsystem.currentPos);
         telemetry.addData("extension offset",robot.arm.extensionSubsystem.offset);
-        telemetry.addData("Pith angle",robot.arm.pitchSubsystem.calculateAngle());
+        telemetry.addData("Pith angle",robot.arm.pitchSubsystem.get_angle());
         telemetry.addData("Pith pos",robot.arm.pitchSubsystem.getCurrentPos());
         telemetry.addData("target angle",robot.arm.targetState.getPitchAngle());
         telemetry.addData("target pitch",robot.arm.pitchSubsystem.target);
         telemetry.addData("pitch mode",robot.arm.pitchSubsystem.mode);
 
-        telemetry.addData("timer",robot.arm.extensionSubsystem.getTimer());
         telemetry.addData("extend mode",robot.arm.extensionSubsystem.mode);
         telemetry.addData("Claw pos",robot.arm.clawSubsystem.clawPos);
         telemetry.addData("Claw state",robot.arm.clawSubsystem.tiltState);
         telemetry.addData("motion profile over",robot.arm.pitchSubsystem.isMotionProfileActive);
         telemetry.addData("vel",robot.arm.pitchSubsystem.desiredVelocity);
-        telemetry.addData("isRetracted",robot.arm.extensionSubsystem.isRetracted());
         telemetry.addData("pitch ff",robot.arm.pitchSubsystem.ff);
         telemetry.addData("slowMode",robot.drive.slow_mode);
         telemetry.addLine();

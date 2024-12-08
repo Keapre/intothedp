@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.Utils.Wrappers.WEncoder;
 @Config
 public class Extension {
 
-    public  DcMotorEx motor;
+    public CachingDcMotorEx motor;
     public enum EXTENSIONLENGTH {
         MIN(0),
 
@@ -72,7 +72,7 @@ public class Extension {
     double valueTimer = 0;
     public Extension(HardwareMap hardwareMap,boolean isAuto,Arm arm) {
         this.arm = arm;
-        motor = hardwareMap.get(DcMotorEx.class, "extend");
+        motor = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "extend"),0.02);
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
 
@@ -93,8 +93,6 @@ public class Extension {
     }
     public void pidUpdate() {
         controller.setPIDF(kP, kI, kD, kF);
-
-        double error = target - (encoder.getCurrentPosition() - offset);
         power = controller.calculate(currentPos,target);
 
     }
@@ -109,9 +107,6 @@ public class Extension {
 
     public double getPosition() {
         return currentPos;
-    }
-    public boolean isAtZero() {
-        return Math.abs(target-currentPos) < 500;
     }
 
     public boolean isRetracted() {
@@ -138,7 +133,7 @@ public class Extension {
     }
 
     public void update() {
-        double angle = arm.pitchSubsystem.calculateAngle();
+        double angle = arm.pitchSubsystem.get_angle();
         currentPos = getCurrentPos(angle);
         if(arm.currentState == Arm.FSMState.RETRACTING_EXTENSION || arm.currentState == Arm.FSMState.EXTENDING_EXTENSION) {
             if(timer == null) {

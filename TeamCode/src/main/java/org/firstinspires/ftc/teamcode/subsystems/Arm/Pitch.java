@@ -143,7 +143,7 @@ public class Pitch {
     }
 
     public double getCurrentPos() {
-        return getTrueCurrentPosition() - offset;
+        return currentPos;
     }
 
 
@@ -161,6 +161,9 @@ public class Pitch {
     }
 
 
+    public double get_angle() {
+        return angle;
+    }
     public void checkForSwitch() {
         if(limitSwitch.getState()) {
 
@@ -221,7 +224,7 @@ public class Pitch {
 
     public void update() {
         checkForSwitch();
-        currentPos = encoder.getCurrentPosition() - offset;
+        currentPos = getTrueCurrentPosition() - offset;
         angle = calculateAngle();
 
         switch ((int) target) {
