@@ -11,7 +11,7 @@ public class SPECIMENGARD extends STATE{
         this.clawpos = Claw.CLAWPOS.OPEN;
         this.rotatePos = Claw.RotateMode.ORIZONTAL;
         this.tiltState = Claw.tiltMode.MID;
-        this.extensionTarget = 345; // Needs to be determined experimentally //si dupa scazi 125
+        this.extensionTarget = 0; // Needs to be determined experimentally //si dupa scazi 125
         this.pitchAngle = 95;
     }
 

@@ -66,24 +66,25 @@ public class speciemSampleAuto extends LinearOpMode {
     void placeSpecimen() {
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
         robot.arm.clawSubsystem.tiltState = Claw.tiltMode.DOWN;
+        robot.drive.setTargetPose(specimenDrop);
         robot.arm.setAutoTargetState(specimen);
         robot.arm.changeDesiredExtension(speciemExtension);
-        while(robot.arm.currentState != Arm.FSMState.IDLE  && opModeIsActive() && !isStopRequested()) {
+        while((robot.arm.currentState != Arm.FSMState.IDLE  || robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE) && opModeIsActive() && !isStopRequested()) {
             telemetry.addData("extension",robot.arm.extensionSubsystem.currentPos);
             telemetry.addData("robot arm",robot.arm.currentState);
             telemetry.addData("robot dt",robot.drive.driveMode);
             telemetry.update();
             robot.sleep(0.001);
         }
-        robot.drive.setTargetPose(specimenDrop);
 
-        while(robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE && opModeIsActive() && !isStopRequested()) {
-            telemetry.addData("extension",robot.arm.extensionSubsystem.currentPos);
-            telemetry.addData("robot arm",robot.arm.currentState);
-            telemetry.addData("robot dt",robot.drive.driveMode);
-            telemetry.update();
-            robot.sleep(0.001);
-        }
+
+//        while(robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE && opModeIsActive() && !isStopRequested()) {
+//            telemetry.addData("extension",robot.arm.extensionSubsystem.currentPos);
+//            telemetry.addData("robot arm",robot.arm.currentState);
+//            telemetry.addData("robot dt",robot.drive.driveMode);
+//            telemetry.update();
+//            robot.sleep(0.001);
+//        }
 
 
 //        while((robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE || robot.arm.currentState != Arm.FSMState.IDLE) && opModeIsActive() && !isStopRequested()) {

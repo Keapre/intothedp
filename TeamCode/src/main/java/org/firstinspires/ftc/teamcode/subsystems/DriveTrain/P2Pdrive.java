@@ -24,10 +24,10 @@ public class P2Pdrive extends Drive{
     private ElapsedTime stable;
 
     public static double STABLE_MS = 100;
-    public static double DEAD_MS = 1500;
+    public static double DEAD_MS = 2500;
 
-    private  double  MAX_TRANSLATIONAL_SPEED = 0.7;
-    private  double  MAX_ROTATIONAL_SPEED = 0.5;
+    public static  double  MAX_TRANSLATIONAL_SPEED = 0.7;
+    public static  double  MAX_ROTATIONAL_SPEED = 0.5;
     private final double X_GAIN = 1.40;
 
     public Pose targetPose;
@@ -95,12 +95,11 @@ public class P2Pdrive extends Drive{
     public boolean isFinishedTransition(Pose currentPose) {
         Pose delta = targetPose.subtract(currentPose);
 
-        if (delta.toVec2D().magnitude() > ALLOWED_TRANSLATIONAL_ERROR + 11
-                || Math.abs(delta.heading) > ALLOWED_HEADING_ERROR + 2.5) {
-            stable.reset();
+        if (delta.toVec2D().magnitude() > ALLOWED_TRANSLATIONAL_ERROR + 15
+                || Math.abs(delta.heading) > ALLOWED_HEADING_ERROR + 6) {
+            return false;
         }
-
-        return timer.milliseconds() > DEAD_MS || stable.milliseconds() > STABLE_MS;
+        return true;
     }
 
 

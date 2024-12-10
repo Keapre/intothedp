@@ -33,6 +33,7 @@ public class Claw {
     public static DiffyPositions down_vertical = new DiffyPositions(0.12, 0.53);
     public static DiffyPositions mid = new DiffyPositions(0.83, 0.18);
     public static DiffyPositions up = new DiffyPositions(1, 0);
+    public static DiffyPositions slamPos = new DiffyPositions(1, 0);
     //TODO:
     public static double clawOpen = 0.3;
     public static double clawClose = 0.82;

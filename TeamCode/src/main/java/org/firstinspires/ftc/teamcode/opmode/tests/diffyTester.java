@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 
-@Disabled
+
 
 @Config
 @TeleOp(name = "diffy")
@@ -17,8 +17,8 @@ public class diffyTester extends LinearOpMode {
 
     Servo diffyLeft,diffyRight;
 
-    public static double targetLeft = 0.5;
-    public static double targetRight = 0.5;
+    public static double targetLeft = 0;
+    public static double targetRight = 0.77;
 
     public static double actual_Left = 0.5;
     public static double actual_Right = 0.5;
@@ -33,10 +33,8 @@ public class diffyTester extends LinearOpMode {
 
         while (opModeIsActive()) {
             gg.update();
-            if(gg.xOnce()) {
                 diffyLeft.setPosition(targetLeft);
                 diffyRight.setPosition(targetRight);
-            }
         }
 
     }
