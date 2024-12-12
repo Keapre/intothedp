@@ -29,11 +29,11 @@ public class Claw {
 
     ;
 
-    public static DiffyPositions down_horizontal = new DiffyPositions(0.29, 0.73);
-    public static DiffyPositions down_vertical = new DiffyPositions(0.12, 0.53);
-    public static DiffyPositions mid = new DiffyPositions(0.83, 0.18);
-    public static DiffyPositions up = new DiffyPositions(1, 0);
-    public static DiffyPositions slamPos = new DiffyPositions(1, 0);
+    public static DiffyPositions down_horizontal = new DiffyPositions(0.17, 0.97);
+    public static DiffyPositions down_vertical = new DiffyPositions(0, 0.77);
+    public static DiffyPositions mid = new DiffyPositions(0.71, 0.42);
+    public static DiffyPositions up = new DiffyPositions(1, 0.13);
+    public static DiffyPositions slamPos = new DiffyPositions(0.32, 0.02);
     //TODO:
     public static double clawOpen = 0.3;
     public static double clawClose = 0.82;
@@ -41,7 +41,6 @@ public class Claw {
     public enum CLAWPOS {
         OPEN,
         CLOSE
-
 
     }
 
@@ -113,8 +112,14 @@ public class Claw {
                 }
                 break;
             case MID:
-                rightDiffy.setPosition(mid.right);
-                leftDiffy.setPosition(mid.left);
+                if(rotateState == RotateMode.VERTICAL) {
+                    rightDiffy.setPosition(slamPos.right);
+                    leftDiffy.setPosition(slamPos.left);
+                }
+                else {
+                    rightDiffy.setPosition(mid.right);
+                    leftDiffy.setPosition(mid.left);
+                }
                 break;
             case UP:
                 rightDiffy.setPosition(up.right);

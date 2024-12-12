@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.Utils.ArmStates.HIGHBASKET;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.INTAKING;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.SPECIMEN;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.SPECIMENGARD;
+import org.firstinspires.ftc.teamcode.Utils.ArmStates.SPECIMENSLAM;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.SPECIMENTELEOP;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.STATE;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
@@ -33,6 +34,7 @@ public class EricTeleOp extends OpMode {
     long lastLoopFinish;
 
     STATE SpeciemnTeleOp = new SPECIMENTELEOP();
+    STATE SPECIMEN_SLAM = new SPECIMENSLAM();
     STATE DEFAULT = new DEFAUlT();
     STATE HIGHBASKET = new HIGHBASKET();
     STATE INTAKING = new INTAKING();
@@ -104,6 +106,9 @@ public class EricTeleOp extends OpMode {
             }else if(robot.arm.getCurrentState() == Arm.FSMState.IDLE && robot.arm.targetState != specimengard) {
                 robot.arm.setTargetState(specimengard);
             }
+        }
+        if(gg.dpadUpOnce()) {
+            robot.arm.setAutoTargetState(SPECIMEN_SLAM);
         }
         if(gg.xOnce()) {
             if( robot.arm.getCurrentState() == Arm.FSMState.IDLE) {

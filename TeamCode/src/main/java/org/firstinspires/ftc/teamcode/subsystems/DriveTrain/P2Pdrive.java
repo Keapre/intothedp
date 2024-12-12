@@ -23,7 +23,7 @@ public class P2Pdrive extends Drive{
     private ElapsedTime timer;
     private ElapsedTime stable;
 
-    public static double STABLE_MS = 100;
+    public static double STABLE_MS = 50;
     public static double DEAD_MS = 2500;
 
     public static  double  MAX_TRANSLATIONAL_SPEED = 0.7;
@@ -50,7 +50,7 @@ public class P2Pdrive extends Drive{
 
     public Pose2d targetPose2d;
     public static double ALLOWED_TRANSLATIONAL_ERROR = 1;
-    public static double ALLOWED_HEADING_ERROR = 0.02;
+    public static double ALLOWED_HEADING_ERROR = 0.05;
 
 
     public DriveMode driveMode = DriveMode.IDLE;

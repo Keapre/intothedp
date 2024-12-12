@@ -29,6 +29,7 @@ public class Specinem extends LinearOpMode {
     Path firstSample,secondSample,thirdSample,pickUP;
     Pose2d startPose = new Pose2d(-9.375536460576095, 60.81076314130167, Math.toRadians(270));
     Pose2d specinem1 = new Pose2d(-3.544303713821051, 36.5, Math.toRadians(270));
+    Pose2d specinem1_1 = new Pose2d(-3.544303713821051, 52, Math.toRadians(270));
     Pose2d specimen2 = new Pose2d(-5.280821191982961, 36.5, Math.toRadians(270));
     Pose2d specimen3 = new Pose2d(-6.280821191982961, 36.5, Math.toRadians(270));
     Pose2d specimen4 = new Pose2d(-8.280821191982961, 36.5, Math.toRadians(270));
@@ -40,9 +41,9 @@ public class Specinem extends LinearOpMode {
 
     ArrayList<Pose> pathforsample1 = new ArrayList<Pose>() {
         {
-            add(new Pose(new Pose2d(-34.61471197173351,45.134743517778055,Math.toRadians(243))));
-            add(new Pose(new Pose2d(-37.80674251045768,10.826866570420153,Math.toRadians(270))));
-            add(new Pose(new Pose2d(-53.19720410925197,11.853723000353716,Math.toRadians(270))));
+            add(new Pose(new Pose2d(-34.23,45.134743517778055,Math.toRadians(236))));
+//            add(new Pose(new Pose2d(-37.80674251045768,10.826866570420153,Math.toRadians(270))));
+//            add(new Pose(new Pose2d(-53.19720410925197,11.853723000353716,Math.toRadians(270))));
         }
     };
     ArrayList<Pose> pathforsample2 = new ArrayList<Pose>() {
@@ -67,24 +68,24 @@ public class Specinem extends LinearOpMode {
     };
 
     public static double speciemExtension = 400;
-    public static double extension1 = 335;
-    public static double extension2 = 360;
-    public static double extension3 = 590;
+    public static double extension1 = 427;
+    public static double extension2 = 463;
+    public static double extension3 = 415;
 
-    public static double headingDegrees1 = 237;
-    public static double headingDegrees2 = 237;
-    public static double headingDegrees3 = 237;
+    public static double headingDegrees1 = 234.5;
+    public static double headingDegrees2 = 223.5;
+    public static double headingDegrees3 = 223;
     SPECIMEN specimen = new SPECIMEN();
     SPECIMENGARD gard = new SPECIMENGARD();
     INTAKING intaking = new INTAKING();
-    public static Pose2d moveFirstPos1 = new Pose2d(-34.24815500815084,42.491546390563485,Math.toRadians(headingDegrees1));
-    public static Pose2d moveFirstPos2 = new Pose2d(-31.0,47.107,Math.toRadians(143));
+    public static Pose2d moveFirstPos1 = new Pose2d(-35.24815500815084,46.491546390563485,Math.toRadians(headingDegrees1));
+    public static Pose2d moveFirstPos2 = new Pose2d(-31.7,45.107,Math.toRadians(131));
 
-    public static Pose2d moveSecondPos1 = new Pose2d(-45.32611035925197,43.52032999354085,Math.toRadians(headingDegrees2));
-    public static Pose2d moveSecondPos2 = new Pose2d(-38.37830070435532,47.01918234036664,Math.toRadians(140));
+    public static Pose2d moveSecondPos1 = new Pose2d(-40.32611035925197,43.52032999354085,Math.toRadians(headingDegrees2));
+    public static Pose2d moveSecondPos2 = new Pose2d(-37.37830070435532,40.01918234036664,Math.toRadians(124));
 
-    public static Pose2d moveThirdPos1 = new Pose2d(-50.9373077632874,40.20239882581816,Math.toRadians(headingDegrees3));
-    public static Pose2d moveThirdPos2 = new Pose2d(-39.22288693405512,46.63408414585384,Math.toRadians(138));
+    public static Pose2d moveThirdPos1 = new Pose2d(-50.9373077632874,42.20239882581816,Math.toRadians(headingDegrees3));
+    public static Pose2d moveThirdPos2 = new Pose2d(-32,44,Math.toRadians(120));
     INTAKING intaking2 = new INTAKING();
     INTAKING intaking3 = new INTAKING();
     HIGHBASKET high = new HIGHBASKET();
@@ -97,16 +98,19 @@ public class Specinem extends LinearOpMode {
     void placeSpecimen() {
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
         robot.arm.clawSubsystem.tiltState = Claw.tiltMode.DOWN;
+        robot.drive.setTargetPose(specinem1_1);
         robot.arm.setAutoTargetState(specimen);
         robot.arm.changeDesiredExtension(speciemExtension);
-        while (robot.arm.currentState != Arm.FSMState.IDLE) {
+        while (robot.arm.currentState != Arm.FSMState.IDLE && robot.drive.driveMode != P2Pdrive.DriveMode.IDLE  && opModeIsActive() && !isStopRequested()) {
             telemetry.addData("extension", robot.arm.extensionSubsystem.currentPos);
             telemetry.update();
             robot.sleep(0.001);
         }
+        robot.sleep(0.1);
         robot.drive.setTargetPose(specinem1);
-
-        while (robot.drive.driveMode != P2Pdrive.DriveMode.IDLE && opModeIsActive() && !isStopRequested()) {
+        while (robot.drive.driveMode != P2Pdrive.DriveMode.IDLE  && opModeIsActive() && !isStopRequested()) {
+            telemetry.addData("extension", robot.arm.extensionSubsystem.currentPos);
+            telemetry.update();
             robot.sleep(0.001);
         }
 
@@ -122,30 +126,43 @@ public class Specinem extends LinearOpMode {
 //            Log.d("AutoInfo","pose" + robot.drive.pose.toString());
 //            robot.sleep(0.001);
 //        }
-        robot.sleep(0.2);
+        robot.sleep(0.25);
         robot.arm.changeExtension(speciemExtension - diff);
         while (robot.arm.currentState != Arm.FSMState.IDLE && robot.arm.extensionSubsystem.getTimer() < 500 && opModeIsActive() && !isStopRequested()) {
             robot.sleep(0.001);
         }
+        robot.sleep(0.15);
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
-        robot.sleep(0.1);
         robot.arm.setAutoTargetState(intaking);
         while (robot.arm.currentState != Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
             robot.sleep(0.001);
         }
     }
 
-    Pose2d dropSample = new Pose2d(-53.8,53,Math.toRadians(270));
     void moveSample1() {
-        robot.drive.setTargetPose(firstSample);
+        robot.drive.setTargetPose(moveFirstPos1);
         while(robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE && opModeIsActive() && !isStopRequested()) {
             robot.sleep(0.001);
         }
-        robot.drive.setTargetPose(dropSample);
-        while(robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE && opModeIsActive() && !isStopRequested()) {
+        robot.arm.setAutoTargetState(intaking);
+        robot.arm.changeDesiredExtension(extension1);
+        while(robot.arm.currentState!= Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
             robot.sleep(0.001);
         }
         robot.sleep(0.1);
+        robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
+        robot.arm.clawSubsystem.tiltState = Claw.tiltMode.DOWN;
+        robot.arm.clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
+        robot.sleep(0.2);
+        robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
+        robot.sleep(0.15);
+        robot.arm.clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
+        robot.arm.clawSubsystem.tiltState = Claw.tiltMode.MID;
+        robot.drive.setTargetPose(moveFirstPos2);
+        while(robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE && opModeIsActive() && !isStopRequested()) {
+            robot.sleep(0.001);
+        }
+        robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
     }
     void moveSample2() {
         robot.arm.clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
@@ -158,32 +175,32 @@ public class Specinem extends LinearOpMode {
         while(robot.arm.currentState!= Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
             robot.sleep(0.001);
         }
-        robot.sleep(0.2);
+        robot.sleep(0.1);
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
         robot.arm.clawSubsystem.tiltState = Claw.tiltMode.DOWN;
-        robot.arm.clawSubsystem.rotateState = Claw.RotateMode.VERTICAL;
+        robot.arm.clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
 
-        robot.sleep(0.3);
-        robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
         robot.sleep(0.2);
+        robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
+        robot.sleep(0.05);
         robot.arm.clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
         robot.arm.clawSubsystem.tiltState = Claw.tiltMode.MID;
         robot.drive.setTargetPose(moveSecondPos2);
         while(robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE && opModeIsActive() && !isStopRequested()) {
             robot.sleep(0.001);
         }
-        robot.sleep(0.2);
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
-        robot.sleep(0.1);
+        robot.sleep(0.1'');
     }
 
-    Pose2d thirdDrop = new Pose2d(-62.808352492925685,53,Math.toRadians(270));
-    Pose2d thirdPickUP = new Pose2d(-54.64,53,Math.toRadians(242));
     void moveSample3() {
-        robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
         robot.arm.clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
         robot.arm.clawSubsystem.tiltState = Claw.tiltMode.MID;
-        robot.drive.setTargetPose(thirdPickUP);
+        robot.arm.setAutoTargetState(intaking);
+        while(robot.arm.currentState!= Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
+            robot.sleep(0.001);
+        }
+        robot.drive.setTargetPose(moveThirdPos1);
         while(robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE && opModeIsActive() && !isStopRequested()) {
             robot.sleep(0.001);
         }
@@ -191,21 +208,23 @@ public class Specinem extends LinearOpMode {
         while(robot.arm.currentState!= Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
             robot.sleep(0.001);
         }
+        robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
         robot.arm.clawSubsystem.tiltState = Claw.tiltMode.DOWN;
-        robot.sleep(0.2);
+        robot.arm.clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
+
+        robot.sleep(0.1);
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
         robot.sleep(0.2);
-        robot.arm.setAutoTargetState(intaking);
-        while(robot.arm.currentState!= Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
-            robot.sleep(0.001);
-        }
-
-        robot.drive.setTargetPose(new Pose2d(dropSample.position.x,dropSample.position.y,Math.toRadians(90)));
+        robot.arm.clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
+        robot.arm.clawSubsystem.tiltState = Claw.tiltMode.MID;
+        robot.drive.setTargetPose(moveThirdPos2);
         while(robot.drive.driveMode!= P2Pdrive.DriveMode.IDLE && opModeIsActive() && !isStopRequested()) {
             robot.sleep(0.001);
         }
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
+        robot.sleep(0.1);
     }
+
 
     void placeSecondSpecimen() {
 
@@ -311,7 +330,14 @@ public class Specinem extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         robot = new Robot2(this, true, startPose);
+         moveFirstPos1 = new Pose2d(-35.24815500815084,46.491546390563485,Math.toRadians(headingDegrees1));
+         moveFirstPos2 = new Pose2d(-31.7,45.107,Math.toRadians(131));
 
+         moveSecondPos1 = new Pose2d(-40.32611035925197,43.52032999354085,Math.toRadians(headingDegrees2));
+         moveSecondPos2 = new Pose2d(-37.37830070435532,40.01918234036664,Math.toRadians(124));
+
+         moveThirdPos1 = new Pose2d(-50.9373077632874,42.20239882581816,Math.toRadians(headingDegrees3));
+         moveThirdPos2 = new Pose2d(-32,44,Math.toRadians(120));
 
         robot.start();
 
@@ -331,12 +357,12 @@ public class Specinem extends LinearOpMode {
 
         placeSpecimen();
         moveSample1();
+        moveSample2();
         moveSample3();
         //placeSecondSpecimen();
         //placeThirdSpecimen();
         //placeFourSpecimen();
 
-        robot.sleep(0.2);
         robot.stop();
     }
 }
