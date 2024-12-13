@@ -122,7 +122,7 @@ public class Arm implements Subsystem {
                 break;
             case RETRACTING_EXTENSION:
                 clawSubsystem.tiltState = targetState.tiltState;
-
+                clawSubsystem.rotateState = targetState.rotatePos;
                 extensionSubsystem.target = extensionSubsystem.offset;
                 extensionSubsystem.mode = Extension.MODE.RAW_POWER;
                 extensionSubsystem.changeRawPower(raw_power_0);

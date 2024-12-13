@@ -102,13 +102,10 @@ public class EricTeleOp extends OpMode {
         }
         if (gg.yOnce()) {
             if( robot.arm.getCurrentState() == Arm.FSMState.IDLE && robot.arm.targetState == specimengard) {
-                robot.arm.setTargetState(SpeciemnTeleOp);
+                robot.arm.setTargetState(SPECIMEN_SLAM);
             }else if(robot.arm.getCurrentState() == Arm.FSMState.IDLE && robot.arm.targetState != specimengard) {
                 robot.arm.setTargetState(specimengard);
             }
-        }
-        if(gg.dpadUpOnce()) {
-            robot.arm.setAutoTargetState(SPECIMEN_SLAM);
         }
         if(gg.xOnce()) {
             if( robot.arm.getCurrentState() == Arm.FSMState.IDLE) {

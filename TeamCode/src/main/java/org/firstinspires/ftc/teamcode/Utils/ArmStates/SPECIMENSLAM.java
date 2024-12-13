@@ -12,7 +12,7 @@ public class SPECIMENSLAM extends STATE{
         this.rotatePos = Claw.RotateMode.VERTICAL;
         this.tiltState = Claw.tiltMode.MID;
         this.extensionTarget = 0; // Needs to be determined experimentally //si dupa scazi 125
-        this.pitchAngle = 610;
+        this.pitchAngle = 670;
     }
 
 }
