@@ -217,61 +217,61 @@ public class Arm implements Subsystem {
                 clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
             else clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
         }
-//        if(gg.dpadLeftOnce()) {
-//            if(clawSubsystem.rotateState == Claw.RotateMode.VERTICAL) {
-//                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
-//            }else if(clawSubsystem.rotateState == Claw.RotateMode.ORIZONTAL) {
-//                clawSubsystem.rotateState = Claw.RotateMode.VERTICAL;
-//            }
-//        }
-//        if(gg.dpadRightOnce()) {
-//            if(clawSubsystem.rotateState == Claw.RotateMode.VERTICAL) {
-//                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
-//            }else if(clawSubsystem.rotateState == Claw.RotateMode.ORIZONTAL) {
-//                clawSubsystem.rotateState = Claw.RotateMode.VERTICAL;
-//            }
-//        }
-//        if(gg.dpadUpOnce()) {
-//            if (clawSubsystem.tiltState == Claw.tiltMode.DOWN) {
-//                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
-//                clawSubsystem.tiltState = Claw.tiltMode.MID;
-//            } else if (clawSubsystem.tiltState == Claw.tiltMode.MID) {
-//                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
-//                clawSubsystem.tiltState = Claw.tiltMode.UP;
-//            }
-//        }
-//        if(gg.dpadDownOnce()) {
-//            if(clawSubsystem.tiltState == Claw.tiltMode.UP) {
-//                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
-//                clawSubsystem.tiltState = Claw.tiltMode.MID;
-//            }else if(clawSubsystem.tiltState == Claw.tiltMode.MID) {
-//                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
-//                clawSubsystem.tiltState = Claw.tiltMode.DOWN;
-//            }
-//        }
-        if (gg.rightBumperOnce()) {
+        if(gg.dpadLeftOnce()) {
+            if(clawSubsystem.rotateState == Claw.RotateMode.VERTICAL) {
+                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
+            }else if(clawSubsystem.rotateState == Claw.RotateMode.ORIZONTAL) {
+                clawSubsystem.rotateState = Claw.RotateMode.VERTICAL;
+            }
+        }
+        if(gg.dpadRightOnce()) {
+            if(clawSubsystem.rotateState == Claw.RotateMode.VERTICAL) {
+                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
+            }else if(clawSubsystem.rotateState == Claw.RotateMode.ORIZONTAL) {
+                clawSubsystem.rotateState = Claw.RotateMode.VERTICAL;
+            }
+        }
+        if(gg.dpadUpOnce()) {
             if (clawSubsystem.tiltState == Claw.tiltMode.DOWN) {
                 clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
                 clawSubsystem.tiltState = Claw.tiltMode.MID;
             } else if (clawSubsystem.tiltState == Claw.tiltMode.MID) {
+                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
                 clawSubsystem.tiltState = Claw.tiltMode.UP;
             }
         }
+        if(gg.dpadDownOnce()) {
+            if(clawSubsystem.tiltState == Claw.tiltMode.UP) {
+                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
+                clawSubsystem.tiltState = Claw.tiltMode.MID;
+            }else if(clawSubsystem.tiltState == Claw.tiltMode.MID) {
+                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
+                clawSubsystem.tiltState = Claw.tiltMode.DOWN;
+            }
+        }
+//        if (gg.rightBumperOnce()) {
+//            if (clawSubsystem.tiltState == Claw.tiltMode.DOWN) {
+//                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
+//                clawSubsystem.tiltState = Claw.tiltMode.MID;
+//            } else if (clawSubsystem.tiltState == Claw.tiltMode.MID) {
+//                clawSubsystem.tiltState = Claw.tiltMode.UP;
+//            }
+//        }
 
         if (gg.guideOnce()) {
             resetMode();
         }
-        if (gg.leftBumperOnce()) {
-            if (clawSubsystem.tiltState == Claw.tiltMode.DOWN && clawSubsystem.rotateState == Claw.RotateMode.VERTICAL) {
-                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
-            } else if (clawSubsystem.tiltState == Claw.tiltMode.DOWN && clawSubsystem.rotateState == Claw.RotateMode.ORIZONTAL) {
-                clawSubsystem.rotateState = Claw.RotateMode.VERTICAL;
-            } else if (clawSubsystem.tiltState == Claw.tiltMode.MID) {
-                clawSubsystem.tiltState = Claw.tiltMode.DOWN;
-            } else if (clawSubsystem.tiltState == Claw.tiltMode.UP) {
-                clawSubsystem.tiltState = Claw.tiltMode.MID;
-            }
-        }
+//        if (gg.leftBumperOnce()) {
+//            if (clawSubsystem.tiltState == Claw.tiltMode.DOWN && clawSubsystem.rotateState == Claw.RotateMode.VERTICAL) {
+//                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
+//            } else if (clawSubsystem.tiltState == Claw.tiltMode.DOWN && clawSubsystem.rotateState == Claw.RotateMode.ORIZONTAL) {
+//                clawSubsystem.rotateState = Claw.RotateMode.VERTICAL;
+//            } else if (clawSubsystem.tiltState == Claw.tiltMode.MID) {
+//                clawSubsystem.tiltState = Claw.tiltMode.DOWN;
+//            } else if (clawSubsystem.tiltState == Claw.tiltMode.UP) {
+//                clawSubsystem.tiltState = Claw.tiltMode.MID;
+//            }
+//        }
     }
 
 
