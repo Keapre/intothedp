@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.util.MovingStatistics;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.internal.system.Misc;
 import org.firstinspires.ftc.teamcode.Robot;
+import org.firstinspires.ftc.teamcode.Utils.ArmStates.ActivClaw;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.DEFAUlT;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.HIGHBASKET;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.INTAKING;
@@ -35,6 +36,7 @@ public class EricTeleOp extends OpMode {
 
     STATE SpeciemnTeleOp = new SPECIMENTELEOP();
     STATE SPECIMEN_SLAM = new SPECIMENSLAM();
+    STATE ACTIV_CLAW = new ActivClaw();
     STATE DEFAULT = new DEFAUlT();
     STATE HIGHBASKET = new HIGHBASKET();
     STATE INTAKING = new INTAKING();
@@ -56,14 +58,14 @@ public class EricTeleOp extends OpMode {
     }
     private boolean isManualControlActivated() {
         return Math.abs(gg.left_trigger) > 0.1 || Math.abs(gg.right_trigger) > 0.1 || gg.aOnce() ||
-                gg.dpadUpOnce() || gg.dpadDownOnce() || gg.dpadLeftOnce() || gg.dpadRightOnce() || gg.leftBumperOnce()
-                || gg.rightBumperOnce() || gg.guideOnce() || gg.startOnce() || gg.backOnce();
+                gg.dpadUpOnce() || gg.dpadDownOnce() || gg.dpadLeftOnce() || gg.dpadRightOnce() || gg.leftBumper()
+                || gg.rightBumper() || gg.guideOnce() || gg.startOnce() || gg.backOnce();
     }
 
     private boolean manualControlDeactivated() {
         return Math.abs(gg.left_trigger) < 0.1 && Math.abs(gg.right_trigger) < 0.1 && !gg.aOnce() &&
                 !gg.dpadUpOnce() && !gg.dpadDownOnce() && !gg.dpadLeftOnce() && !gg.dpadRightOnce()
-                && !gg.leftBumperOnce() && !gg.rightBumperOnce() && !gg.guideOnce() && !gg.startOnce() && !gg.backOnce();
+                && !gg.leftBumper() && !gg.rightBumper() && !gg.guideOnce() && !gg.startOnce() && !gg.backOnce();
     }
 
 
@@ -95,9 +97,14 @@ public class EricTeleOp extends OpMode {
         }else if(manualControlDeactivated()) {
             robot.arm.manualControl = false;
         }
-        if(gg.bOnce()) {
+        if(gg.bOnce() || (gg.rightBumper() && robot.arm.targetState == ACTIV_CLAW && robot.arm.getCurrentState() == Arm.FSMState.IDLE)) {
             if(robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
-                robot.arm.setTargetState(INTAKING);
+                robot.arm.setTargetStateNoRetract(INTAKING);
+            }
+        }
+        if(gg.aOnce()) {
+            if(robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
+                robot.arm.setTargetState(ACTIV_CLAW);
             }
         }
         if (gg.yOnce()) {

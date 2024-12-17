@@ -107,12 +107,10 @@ public class ArmPreTest extends LinearOpMode {
         claw = hardwareMap.get(Servo.class,"claw");
         rotate = hardwareMap.get(Servo.class,"rotate");
             RotateMode rMode = RotateMode.ORIZONTAL;
-        clSensor =new OPColorSensor(hardwareMap.get(ColorRangeSensor.class,"sensor"));
         gamepadd = new GamePadController(gamepad1);
         waitForStart();
 
         while(opModeIsActive()) {
-            clSensor.update();
             gamepadd.update();
             if(gamepadd.aOnce()) {
                 if(modeServo == ServoMode.CLOSED){
@@ -186,7 +184,6 @@ public class ArmPreTest extends LinearOpMode {
                     tilt.setPosition(highTiltPos);
                     break;
             }
-            telemetry.addData("distance",clSensor.getDistance());
             telemetry.addData("mode",modeServo);
             telemetry.addData("use Sensor:",usedSensor);
             telemetry.addData("threeshold:",threesholdTransition);

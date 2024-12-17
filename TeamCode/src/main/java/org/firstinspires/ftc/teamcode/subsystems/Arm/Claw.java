@@ -1,15 +1,17 @@
 package org.firstinspires.ftc.teamcode.subsystems.Arm;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.Utils.Caching.CachingCRServo;
 import org.firstinspires.ftc.teamcode.Utils.Caching.CachingServo;
 import org.firstinspires.ftc.teamcode.opmode.tests.PitchTest;
 
 @Config
 public class Claw {
-    CachingServo claw;
+    CachingCRServo claw;
     CachingServo leftDiffy;
     CachingServo rightDiffy;
 
@@ -39,7 +41,8 @@ public class Claw {
     public static double clawClose = 0.82;
 
     public enum CLAWPOS {
-        OPEN,
+        FORWARD,
+        REVERSE,
         CLOSE
 
     }
@@ -61,10 +64,12 @@ public class Claw {
     public CLAWPOS clawPos = CLAWPOS.CLOSE;
 
     public Claw(HardwareMap hardwareMap, boolean isAuto) {
-        this.claw = new CachingServo(hardwareMap.get(Servo.class, "claw"));
+        this.claw = new CachingCRServo(hardwareMap.get(CRServo.class, "test"));
         this.leftDiffy = new CachingServo(hardwareMap.get(Servo.class, "diffyLeft"));
         this.rightDiffy = new CachingServo(hardwareMap.get(Servo.class, "diffyRight"));
     }
+    public static double power = 1;
+    public static double reversepower = -0.25;
 
 
     public void setClawPos(CLAWPOS pos) {
@@ -93,11 +98,14 @@ public class Claw {
 
     public void update() {
         switch (clawPos) {
-            case OPEN:
-                claw.setPosition(clawOpen);
+            case FORWARD:
+                claw.setPower(power);
                 break;
             case CLOSE:
-                claw.setPosition(clawClose);
+                claw.setPower(0);
+                break;
+            case REVERSE:
+                claw.setPower(reversepower);
                 break;
         }
         switch (tiltState) {

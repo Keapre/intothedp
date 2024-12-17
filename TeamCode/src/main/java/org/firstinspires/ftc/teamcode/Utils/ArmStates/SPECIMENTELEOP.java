@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Arm.Pitch;
 @Config
 public class SPECIMENTELEOP extends STATE{
     public SPECIMENTELEOP() {
-        this.clawpos = Claw.CLAWPOS.OPEN;
+        this.clawpos = Claw.CLAWPOS.CLOSE;
         this.rotatePos = Claw.RotateMode.ORIZONTAL;
         this.tiltState = Claw.tiltMode.MID;
         this.extensionTarget = 345; // Needs to be determined experimentally //si dupa scazi 125

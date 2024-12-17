@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.Utils.Utils;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.Encoder;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.Drive;
-@Disabled
+
 
 @Config
 @TeleOp(name = "halloween party::)))))")

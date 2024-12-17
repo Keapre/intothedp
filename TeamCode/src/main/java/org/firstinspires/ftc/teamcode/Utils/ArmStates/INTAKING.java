@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Arm.Pitch;
 @Config
 public class INTAKING extends STATE{
     public INTAKING() {
-        this.clawpos = Claw.CLAWPOS.OPEN;
+        this.clawpos = Claw.CLAWPOS.CLOSE;
         this.rotatePos = Claw.RotateMode.ORIZONTAL;
         this.tiltState = Claw.tiltMode.MID;
         this.extensionTarget = 0; // Needs to be determined experimentally

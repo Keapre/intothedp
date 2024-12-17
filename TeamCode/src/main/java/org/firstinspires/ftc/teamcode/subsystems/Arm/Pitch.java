@@ -81,6 +81,7 @@ public class Pitch {
     DigitalChannel limitSwitch;
     public  double offset = 0;
     InterpLUT lut = null;
+    InterpLUT lutExtendIntake = null;
     public static double currentPos = 0;
     public MODE mode = MODE.AUTO;
     public static double kGpowerInceput = 0.05;
@@ -102,7 +103,7 @@ public class Pitch {
     ProfileState state;
     private Encoder encoder;
     Arm arm;
-    public static double gardFeedforwd = 0.1;
+    public static double gardFeedforwd = 0.16;
     public static double specimenFeedforwd = 0.115;
     public static double basketFeedforwd = 0;
 
@@ -178,7 +179,7 @@ public class Pitch {
         motor1Power = controller.calculate(currentPos,target);
         motor2Power = motor1Power;
     }
-
+    double minn = 0,maxx =0 ;
     public void motionProfilePid() {
         double targetPosition = target;
         long currentTimeMillis = System.currentTimeMillis();
