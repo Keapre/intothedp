@@ -59,7 +59,7 @@ public class EricTeleOp extends OpMode {
     private boolean isManualControlActivated() {
         return Math.abs(gg.left_trigger) > 0.1 || Math.abs(gg.right_trigger) > 0.1 || gg.aOnce() ||
                 gg.dpadUpOnce() || gg.dpadDownOnce() || gg.dpadLeftOnce() || gg.dpadRightOnce() || gg.leftBumper()
-                || gg.rightBumperOnce() || gg.guideOnce() || gg.startOnce() || gg.backOnce();
+                || gg.rightBumper() || gg.guideOnce() || gg.startOnce() || gg.backOnce();
     }
 
     private boolean manualControlDeactivated() {
