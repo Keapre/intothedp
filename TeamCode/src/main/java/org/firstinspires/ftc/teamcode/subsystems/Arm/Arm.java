@@ -35,6 +35,7 @@ public class Arm implements Subsystem {
     public Pitch pitchSubsystem;
     public static double timerthreeshold = 100;
 
+    public static double addonCorecttion = 59.62;
     public Claw clawSubsystem;
     GamePadController gg;
     private long lastUpdateTime;
@@ -56,7 +57,7 @@ public class Arm implements Subsystem {
             Log.w(TAG, "Failed to initialize Pitch: " + e.getMessage());
         }
         try {
-            this.clawSubsystem = new Claw(hardwareMap, false);
+            this.clawSubsystem = new Claw(hardwareMap, false,true);
             Log.w(TAG, "Claw intialized successfully");
         } catch (Exception e) {
             Log.w(TAG, "Failed to initialize Claw: " + e.getMessage());
@@ -121,6 +122,11 @@ public class Arm implements Subsystem {
 //        if (currentTime - lastUpdateTime < UPDATE_INTERVAL_MS) {
 //            return;
 //        }
+        if(targetState.getPitchAngle() == 555) {
+            clawSubsystem.setReverse(-0.17);
+        }else {
+            clawSubsystem.setReverse(-1);
+        }
         if(!manualControl) {
             clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
         }
@@ -188,23 +194,20 @@ public class Arm implements Subsystem {
                 currentState = FSMState.IDLE;
                 break;
         }
-//        if(targetState.getPitchAngle() == 42 && currentState == Arm.FSMState.IDLE){
-//            double currentEx = extensionSubsystem.currentPos;
-//            if(lutExtendIntake == null) {
-//                lutExtendIntake = new InterpLUT();
-//                minn = currentEx;
-//                maxx = currentEx + 432;
-//                lutExtendIntake.add(currentEx,44);
-//                lutExtendIntake.add(currentEx + 377,12);
-//                lutExtendIntake.add(currentEx + 62,35);
-//                lutExtendIntake.add(currentEx + 190,20);
-//                lutExtendIntake.add(currentEx + 288,18);
-//                lutExtendIntake.add(currentEx + 432,15);
-//                lutExtendIntake.createLUT();
-//            }
-//            pitchSubsystem.setTarget(lutExtendIntake.get(Utils.minMaxClip(currentEx,minn,maxx)));
-//        }else {
-//            lutExtendIntake = null;
+//        if(targetState.getPitchAngle() == 42 && currentState == FSMState.IDLE){
+////            if(lutExtendIntake == null) {
+////                lutExtendIntake = new InterpLUT();
+////                minn = extensionSubsystem.getCurrentPosition();
+////                maxx = extensionSubsystem.getCurrentPosition() + 432;
+////                lutExtendIntake.add(extensionSubsystem.getCurrentPosition(),41);
+////                lutExtendIntake.add(extensionSubsystem.getCurrentPosition() + 377,15);
+////                lutExtendIntake.add(extensionSubsystem.getCurrentPosition() + 62,35);
+////                lutExtendIntake.add(extensionSubsystem.getCurrentPosition() + 190,20);
+////                lutExtendIntake.add(extensionSubsystem.getCurrentPosition() + 288,18);
+////                lutExtendIntake.add(extensionSubsystem.getCurrentPosition() + 432,10);
+////                lutExtendIntake.createLUT();
+////            }
+//            pitchSubsystem.setTarget(-0.09865 * extensionSubsystem.getCurrentPosition() + addonCorecttion);
 //        }
         pitchSubsystem.update();
         extensionSubsystem.update();

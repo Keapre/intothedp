@@ -59,7 +59,7 @@ public class EricTeleOp extends OpMode {
     private boolean isManualControlActivated() {
         return Math.abs(gg.left_trigger) > 0.1 || Math.abs(gg.right_trigger) > 0.1 || gg.aOnce() ||
                 gg.dpadUpOnce() || gg.dpadDownOnce() || gg.dpadLeftOnce() || gg.dpadRightOnce() || gg.leftBumper()
-                || gg.rightBumper() || gg.guideOnce() || gg.startOnce() || gg.backOnce();
+                || gg.rightBumperOnce() || gg.guideOnce() || gg.startOnce() || gg.backOnce();
     }
 
     private boolean manualControlDeactivated() {
@@ -99,12 +99,21 @@ public class EricTeleOp extends OpMode {
         }
         if(gg.bOnce() || (gg.rightBumper() && robot.arm.targetState == ACTIV_CLAW && robot.arm.getCurrentState() == Arm.FSMState.IDLE)) {
             if(robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
-                robot.arm.setTargetStateNoRetract(INTAKING);
+                if(robot.arm.targetState == ACTIV_CLAW) {
+                    robot.arm.setTargetStateNoRetract(INTAKING);
+                }else {
+                    robot.arm.setTargetState(INTAKING);
+                }
+
             }
         }
         if(gg.aOnce()) {
             if(robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
-                robot.arm.setTargetState(ACTIV_CLAW);
+                if(robot.arm.targetState == INTAKING) {
+                    robot.arm.setTargetStateNoRetract(ACTIV_CLAW);
+                }else {
+                    robot.arm.setTargetState(ACTIV_CLAW);
+                }
             }
         }
         if (gg.yOnce()) {
@@ -144,7 +153,6 @@ public class EricTeleOp extends OpMode {
         telemetry.addData("target angle",robot.arm.targetState.getPitchAngle());
         telemetry.addData("target pitch",robot.arm.pitchSubsystem.target);
         telemetry.addData("pitch mode",robot.arm.pitchSubsystem.mode);
-
         telemetry.addData("extend mode",robot.arm.extensionSubsystem.mode);
         telemetry.addData("Claw pos",robot.arm.clawSubsystem.clawPos);
         telemetry.addData("Claw state",robot.arm.clawSubsystem.tiltState);

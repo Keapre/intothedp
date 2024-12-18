@@ -155,7 +155,7 @@ public class Extension {
                 pidUpdate();
                 power*=-1;
                 power+=ff;
-                motor.setPower(Utils.minMaxClip(power - basePower,-1, 0.75));
+                motor.setPower(Utils.minMaxClip(power - basePower,-1, 1));
                 break;
             case MANUAL:
                 raw_power = 0;

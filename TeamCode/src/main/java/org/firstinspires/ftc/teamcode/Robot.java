@@ -35,7 +35,6 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
     public Arm arm;
 
     private LynxModule hub1;
-    private LynxModule hub2;
 
     private List<Subsystem> subsystems;
     private List<Subsystem> subsystemsWithProblems;
@@ -51,6 +50,7 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
     }
 
     private Runnable subsystemUpdateRunnable = () -> {
+        //hub1.clearBulkCache();
         double startTime, temp;
         while (!Thread.currentThread().isInterrupted()) {
             try {
@@ -93,7 +93,6 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
         dashboard.setTelemetryTransmissionInterval(25);
 
         hub1 = opMode.hardwareMap.get(LynxModule.class, "Control Hub");
-        hub2 = opMode.hardwareMap.get(LynxModule.class, "Expansion Hub 2");
 
         hub1.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
 

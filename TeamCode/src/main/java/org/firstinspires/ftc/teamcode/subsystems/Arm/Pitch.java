@@ -103,7 +103,7 @@ public class Pitch {
     ProfileState state;
     private Encoder encoder;
     Arm arm;
-    public static double gardFeedforwd = 0.16;
+    public static double gardFeedforwd = 0.3;
     public static double specimenFeedforwd = 0.115;
     public static double basketFeedforwd = 0;
 
@@ -258,8 +258,8 @@ public class Pitch {
 //                    extension1.setPower(Utils.minMaxClip(-1, 1, motor1Power));
 //                    extension2.setPower(Utils.minMaxClip(-1, 1, motor2Power));
 //                }motionProfilePid();
-                extension1.setPower(Utils.minMaxClip(motor1Power + ff, -0.5, 0.6));
-                extension2.setPower(Utils.minMaxClip(motor2Power + ff,-0.5, 0.6));
+                extension1.setPower(Utils.minMaxClip(motor1Power + ff, -0.5, 0.9));
+                extension2.setPower(Utils.minMaxClip(motor2Power + ff,-0.5, 0.9));
                 break;
             case MANUAL:
                 extension1.setPower(Utils.minMaxClip(-1,1,motor1Power + ff));

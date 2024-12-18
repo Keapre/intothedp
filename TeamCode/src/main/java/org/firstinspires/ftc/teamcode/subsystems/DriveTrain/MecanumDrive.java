@@ -53,6 +53,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.teamcode.Utils.Caching.CachingDcMotor;
 import org.firstinspires.ftc.teamcode.Utils.Caching.CachingDcMotorEx;
 import org.firstinspires.ftc.teamcode.Utils.Dashboard.Drawing;
 import org.firstinspires.ftc.teamcode.Utils.MecanumUtil;
@@ -161,7 +162,7 @@ public class MecanumDrive implements Subsystem {
     };
     public boolean isAuto = false;
     final MotorFeedforward ffMotor = new MotorFeedforward(PARAMS.kS,PARAMS.kV/PARAMS.inPerTick,PARAMS.kA/ PARAMS.inPerTick);
-    public final DcMotorEx leftFront, leftBack, rightBack, rightFront;
+    public final CachingDcMotorEx leftFront, leftBack, rightBack, rightFront;
 
     public final VoltageSensor voltageSensor;
 
@@ -274,10 +275,10 @@ public class MecanumDrive implements Subsystem {
         else {
             usePinPoint = false;
         }
-        leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
-        leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
-        rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
-        rightFront =hardwareMap.get(DcMotorEx.class, "rightFront");
+        leftFront = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "leftFront"),0);
+        leftBack = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "leftBack"),0);
+        rightBack = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "rightBack"),0);
+        rightFront = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "rightFront"),0);
 
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

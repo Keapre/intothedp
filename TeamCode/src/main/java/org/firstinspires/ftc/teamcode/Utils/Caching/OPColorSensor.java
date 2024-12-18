@@ -17,8 +17,8 @@ public class OPColorSensor {
     // Base Color Threshold
     public static double RED_THRESHOLD_LEFT = 700, RED_THRESHOLD_RIGHT = 700;
     public static double BLUE_THRESHOLD_LEFT = 700, BLUE_THRESHOLD_RIGHT = 700;
-    public static double RED_THRESHOLD = 125;
-    public static double BLUE_THRESHOLD = 125;
+    public static double RED_THRESHOLD = 0.5;
+    public static double BLUE_THRESHOLD = 0.5;
     // Complex Color Thresholds (not red, green, or blue)
     public static double YELLOW_RED_VALUE = 0.38;
     public static double YELLOW_GREEN_VALUE = 0.49;
@@ -99,11 +99,11 @@ public class OPColorSensor {
     }
 
     public boolean isRed(){
-        return internalColorSensor.red() > RED_THRESHOLD;
+        return normalizedRGB()[0] > RED_THRESHOLD;
     }
 
     public boolean isBlue(){
-        return internalColorSensor.blue() > BLUE_THRESHOLD;
+        return normalizedRGB()[2] > BLUE_THRESHOLD;
     }
 
     public static double yellowSum = 0.85;
