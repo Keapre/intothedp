@@ -1,30 +1,25 @@
 package org.firstinspires.ftc.teamcode.subsystems.Arm;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.Utils.Caching.CachingCRServo;
 import org.firstinspires.ftc.teamcode.Utils.Caching.CachingServo;
 import org.firstinspires.ftc.teamcode.Utils.Caching.OPColorSensor;
-import org.firstinspires.ftc.teamcode.opmode.tests.PitchTest;
 
 @Config
 public class Claw {
-    CachingCRServo claw;
+    Servo claw;
     CachingServo leftDiffy;
     CachingServo rightDiffy;
+    Arm arm;
 
-    public boolean clawEnabled = true;
-    public boolean rotateEnabled = true;
-    public boolean tiltEnabled = true;
-    boolean blue =false;
+    boolean blue;
 
     public static class DiffyPositions {
-        public double left = 0.0;
-        public double right = 0.0;
+        public double left;
+        public double right;
 
         public DiffyPositions(double l, double r) {
             left = l;
@@ -32,10 +27,10 @@ public class Claw {
         }
     }
 
-    ;
+
 
     public static DiffyPositions down_horizontal = new DiffyPositions(0.15, 1);
-    public static DiffyPositions down_vertical = new DiffyPositions(0, 0.77);
+    public static DiffyPositions down_vertical = new DiffyPositions(0, 0.78);
     public static DiffyPositions mid = new DiffyPositions(0.71, 0.42);
     public static DiffyPositions up = new DiffyPositions(1, 0.13);
     public static DiffyPositions slamPos = new DiffyPositions(0.32, 0.02);
@@ -46,15 +41,14 @@ public class Claw {
     CLAWPOS lastClawPose = CLAWPOS.CLOSE;
 
     public enum CLAWPOS {
-        FORWARD,
-        REVERSE,
+        OPEN,
         CLOSE
 
     }
 
     public enum RotateMode {
         VERTICAL,
-        ORIZONTAL;
+        ORIZONTAL
 
     }
 
@@ -68,9 +62,10 @@ public class Claw {
     public RotateMode rotateState = RotateMode.ORIZONTAL;
     public CLAWPOS clawPos = CLAWPOS.CLOSE;
 
-    public Claw(HardwareMap hardwareMap, boolean isAuto,boolean blue) {
+    public Claw(HardwareMap hardwareMap, boolean isAuto,boolean blue,Arm Arm) {
+        this.arm = Arm;
         this.blue = blue;
-        this.claw = new CachingCRServo(hardwareMap.get(CRServo.class, "test"));
+        this.claw = hardwareMap.get(Servo.class, "claw");
         this.leftDiffy = new CachingServo(hardwareMap.get(Servo.class, "diffyLeft"));
         this.rightDiffy = new CachingServo(hardwareMap.get(Servo.class, "diffyRight"));
         sensor = new OPColorSensor(hardwareMap,"intakeSensor");
@@ -79,13 +74,8 @@ public class Claw {
     public static double reversepower = -0.16;
 
 
-    public void setClawPos(CLAWPOS pos) {
-        clawPos = pos;
-    }
 
-    public void setRotateState(RotateMode state) {
-        rotateState = state;
-    }
+
 
     public void setTiltState(tiltMode state) {
         tiltState = state;
@@ -95,13 +85,7 @@ public class Claw {
         return tiltState;
     }
 
-    public RotateMode getRotateState() {
-        return rotateState;
-    }
 
-    public CLAWPOS getClawPos() {
-        return clawPos;
-    }
 
     public void  setReverse(double speed) {
         reversepower = speed;
@@ -114,21 +98,15 @@ public class Claw {
             }
             if(blue) {
                 if(sensor.isRed()) {
-                    clawPos = CLAWPOS.REVERSE;
+                    clawPos = CLAWPOS.OPEN;
                 }else {
-                    if(timerClaw.time() > 1500) {
-                        clawPos = CLAWPOS.CLOSE;
-                    }
                     tiltState = tiltMode.MID;
                     rotateState = RotateMode.ORIZONTAL;
                 }
             }else {
                 if(sensor.isBlue()) {
-                    clawPos = CLAWPOS.REVERSE;
+                    clawPos = CLAWPOS.OPEN;
                 }else {
-                    if(timerClaw.time() > 1500) {
-                        clawPos = CLAWPOS.CLOSE;
-                    }
                     rotateState = RotateMode.ORIZONTAL;
                     tiltState = tiltMode.MID;
                 }
@@ -138,21 +116,18 @@ public class Claw {
         }
     }
     public void update() {
-        if(clawPos == CLAWPOS.FORWARD) {
-            if(lastClawPose!=CLAWPOS.FORWARD) sensor.enableLED(true);
-            checkTook();
-        }else{
-            if(lastClawPose == CLAWPOS.FORWARD) sensor.enableLED(false);
-        }
+//        if(arm.targetState.getPitchAngle()==0) {
+//            if(lastClawPose==CLAWPOS.OPEN && clawPos == CLAWPOS.CLOSE) sensor.enableLED(true);
+//            checkTook();
+//        }else{
+//            if(lastClawPose == CLAWPOS.CLOSE && clawPos == CLAWPOS.OPEN) sensor.enableLED(false);
+//        }
         switch (clawPos) {
-            case FORWARD:
-                claw.setPower(power);
+            case OPEN:
+                claw.setPosition(clawOpen);
                 break;
             case CLOSE:
-                claw.setPower(0);
-                break;
-            case REVERSE:
-                claw.setPower(reversepower);
+                claw.setPosition(clawClose);
                 break;
         }
         lastClawPose = clawPos;

@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.DEFAUlT;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.STATE;
-import org.firstinspires.ftc.teamcode.Utils.Utils;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 import org.firstinspires.ftc.teamcode.Utils.pubSub.Subsystem;
 import org.firstinspires.ftc.teamcode.opmode.tests.PitchTest;
@@ -35,7 +34,6 @@ public class Arm implements Subsystem {
     public Pitch pitchSubsystem;
     public static double timerthreeshold = 100;
 
-    public static double addonCorecttion = 59.62;
     public Claw clawSubsystem;
     GamePadController gg;
     private long lastUpdateTime;
@@ -57,7 +55,7 @@ public class Arm implements Subsystem {
             Log.w(TAG, "Failed to initialize Pitch: " + e.getMessage());
         }
         try {
-            this.clawSubsystem = new Claw(hardwareMap, false,true);
+            this.clawSubsystem = new Claw(hardwareMap, false,true,this);
             Log.w(TAG, "Claw intialized successfully");
         } catch (Exception e) {
             Log.w(TAG, "Failed to initialize Claw: " + e.getMessage());
@@ -69,8 +67,6 @@ public class Arm implements Subsystem {
 
     }
 
-    InterpLUT lutExtendIntake = null;
-    double minn =0,maxx = 0;
     public static double raw_power_0 = 0.85;
     public static double raw_power_90 = 0.55;
     public boolean useRetractAuto = true;
@@ -83,13 +79,6 @@ public class Arm implements Subsystem {
         desiredExtension = targetState.getExtensionTarget();
 
         planTransitionSteps();
-        currentState = nextStateInPlan();
-    }
-    public void setTargetStateNoRetract(STATE newState) {
-        previousState = targetState;
-        targetState = newState;
-
-        noRetractTransition();
         currentState = nextStateInPlan();
     }
 
@@ -122,15 +111,6 @@ public class Arm implements Subsystem {
 //        if (currentTime - lastUpdateTime < UPDATE_INTERVAL_MS) {
 //            return;
 //        }
-        if(targetState.getPitchAngle() == 555) {
-            clawSubsystem.setReverse(-0.17);
-        }else {
-            clawSubsystem.setReverse(-1);
-        }
-        if(!manualControl) {
-            clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
-        }
-
         if (!manualControl && currentState != FSMState.RETRACTING_EXTENSION && currentState != FSMState.EXTENDING_EXTENSION) {
             extensionSubsystem.mode = Extension.MODE.IDLE;
         } else if (!manualControl && currentState == FSMState.RETRACTING_EXTENSION) {
@@ -185,30 +165,12 @@ public class Arm implements Subsystem {
 
             case OPERATION_COMPLETE:
 //                clawSubsystem.clawPos =targetState.getClawpos();
-                if(targetState.getPitchAngle() != 0){
-                    clawSubsystem.rotateState = targetState.getRotatePos();
-                    clawSubsystem.tiltState = targetState.getTilt();
-                }
-
+                clawSubsystem.rotateState = targetState.getRotatePos();
+                clawSubsystem.tiltState = targetState.getTilt();
                 if (targetState.getPitchAngle() == 0) pitchSubsystem.mode = Pitch.MODE.IDLE;
                 currentState = FSMState.IDLE;
                 break;
         }
-//        if(targetState.getPitchAngle() == 42 && currentState == FSMState.IDLE){
-////            if(lutExtendIntake == null) {
-////                lutExtendIntake = new InterpLUT();
-////                minn = extensionSubsystem.getCurrentPosition();
-////                maxx = extensionSubsystem.getCurrentPosition() + 432;
-////                lutExtendIntake.add(extensionSubsystem.getCurrentPosition(),41);
-////                lutExtendIntake.add(extensionSubsystem.getCurrentPosition() + 377,15);
-////                lutExtendIntake.add(extensionSubsystem.getCurrentPosition() + 62,35);
-////                lutExtendIntake.add(extensionSubsystem.getCurrentPosition() + 190,20);
-////                lutExtendIntake.add(extensionSubsystem.getCurrentPosition() + 288,18);
-////                lutExtendIntake.add(extensionSubsystem.getCurrentPosition() + 432,10);
-////                lutExtendIntake.createLUT();
-////            }
-//            pitchSubsystem.setTarget(-0.09865 * extensionSubsystem.getCurrentPosition() + addonCorecttion);
-//        }
         pitchSubsystem.update();
         extensionSubsystem.update();
         clawSubsystem.update();
@@ -250,58 +212,66 @@ public class Arm implements Subsystem {
         if (gg.startOnce()) {
             extensionSubsystem.offset += extensionSubsystem.currentPos;
         }
-        if(gg.dpadLeftOnce()) {
-            if(clawSubsystem.rotateState == Claw.RotateMode.VERTICAL) {
-                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
-            }else if(clawSubsystem.rotateState == Claw.RotateMode.ORIZONTAL) {
-                clawSubsystem.rotateState = Claw.RotateMode.VERTICAL;
-            }
+        if (gg.aOnce()) {
+            if (clawSubsystem.clawPos == Claw.CLAWPOS.OPEN)
+                clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
+            else clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
         }
-        if(gg.dpadRightOnce()) {
-            if(clawSubsystem.rotateState == Claw.RotateMode.VERTICAL) {
-                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
-            }else if(clawSubsystem.rotateState == Claw.RotateMode.ORIZONTAL) {
-                clawSubsystem.rotateState = Claw.RotateMode.VERTICAL;
-            }
-        }
-        if(gg.dpadUpOnce()) {
+//        if(gg.dpadLeftOnce()) {
+//            if(clawSubsystem.rotateState == Claw.RotateMode.VERTICAL) {
+//                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
+//            }else if(clawSubsystem.rotateState == Claw.RotateMode.ORIZONTAL) {
+//                clawSubsystem.rotateState = Claw.RotateMode.VERTICAL;
+//            }
+//        }
+//        if(gg.dpadRightOnce()) {
+//            if(clawSubsystem.rotateState == Claw.RotateMode.VERTICAL) {
+//                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
+//            }else if(clawSubsystem.rotateState == Claw.RotateMode.ORIZONTAL) {
+//                clawSubsystem.rotateState = Claw.RotateMode.VERTICAL;
+//            }
+//        }
+//        if(gg.dpadUpOnce()) {
+//            if (clawSubsystem.tiltState == Claw.tiltMode.DOWN) {
+//                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
+//                clawSubsystem.tiltState = Claw.tiltMode.MID;
+//            } else if (clawSubsystem.tiltState == Claw.tiltMode.MID) {
+//                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
+//                clawSubsystem.tiltState = Claw.tiltMode.UP;
+//            }
+//        }
+//        if(gg.dpadDownOnce()) {
+//            if(clawSubsystem.tiltState == Claw.tiltMode.UP) {
+//                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
+//                clawSubsystem.tiltState = Claw.tiltMode.MID;
+//            }else if(clawSubsystem.tiltState == Claw.tiltMode.MID) {
+//                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
+//                clawSubsystem.tiltState = Claw.tiltMode.DOWN;
+//            }
+//        }
+        if (gg.rightBumperOnce()) {
             if (clawSubsystem.tiltState == Claw.tiltMode.DOWN) {
                 clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
                 clawSubsystem.tiltState = Claw.tiltMode.MID;
             } else if (clawSubsystem.tiltState == Claw.tiltMode.MID) {
-                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
                 clawSubsystem.tiltState = Claw.tiltMode.UP;
             }
-        }
-        if(gg.dpadDownOnce()) {
-            if(clawSubsystem.tiltState == Claw.tiltMode.UP) {
-                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
-                clawSubsystem.tiltState = Claw.tiltMode.MID;
-            }else if(clawSubsystem.tiltState == Claw.tiltMode.MID) {
-                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
-                clawSubsystem.tiltState = Claw.tiltMode.DOWN;
-            }
-        }
-        if (gg.rightBumper()) {
-            clawSubsystem.clawPos = Claw.CLAWPOS.FORWARD;
-        }else if(gg.leftBumper()) {
-            clawSubsystem.clawPos = Claw.CLAWPOS.REVERSE;
         }
 
         if (gg.guideOnce()) {
             resetMode();
         }
-//        if (gg.leftBumperOnce()) {
-//            if (clawSubsystem.tiltState == Claw.tiltMode.DOWN && clawSubsystem.rotateState == Claw.RotateMode.VERTICAL) {
-//                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
-//            } else if (clawSubsystem.tiltState == Claw.tiltMode.DOWN && clawSubsystem.rotateState == Claw.RotateMode.ORIZONTAL) {
-//                clawSubsystem.rotateState = Claw.RotateMode.VERTICAL;
-//            } else if (clawSubsystem.tiltState == Claw.tiltMode.MID) {
-//                clawSubsystem.tiltState = Claw.tiltMode.DOWN;
-//            } else if (clawSubsystem.tiltState == Claw.tiltMode.UP) {
-//                clawSubsystem.tiltState = Claw.tiltMode.MID;
-//            }
-//        }
+        if (gg.leftBumperOnce()) {
+            if (clawSubsystem.tiltState == Claw.tiltMode.DOWN && clawSubsystem.rotateState == Claw.RotateMode.VERTICAL) {
+                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
+            } else if (clawSubsystem.tiltState == Claw.tiltMode.DOWN && clawSubsystem.rotateState == Claw.RotateMode.ORIZONTAL) {
+                clawSubsystem.rotateState = Claw.RotateMode.VERTICAL;
+            } else if (clawSubsystem.tiltState == Claw.tiltMode.MID) {
+                clawSubsystem.tiltState = Claw.tiltMode.DOWN;
+            } else if (clawSubsystem.tiltState == Claw.tiltMode.UP) {
+                clawSubsystem.tiltState = Claw.tiltMode.MID;
+            }
+        }
     }
 
 
@@ -320,17 +290,6 @@ public class Arm implements Subsystem {
 
         transitionPlan.add(FSMState.OPERATION_COMPLETE);
 
-    }
-    void noRetractTransition() {
-        transitionPlan.clear();
-        transitionPlan.add(FSMState.PRE_ADJUSTING_PITCH);
-        transitionPlan.add(FSMState.ADJUSTING_PITCH);
-
-//        if (Math.abs(extensionSubsystem.getCurrentPosition() - targetState.extensionTarget) > 10) {
-//            transitionPlan.add(FSMState.EXTENDING_EXTENSION);
-//        }
-
-        transitionPlan.add(FSMState.OPERATION_COMPLETE);
     }
 
     private void planTransitionSteps() {

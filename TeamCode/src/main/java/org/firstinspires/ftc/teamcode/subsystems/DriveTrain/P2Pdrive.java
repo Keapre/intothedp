@@ -114,8 +114,8 @@ public class P2Pdrive extends Drive{
         FtcDashboard.getInstance().sendTelemetryPacket(packet);
         currentPose = new Pose(pose);
         if(!path.isLast()) {
-            MAX_TRANSLATIONAL_SPEED = 0.9;
-            MAX_ROTATIONAL_SPEED = 0.7;
+            MAX_TRANSLATIONAL_SPEED = 0.95;
+            MAX_ROTATIONAL_SPEED = 0.75;
             //transition
             if(isFinishedTransition(currentPose)) {
                 timer = null;
@@ -125,8 +125,8 @@ public class P2Pdrive extends Drive{
             }
         }
         if(path.isLast()) {
-            MAX_TRANSLATIONAL_SPEED = 0.6;
-            MAX_ROTATIONAL_SPEED = 0.45;
+            MAX_TRANSLATIONAL_SPEED = 0.6;//0.75
+            MAX_ROTATIONAL_SPEED = 0.45;//0.6
             if(isFinishedLast(currentPose)) {
                 timer = null;
                 stable = null;
@@ -154,7 +154,7 @@ public class P2Pdrive extends Drive{
         x_rotated = Range.clip(x_rotated, -MAX_TRANSLATIONAL_SPEED / X_GAIN, MAX_TRANSLATIONAL_SPEED / X_GAIN);
         y_rotated = Range.clip(y_rotated, -MAX_TRANSLATIONAL_SPEED, MAX_TRANSLATIONAL_SPEED);
 
-        setDrivePowers(new PoseVelocity2d(new Vector2d(x_rotated * X_GAIN, y_rotated), hPower));
+        setPowers(x_rotated * X_GAIN, y_rotated, hPower);
 
     }
 

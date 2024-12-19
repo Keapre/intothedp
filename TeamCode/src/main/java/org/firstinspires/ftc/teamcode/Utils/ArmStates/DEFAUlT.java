@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Arm.Pitch;
 @Config
 public class DEFAUlT extends STATE {
     public DEFAUlT() {
-        this.clawpos = Claw.CLAWPOS.CLOSE;
+        this.clawpos = Claw.CLAWPOS.OPEN;
         this.rotatePos = Claw.RotateMode.ORIZONTAL;
         this.tiltState = Claw.tiltMode.DOWN;
         this.extensionTarget = 0; // Needs to be determined experimentally

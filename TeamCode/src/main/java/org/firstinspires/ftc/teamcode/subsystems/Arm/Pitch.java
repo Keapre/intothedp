@@ -258,8 +258,8 @@ public class Pitch {
 //                    extension1.setPower(Utils.minMaxClip(-1, 1, motor1Power));
 //                    extension2.setPower(Utils.minMaxClip(-1, 1, motor2Power));
 //                }motionProfilePid();
-                extension1.setPower(Utils.minMaxClip(motor1Power + ff, -0.5, 0.9));
-                extension2.setPower(Utils.minMaxClip(motor2Power + ff,-0.5, 0.9));
+                extension1.setPower(Utils.minMaxClip(motor1Power + ff, -0.35, 0.9));
+                extension2.setPower(Utils.minMaxClip(motor2Power + ff,-0.35, 0.9));
                 break;
             case MANUAL:
                 extension1.setPower(Utils.minMaxClip(-1,1,motor1Power + ff));

@@ -1,16 +1,17 @@
 package org.firstinspires.ftc.teamcode.opmode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.MovingStatistics;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.internal.system.Misc;
 import org.firstinspires.ftc.teamcode.Robot;
-import org.firstinspires.ftc.teamcode.Utils.ArmStates.ActivClaw;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.DEFAUlT;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.HIGHBASKET;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.INTAKING;
@@ -24,7 +25,7 @@ import org.firstinspires.ftc.teamcode.Utils.geometry.Pose;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Arm;
 
 
-
+@Config
 @TeleOp(name = "TeleOp Blue")
 public class EricTeleOp extends OpMode {
     Robot robot;
@@ -36,12 +37,13 @@ public class EricTeleOp extends OpMode {
 
     STATE SpeciemnTeleOp = new SPECIMENTELEOP();
     STATE SPECIMEN_SLAM = new SPECIMENSLAM();
-    STATE ACTIV_CLAW = new ActivClaw();
     STATE DEFAULT = new DEFAUlT();
     STATE HIGHBASKET = new HIGHBASKET();
     STATE INTAKING = new INTAKING();
     STATE specimenbar = new SPECIMEN();
     STATE specimengard = new SPECIMENGARD();
+    public static double slow_extension_limit = 150;
+    ElapsedTime timer = null;
 
     @Override
     public void init() {
@@ -55,17 +57,18 @@ public class EricTeleOp extends OpMode {
     @Override
     public void start() {
         robot.start();
+        timer = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
     }
     private boolean isManualControlActivated() {
         return Math.abs(gg.left_trigger) > 0.1 || Math.abs(gg.right_trigger) > 0.1 || gg.aOnce() ||
-                gg.dpadUpOnce() || gg.dpadDownOnce() || gg.dpadLeftOnce() || gg.dpadRightOnce() || gg.leftBumper()
-                || gg.rightBumper() || gg.guideOnce() || gg.startOnce() || gg.backOnce();
+                gg.dpadUpOnce() || gg.dpadDownOnce() || gg.dpadLeftOnce() || gg.dpadRightOnce() || gg.leftBumperOnce()
+                || gg.rightBumperOnce() || gg.guideOnce() || gg.startOnce() || gg.backOnce();
     }
 
     private boolean manualControlDeactivated() {
         return Math.abs(gg.left_trigger) < 0.1 && Math.abs(gg.right_trigger) < 0.1 && !gg.aOnce() &&
                 !gg.dpadUpOnce() && !gg.dpadDownOnce() && !gg.dpadLeftOnce() && !gg.dpadRightOnce()
-                && !gg.leftBumper() && !gg.rightBumper() && !gg.guideOnce() && !gg.startOnce() && !gg.backOnce();
+                && !gg.leftBumperOnce() && !gg.rightBumperOnce() && !gg.guideOnce() && !gg.startOnce() && !gg.backOnce();
     }
 
 
@@ -97,23 +100,9 @@ public class EricTeleOp extends OpMode {
         }else if(manualControlDeactivated()) {
             robot.arm.manualControl = false;
         }
-        if(gg.bOnce() || (gg.rightBumper() && robot.arm.targetState == ACTIV_CLAW && robot.arm.getCurrentState() == Arm.FSMState.IDLE)) {
+        if(gg.bOnce()) {
             if(robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
-                if(robot.arm.targetState == ACTIV_CLAW) {
-                    robot.arm.setTargetStateNoRetract(INTAKING);
-                }else {
-                    robot.arm.setTargetState(INTAKING);
-                }
-
-            }
-        }
-        if(gg.aOnce()) {
-            if(robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
-                if(robot.arm.targetState == INTAKING) {
-                    robot.arm.setTargetStateNoRetract(ACTIV_CLAW);
-                }else {
-                    robot.arm.setTargetState(ACTIV_CLAW);
-                }
+                robot.arm.setTargetState(INTAKING);
             }
         }
         if (gg.yOnce()) {
@@ -130,6 +119,11 @@ public class EricTeleOp extends OpMode {
         }
     }
     public void updateDrive() {
+        if(robot.arm.extensionSubsystem.getPosition()>=slow_extension_limit) {
+            robot.drive.slow_mode = true;
+        }else {
+            robot.drive.slow_mode = false;
+        }
         if(gg.left_stick_x == 0 && gg.left_stick_y == 0 && gg.right_stick_x == 0 && gg.right_stick_y == 0) {
             robot.drive.setMotorPowers(0,0,0,0);
             return;
@@ -153,6 +147,7 @@ public class EricTeleOp extends OpMode {
         telemetry.addData("target angle",robot.arm.targetState.getPitchAngle());
         telemetry.addData("target pitch",robot.arm.pitchSubsystem.target);
         telemetry.addData("pitch mode",robot.arm.pitchSubsystem.mode);
+
         telemetry.addData("extend mode",robot.arm.extensionSubsystem.mode);
         telemetry.addData("Claw pos",robot.arm.clawSubsystem.clawPos);
         telemetry.addData("Claw state",robot.arm.clawSubsystem.tiltState);
@@ -161,6 +156,7 @@ public class EricTeleOp extends OpMode {
         telemetry.addData("pitch ff",robot.arm.pitchSubsystem.ff);
         telemetry.addData("slowMode",robot.drive.slow_mode);
         telemetry.addLine();
+        telemetry.addData("timer",timer.time());
         telemetry.addData("Sample Rate (Hz) ",1/((double)(System.currentTimeMillis() - lastLoopFinish)/1000.0));
         addStatistics();
         telemetry.update();

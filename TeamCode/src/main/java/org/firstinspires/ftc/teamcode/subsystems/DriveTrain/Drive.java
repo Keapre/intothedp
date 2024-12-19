@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems.DriveTrain;
 
+import android.util.Log;
+
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.ftc.FlightRecorder;
@@ -61,6 +63,27 @@ public class Drive extends MecanumDrive{
         }
 
         pinpoint.setPosition(pose);
+    }
+
+
+    public void setPowers(double x,double y,double z) {
+        MecanumUtil.Motion motion;
+        motion = MecanumUtil.joystickToMotion(x, y,
+                z, 0, false, false);
+
+        MecanumUtil.Wheels wh;
+        wh = MecanumUtil.motionToWheelsFullSpeed(motion).scaleWheelPower(1);
+
+        motorPowers[0] = wh.frontLeft;
+        motorPowers[1] = wh.backLeft;
+        motorPowers[2] = wh.backRight;
+        motorPowers[3] = wh.frontRight;
+        Log.w("Wheels speed","front left" + wh.frontLeft);
+        Log.w("Wheels speed","back left" + wh.backLeft);
+        Log.w("Wheels speed","back right" + wh.backRight);
+        Log.w("Wheels speed","front right" + wh.frontRight);
+        setMotorPowers(motorPowers[0],motorPowers[1],motorPowers[2],motorPowers[3]);
+
     }
     public void setMotorPowersFromGamepad(GamePadController gg, double scale, boolean reverseFront, boolean customCurve) {
         MecanumUtil.Motion motion;
