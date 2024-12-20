@@ -36,8 +36,8 @@ public class Claw {
     public static DiffyPositions slamPos = new DiffyPositions(0.32, 0.02);
    public OPColorSensor sensor;
     //TODO:
-    public static double clawOpen = 0.3;
-    public static double clawClose = 0.82;
+    public static double clawOpen = 0.34;
+    public static double clawClose = 0.85;
     CLAWPOS lastClawPose = CLAWPOS.CLOSE;
 
     public enum CLAWPOS {

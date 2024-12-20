@@ -31,6 +31,13 @@ public class Drive extends MecanumDrive{
     public static Params PARAMS = new Params();
     public GoBildaPinpointDriverRR pinpoint;
     public static boolean usePin = false;
+
+    @Override
+    public void update() {
+        if(usePin) {
+            updatePoseEstimate();
+        }
+    }
     private Pose2d lastPinpointPose = pose;
     public Drive(HardwareMap hardwareMap, Pose2d pose, boolean isAuto) {
         super(hardwareMap, pose, isAuto);
@@ -102,13 +109,13 @@ public class Drive extends MecanumDrive{
         motion = MecanumUtil.joystickToMotion(left_stick_x, left_stick_y,
                 right_stick_x, right_stick_y, reverseFront, customCurve);
 
-        updatePoseEstimate();
+
         if (fieldCentric) {
             motion = motion.toFieldCentricMotion(pose.heading.toDouble());
         }
         MecanumUtil.Wheels wh;
         if(slow_mode) {
-            wh = MecanumUtil.motionToWheelsFullSpeed(motion).scaleWheelPower(0.6);
+            wh = MecanumUtil.motionToWheelsFullSpeed(motion).scaleWheelPower(0.7);
         }else {
             right_stick_x*=rotateNormal;
             right_stick_y*=rotateNormal;

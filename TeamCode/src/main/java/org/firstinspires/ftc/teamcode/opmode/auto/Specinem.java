@@ -32,12 +32,12 @@ public class Specinem extends LinearOpMode {
     Path PickUp2,PickUp3,PickUp5,PickUp4,PickUp6,PickUp7,PickUp8;
     Pose2d park = new Pose2d(-40,59,Math.toRadians(180));
 
-    Pose2d startPose = new Pose2d(-10, 59.4, Math.toRadians(270));
-    Pose2d specinem1 = new Pose2d(-9, 36.15, Math.toRadians(270));
+    Pose2d startPose = new Pose2d(-10, 60.2, Math.toRadians(270));
+    Pose2d specinem1 = new Pose2d(-9, 35.5, Math.toRadians(270));
     Pose2d specinem1_1 = new Pose2d(-3.544303713821051, 52, Math.toRadians(270));
     Pose2d specimen2 = new Pose2d(-6, 30, Math.toRadians(90));
     Pose2d specimen3 = new Pose2d(-4, 30, Math.toRadians(90));
-    Pose2d specimen4 = new Pose2d(-2, 29.5, Math.toRadians(90));
+    Pose2d specimen4 = new Pose2d(-1.2, 29.5, Math.toRadians(90));
     Pose2d specimen5 = new Pose2d(1, 29.5, Math.toRadians(90));
     Pose2d specimen6 = new Pose2d(-1, 29.5, Math.toRadians(90));
 
@@ -93,14 +93,14 @@ public class Specinem extends LinearOpMode {
     };
 
 
-    public static double speciemExtension = 400;
+    public static double speciemExtension = 428;
     public static double extension1 = 427;
-    public static double extension2 = 460;
-    public static double extension3 = 415;
+    public static double extension2 = 480;
+    public static double extension3 = 425;
 
-    public static double headingDegrees1 = 234.5;
-    public static double headingDegrees2 = 223.5;
-    public static double headingDegrees3 = 223;
+    public static double headingDegrees1 = 234.3;
+    public static double headingDegrees2 = 224;
+    public static double headingDegrees3 = 223.3;
     public static double specimenSlam = 240;
     SPECIMEN specimen = new SPECIMEN();
     SPECIMENGARD gard = new SPECIMENGARD();
@@ -137,7 +137,7 @@ public class Specinem extends LinearOpMode {
             telemetry.addData("robot arm",robot.arm.currentState);
             telemetry.addData("robot dt",robot.drive.driveMode);
             telemetry.update();
-            robot.sleep(0.001);
+            robot.sleep(0.01);
         }
         robot.sleep(0.08);
         robot.drive.setTargetPose(specinem1);
@@ -149,7 +149,7 @@ public class Specinem extends LinearOpMode {
             telemetry.addData("robot dt",robot.drive.driveMode);
             telemetry.update();
             telemetry.update();
-            robot.sleep(0.001);
+            robot.sleep(0.01);
         }
 
 
@@ -164,14 +164,14 @@ public class Specinem extends LinearOpMode {
 //            Log.d("AutoInfo","pose" + robot.drive.pose.toString());
 //            robot.sleep(0.001);
 //        }
-        robot.sleep(0.25);
+        robot.sleep(0.13);
         robot.arm.changeExtension(speciemExtension - diff);
         while (robot.arm.currentState != Arm.FSMState.IDLE && robot.arm.extensionSubsystem.getTimer() < 500 && opModeIsActive() && !isStopRequested()) {
             telemetry.addData("extension",robot.arm.extensionSubsystem.currentPos);
             telemetry.addData("robot arm",robot.arm.currentState);
             telemetry.addData("robot dt",robot.drive.driveMode);
             telemetry.update();
-            robot.sleep(0.001);
+            robot.sleep(0.01);
         }
         robot.sleep(0.1);
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
@@ -195,7 +195,7 @@ public class Specinem extends LinearOpMode {
             telemetry.addData("robot arm",robot.arm.currentState);
             telemetry.addData("robot dt",robot.drive.driveMode);
             telemetry.update();
-            robot.sleep(0.001);
+            robot.sleep(0.01);
         }
         robot.sleep(0.1);
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
@@ -212,7 +212,7 @@ public class Specinem extends LinearOpMode {
             telemetry.addData("robot arm",robot.arm.currentState);
             telemetry.addData("robot dt",robot.drive.driveMode);
             telemetry.update();
-            robot.sleep(0.001);
+            robot.sleep(0.01);
         }
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
     }
@@ -225,7 +225,7 @@ public class Specinem extends LinearOpMode {
             telemetry.addData("robot arm",robot.arm.currentState);
             telemetry.addData("robot dt",robot.drive.driveMode);
             telemetry.update();
-            robot.sleep(0.001);
+            robot.sleep(0.01);
         }
         robot.arm.changeExtension(extension2);
         while(robot.arm.currentState!= Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
@@ -233,7 +233,7 @@ public class Specinem extends LinearOpMode {
             telemetry.addData("robot arm",robot.arm.currentState);
             telemetry.addData("robot dt",robot.drive.driveMode);
             telemetry.update();
-            robot.sleep(0.001);
+            robot.sleep(0.01);
         }
         robot.sleep(0.1);
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
@@ -313,7 +313,7 @@ public class Specinem extends LinearOpMode {
             telemetry.addData("robot arm",robot.arm.currentState);
             telemetry.addData("robot dt",robot.drive.driveMode);
             telemetry.update();
-            robot.sleep(0.001);
+            robot.sleep(0.01);
         }
 
         robot.sleep(0.25);
@@ -328,7 +328,7 @@ public class Specinem extends LinearOpMode {
             telemetry.addData("robot arm",robot.arm.currentState);
             telemetry.addData("robot dt",robot.drive.driveMode);
             telemetry.update();
-            robot.sleep(0.001);
+            robot.sleep(0.01);
         }
         robot.arm.setAutoTargetState(slam);
         while (robot.arm.currentState != Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
@@ -336,10 +336,10 @@ public class Specinem extends LinearOpMode {
             telemetry.addData("robot arm",robot.arm.currentState);
             telemetry.addData("robot dt",robot.drive.driveMode);
             telemetry.update();
-            robot.sleep(0.001);
+            robot.sleep(0.01);
         }
-         robot.sleep(0.05);
-         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
+        robot.sleep(0.05);
+        robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
     }
 
     void placeThirdSpecimen() {
@@ -351,7 +351,7 @@ public class Specinem extends LinearOpMode {
             telemetry.addData("robot arm",robot.arm.currentState);
             telemetry.addData("robot dt",robot.drive.driveMode);
             telemetry.update();
-            robot.sleep(0.001);
+            robot.sleep(0.01);
         }
 
         robot.sleep(0.25);
@@ -502,15 +502,15 @@ public class Specinem extends LinearOpMode {
     }
     @Override
     public void runOpMode() throws InterruptedException {
-         robot = new Robot2(this, true, startPose);
-         moveFirstPos1 = new Pose2d(-35.24815500815084,46.491546390563485,Math.toRadians(headingDegrees1));
-         moveFirstPos2 = new Pose2d(-31.7,45.107,Math.toRadians(131));
+        robot = new Robot2(this, true, startPose);
+        moveFirstPos1 = new Pose2d(-35.24815500815084,46.491546390563485,Math.toRadians(headingDegrees1));
+        moveFirstPos2 = new Pose2d(-31.7,45.107,Math.toRadians(131));
 
-         moveSecondPos1 = new Pose2d(-40.32611035925197,43.52032999354085,Math.toRadians(headingDegrees2));
-         moveSecondPos2 = new Pose2d(-37.37830070435532,40.01918234036664,Math.toRadians(124));
+        moveSecondPos1 = new Pose2d(-40.32611035925197,43.52032999354085,Math.toRadians(headingDegrees2));
+        moveSecondPos2 = new Pose2d(-37.37830070435532,40.01918234036664,Math.toRadians(124));
 
-         moveThirdPos1 = new Pose2d(-50.9373077632874,42.20239882581816,Math.toRadians(headingDegrees3));
-         moveThirdPos2 = new Pose2d(-32,44,Math.toRadians(120));
+        moveThirdPos1 = new Pose2d(-50.9373077632874,42.20239882581816,Math.toRadians(headingDegrees3));
+        moveThirdPos2 = new Pose2d(-32,44,Math.toRadians(120));
 
         robot.start();
 
