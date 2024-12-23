@@ -1,0 +1,58 @@
+package org.firstinspires.ftc.teamcode.Utils;
+
+
+
+
+import com.acmerobotics.roadrunner.Pose2d;
+
+//import org.firstinspires.ftc.teamcode.Utils.geometry.Pose;
+
+public class Utils {
+    public Utils() {}
+
+    public static double minMaxClip(double value, double min, double max) {
+        return Math.min(Math.max(min, value), max);
+    }
+
+    public static int minMaxClipInt(double value, double min, double max) {
+        return (int) Math.min(Math.max(min, value), max);
+    }
+
+    public static double headingClip(double value) {
+        while(value >= Math.PI) {
+            value -= 2*Math.PI;
+        }
+        while(value <= -Math.PI) {
+            value += 2*Math.PI;
+        }
+        return value;
+    }
+
+    public static double normalizeAngle(double angleRadians) {
+        double angle = angleRadians;
+        while (angle < 0) angle += 2 * Math.PI;
+        while (angle > 2 * Math.PI) angle -= 2 * Math.PI;
+        return angle;
+    }
+    public static double getTurnDirection(double startHeading, double endHeading) {
+        if (normalizeAngle(endHeading - startHeading) >= 0 && normalizeAngle(endHeading - startHeading) <= Math.PI) {
+            return 1; // counter clock wise
+        }
+        return -1; // clock wise
+    }
+
+
+    public static boolean withinThreshold(double value, double minThreshold, double maxThreshold) {
+        return value > minThreshold && value < maxThreshold;
+    }
+
+    public static double kalmanFilter (double value1, double value2, double value2Weight) {
+        return (value1 * (1.0-value2Weight)) + (value2 * value2Weight);
+    }
+
+    public static double calculateDistanceBetweenPoints (Pose2d point1, Pose2d point2) {
+        double deltaX = point1.position.x - point2.position.x ;
+        double deltaY = point1.position.y  - point2.position.y;
+        return Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
+    }
+}
