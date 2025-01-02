@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmode;
 
+import static org.firstinspires.ftc.teamcode.Utils.OpModeUtils.setOpMode;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -18,8 +20,11 @@ import org.firstinspires.ftc.teamcode.Utils.ArmStates.SPECIMENGARD;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.SPECIMENSLAM;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.SPECIMENTELEOP;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.STATE;
+import org.firstinspires.ftc.teamcode.Utils.Files.BlackBox.BlackBoxLogger;
+import org.firstinspires.ftc.teamcode.Utils.Files.BlackBox.BlackBoxTestingOp;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Arm;
+import org.firstinspires.ftc.teamcode.subsystems.Arm.ArmState;
 
 
 @Config
@@ -41,13 +46,17 @@ public class TeleOp extends OpMode {
     STATE specimengard = new SPECIMENGARD();
     public static double slow_extension_limit = 150;
     ElapsedTime timer = null;
+    BlackBoxLogger logger = null;
+    public static boolean useLogger = true;
 
     @Override
     public void init() {
+        setOpMode(this);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         gg = new GamePadController(gamepad1);
-        robot = new Robot(this,false,startPose);
+        robot = new Robot(this,startPose);
         lastLoopFinish = System.currentTimeMillis();
+        logger = new BlackBoxLogger();
     }
 
 
@@ -88,6 +97,7 @@ public class TeleOp extends OpMode {
         updateDrive();
         updateArm();
         updateTelemetry();
+        if(useLogger) logger.writeData();
     }
 
     public void updateArm() {
@@ -99,19 +109,19 @@ public class TeleOp extends OpMode {
         }
         if(gg.bOnce()) {
             if(robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
-                robot.arm.setTargetState(INTAKING);
+                robot.arm.setTargetState(ArmState.INTAKING);
             }
         }
         if (gg.yOnce()) {
-            if( robot.arm.getCurrentState() == Arm.FSMState.IDLE && robot.arm.targetState == specimengard) {
-                robot.arm.setTargetState(SPECIMEN_SLAM);
-            }else if(robot.arm.getCurrentState() == Arm.FSMState.IDLE && robot.arm.targetState != specimengard) {
-                robot.arm.setTargetState(specimengard);
+            if( robot.arm.getCurrentState() == Arm.FSMState.IDLE && robot.arm.targetState == ArmState.SPECIMENGARD) {
+                robot.arm.setTargetState(ArmState.SPECIMENSLAM);
+            }else if(robot.arm.getCurrentState() == Arm.FSMState.IDLE && robot.arm.targetState != ArmState.SPECIMENGARD) {
+                robot.arm.setTargetState(ArmState.SPECIMENGARD);
             }
         }
         if(gg.xOnce()) {
             if( robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
-                robot.arm.setTargetState(HIGHBASKET);
+                robot.arm.setTargetState(ArmState.HIGHBASKET);
             }
         }
     }
@@ -125,7 +135,7 @@ public class TeleOp extends OpMode {
             robot.drive.setMotorPowers(0,0,0,0);
             return;
         }
-        robot.drive.setMotorPowersFromGamepad(gg,1.0,false,true);
+        robot.drive.drive(gg);
     }
     public void updateTelemetry() {
         telemetry.addLine();
@@ -141,15 +151,13 @@ public class TeleOp extends OpMode {
         telemetry.addData("extension offset",robot.arm.extensionSubsystem.offset);
         telemetry.addData("Pith angle",robot.arm.pitchSubsystem.get_angle());
         telemetry.addData("Pith pos",robot.arm.pitchSubsystem.getCurrentPos());
-        telemetry.addData("target angle",robot.arm.targetState.getPitchAngle());
-        telemetry.addData("target pitch",robot.arm.pitchSubsystem.target);
+        telemetry.addData("target angle",robot.arm.targetState.getPivotAngle());
+        telemetry.addData("target pitch",robot.arm.pitchSubsystem.getTarget());
         telemetry.addData("pitch mode",robot.arm.pitchSubsystem.mode);
 
         telemetry.addData("extend mode",robot.arm.extensionSubsystem.mode);
         telemetry.addData("Claw pos",robot.arm.clawSubsystem.clawPos);
         telemetry.addData("Claw state",robot.arm.clawSubsystem.tiltState);
-        telemetry.addData("motion profile over",robot.arm.pitchSubsystem.isMotionProfileActive);
-        telemetry.addData("vel",robot.arm.pitchSubsystem.desiredVelocity);
         telemetry.addData("pitch ff",robot.arm.pitchSubsystem.ff);
         telemetry.addData("slowMode",robot.drive.slow_mode);
         telemetry.addLine();

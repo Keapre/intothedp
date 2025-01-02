@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.Utils.ArmStates;
 
 import com.acmerobotics.dashboard.config.Config;
 
-import org.firstinspires.ftc.teamcode.subsystems.Arm.Claw;
+import org.firstinspires.ftc.teamcode.subsystems.Arm.Claw.Claw;
 
 @Config
 public class SPECIMEN extends STATE{

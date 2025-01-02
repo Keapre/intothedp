@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems.DriveTrain;
 
-import com.acmerobotics.dashboard.canvas.Canvas;
+import static com.arcrobotics.ftclib.util.MathUtils.clamp;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
@@ -13,16 +14,16 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.Utils.Caching.CachingDcMotorEx;
 import org.firstinspires.ftc.teamcode.Utils.Subsystem;
 import org.firstinspires.ftc.teamcode.Utils.Utils;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.PID;
-import org.firstinspires.ftc.teamcode.Utils.Wrappers.SquidController;
+import org.firstinspires.ftc.teamcode.Utils.Control.SquidController;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.TelemetryUtil;
-import org.firstinspires.ftc.teamcode.Utils.geometry.Pose;
+import org.firstinspires.ftc.teamcode.Utils.geometry.Path;
 import org.firstinspires.ftc.teamcode.Utils.geometry.Vector2D;
-import org.firstinspires.ftc.teamcode.Utils.messages.Drawing;
 
 /*
 IMPROVEMENTS
@@ -36,14 +37,17 @@ SI SA TESTEZEZ mai multe functii pt gamepad sigmoid or cubic
 public class DriveTrain implements Subsystem {
 
 
+    private Robot robot;
 
 
+    public boolean slow_mode = false;
     public enum STATE {
         IDLE,
         GOING_TO_POINT,
         DRIVE,
         TURN,
         FINE_CONTROL,
+        PATH_FOLLOW,
         GLIDE
     }
 
@@ -71,7 +75,7 @@ public class DriveTrain implements Subsystem {
     public static PID hPID = new PID(hkP,0,hkD);
 
     public static  double kS = 0.05; // TODO: tune this
-    private static final double NOMINAL_VOLTAGE = 12.8;
+    private static final double NOMINAL_VOLTAGE = 13.2;
     Pose2d powerVector = new Pose2d(0,0,0);
     private VoltageSensor voltageSensor;
 
@@ -83,16 +87,18 @@ public class DriveTrain implements Subsystem {
 
     public static double xThreeshold = 2,yThreeshold = 2,hThreeshold = 0.2; //TODO:maybe tune this also
 
+    Path path = null;
     boolean fine_stop = false,stop = true;
     double xError = 0,yError = 0,hError = 0;
 
     double max_speed = 1;
 
-    public DriveTrain(HardwareMap hw, Pose2d startingPose,boolean auto) {
-        leftFront =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"lf"),0);
-        leftBack =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"lb"),0);
-        rightBack =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"rb"),0);
-        rightFront =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"rf"),0);
+    public DriveTrain(HardwareMap hw, Pose2d startingPose,boolean auto,Robot robot) {
+        this.robot = robot;
+        leftFront =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"lf"),0.005);
+        leftBack =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"lb"),0.005);
+        rightBack =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"rb"),0.005);
+        rightFront =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"rf"),0.005);
 
         initializeMotors();
 
@@ -104,7 +110,6 @@ public class DriveTrain implements Subsystem {
         pinpoint.setEncoderResolution(GoBildaPinpointDriverRR.goBILDA_4_BAR_POD);
         pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
-        voltageSensor = hw.voltageSensor.iterator().next();
         pinpoint.resetPosAndIMU();
         try {
             Thread.sleep(500);
@@ -156,7 +161,7 @@ public class DriveTrain implements Subsystem {
     public void update() {
         if(IS_DIASABLED) return;
         updateLocalization();
-        voltage = voltageSensor.getVoltage();
+
 
         switch (state) {
             case IDLE:
@@ -178,11 +183,16 @@ public class DriveTrain implements Subsystem {
                 }
                 break;
             case FINE_CONTROL:
+                fineXPid.reset();
+                fineYPid.reset();
+                fineHPid.reset();
                 fine_control();
                 if(atTarget()) {
                     state = STATE.IDLE;
                 }
                 break;
+            case PATH_FOLLOW:
+                doPathFollowLogic();
             case DRIVE:
                 break;
         }
@@ -191,6 +201,46 @@ public class DriveTrain implements Subsystem {
         lastState = state;
     }
 
+    private void doPathFollowLogic() {
+        if(path == null || path.isComplete()) {
+            state = STATE.IDLE;
+            return;
+        }
+
+        Pose2d currentWaypoint = path.getCurrentTarget();
+        if(currentWaypoint == null) {
+            state = STATE.IDLE;
+            return;
+        }
+
+        this.target = currentWaypoint;
+        if(path.isTransition()) {
+            stop = false;
+        }else {
+            stop = true;
+        }
+        calculateErrors();
+        pidDrive();
+
+
+        if(atTarget()) {
+            path.nextPoint();
+
+            if(path.isComplete()) {
+                if(fine_stop) {
+                    state = STATE.FINE_CONTROL;
+                } else {
+                    state = STATE.IDLE;
+                }
+            } else {
+                xPID.reset();
+                yPID.reset();
+                hPID.reset();
+                timer = null;
+                stable = null;
+            }
+        }
+    }
     public void updateTelemetry() {
 
         TelemetryUtil.packet.put("Drivetrain State", state);
@@ -300,13 +350,13 @@ public class DriveTrain implements Subsystem {
     }
 
     private double equationMotor(double rawPower) {
-        double scale = (voltage > 0)
-                ? NOMINAL_VOLTAGE / voltage
+        double scale = (robot.getVoltage() > 0)
+                ? robot.getNormalizedVoltage()
                 : 1.0;
 
         rawPower*=scale;
         double scaledKs = kS * scale * Math.signum(rawPower);
-        double finalPower = Utils.minMaxClip(scaledKs + rawPower,max_speed,max_speed);
+        double finalPower = Utils.minMaxClip(scaledKs + rawPower,-max_speed,max_speed);
         if(state == STATE.DRIVE) {
             if(Math.abs(rawPower) < 0.01) {
                 finalPower = 0;
@@ -324,10 +374,10 @@ public class DriveTrain implements Subsystem {
         }
     }
     public void setMotorPowers(double lf, double lr, double rr, double rf) {
-        leftFront.setPower(lf);
-        leftBack.setPower(lr);
-        rightBack.setPower(rr);
-        rightFront.setPower(rf);
+        leftFront.setPower(clamp(lf,-1,1));
+        leftBack.setPower(clamp(lr,-1,1));
+        rightBack.setPower(clamp(rr,-1,1));
+        rightFront.setPower(clamp(rf,-1,1));
     }
 
 
@@ -360,6 +410,29 @@ public class DriveTrain implements Subsystem {
         return value * value * value; // value^3
     }
     double deadzone = 0.05;
+    public void setTargetPosition(Pose2d point, boolean finalAdjustment, boolean stop, double maxPower) {
+        goToPoint(point, finalAdjustment, stop, maxPower);
+    }
+
+    private void setPath(Path path, boolean finalAdjustment, boolean stop, double maxPower) {
+        this.path = path;
+        this.path.reset();  // start at the first waypoint
+        this.fine_stop = finalAdjustment;
+        this.stop = stop;
+        this.max_speed = Math.abs(maxPower);
+        this.state = STATE.PATH_FOLLOW;
+
+        // Reset PIDs, timers, etc. if needed
+        xPID.reset();
+        yPID.reset();
+        hPID.reset();
+        timer = null;
+        stable = null;
+    }
+    // Overloaded method for a Path
+    public void setTargetPosition(Path path, boolean finalAdjustment, boolean stop, double maxPower) {
+        setPath(path, finalAdjustment, stop, maxPower);
+    }
     double scaleInput(double value) {
         if (Math.abs(value) < deadzone) {
             return 0;
@@ -400,9 +473,9 @@ public class DriveTrain implements Subsystem {
         yPower = Utils.minMaxClip(yPower,-max_speed,max_speed);
         hPower = Utils.minMaxClip(hPower,-max_speed,max_speed);
 
-        //gliding mechaism (eric cook)
+        //gliding mechanism
 
-        if(speed.angVel < 2 && hError < 2 && use_gliding) {
+        if(speed.angVel < 2 && hError < 2 && use_gliding && stop) {
             double current_speed_x = speed.linearVel.x;
             double current_speed_y = speed.linearVel.y; // inch /
 

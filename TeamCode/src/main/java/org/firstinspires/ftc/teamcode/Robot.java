@@ -13,9 +13,12 @@ import com.qualcomm.robotcore.util.MovingStatistics;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.ThreadPool;
 
+import org.firstinspires.ftc.teamcode.Utils.Globals;
 import org.firstinspires.ftc.teamcode.Utils.Subsystem;
+import org.firstinspires.ftc.teamcode.Utils.Wrappers.CachingVoltageSensor;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Arm;
 import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.Drive;
+import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.DriveTrain;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,8 +32,9 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
     public static final String TAG = "Robot";
 
 
-    public Drive drive;
+    public DriveTrain drive;
     public Arm arm;
+    CachingVoltageSensor voltageSensor;
 
     private LynxModule hub1;
 
@@ -71,6 +75,7 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
                             subsystemsWithProblems.add(subsystem);
                     }
                 }
+
                 temp = getCurrentTime() - startTime; // Calculate loop time
                 top10.add(temp); // Add loop time to different statistics
                 top100.add(temp);
@@ -81,7 +86,7 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
         }
     };
 
-    public Robot(OpMode opMode, boolean isAutonomous,Pose2d startPose) {
+    public Robot(OpMode opMode,Pose2d startPose) {
         // Initialize statistics
         top10 = new MovingStatistics(10);
         top100 = new MovingStatistics(100);
@@ -97,19 +102,20 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
         //region Initialize subsystems
         subsystems = new ArrayList<>();
         try {
-            drive = new Drive(opMode.hardwareMap,startPose,false);
+            drive = new DriveTrain(opMode.hardwareMap,startPose,Globals.isAuto(),this);
             subsystems.add(drive);
             Log.w(TAG, "DriveTrain intialized successfully");
         } catch (Exception e) {
             Log.w(TAG, "Failed to initialize DriveTrain: " + e.getMessage());
         }
         try {
-            arm = new Arm(opMode.hardwareMap,false);
+            arm = new Arm(opMode.hardwareMap, Globals.isAuto(),this);
             subsystems.add(arm);
             Log.w(TAG, "arm intialized successfully");
         } catch (Exception e) {
             Log.w(TAG, "Failed to initialize Arm: " + e.getMessage());
         }
+        voltageSensor = new CachingVoltageSensor(opMode.hardwareMap);
 
         //endregion
         for (Subsystem subsystem : subsystems) {
@@ -128,6 +134,13 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
         }
     }
 
+    public double getNormalizedVoltage() {
+        return voltageSensor.getVoltageNormalized();
+    }
+
+    public double getVoltage() {
+        return voltageSensor.getVoltage();
+    }
     public void stop() {
         if (started && subsystemUpdateExecutor != null) {
             subsystemUpdateExecutor.shutdownNow();

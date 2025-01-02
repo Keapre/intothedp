@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.Utils.ArmStates;
 
-import org.firstinspires.ftc.teamcode.subsystems.Arm.Claw;
+import org.firstinspires.ftc.teamcode.subsystems.Arm.Claw.Claw;
 
 public class STATE {
     public  Claw.CLAWPOS clawpos;

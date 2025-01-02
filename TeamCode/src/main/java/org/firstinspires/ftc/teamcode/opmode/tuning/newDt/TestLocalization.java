@@ -4,6 +4,7 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.DriveTrain;
@@ -12,7 +13,8 @@ import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.DriveTrain;
 public class TestLocalization extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        DriveTrain drive = new DriveTrain(hardwareMap,new Pose2d(47, 47, Math.toRadians(270)),false);
+        Robot robot = new Robot(this,new Pose2d(47, 47, Math.toRadians(270)));
+        DriveTrain drive = new DriveTrain(hardwareMap,new Pose2d(47, 47, Math.toRadians(270)),false,robot);
         GamePadController gpc = new GamePadController(gamepad1);
         TelemetryUtil.setup();
 

@@ -13,7 +13,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.Utils.Utils;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.Encoder;
-import org.firstinspires.ftc.teamcode.subsystems.Arm.Pitch;
+import org.firstinspires.ftc.teamcode.subsystems.Arm.Pitch.Pitch;
 
 @Disabled
 
