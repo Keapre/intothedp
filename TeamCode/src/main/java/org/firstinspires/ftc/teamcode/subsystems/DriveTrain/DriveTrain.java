@@ -16,8 +16,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.Utils.Caching.CachingDcMotorEx;
+import org.firstinspires.ftc.teamcode.Utils.Globals;
 import org.firstinspires.ftc.teamcode.Utils.Subsystem;
 import org.firstinspires.ftc.teamcode.Utils.Utils;
+import org.firstinspires.ftc.teamcode.Utils.Wrappers.Filters.SlewRateFilter;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.PID;
 import org.firstinspires.ftc.teamcode.Utils.Control.SquidController;
@@ -39,7 +41,6 @@ public class DriveTrain implements Subsystem {
 
     private Robot robot;
 
-
     public boolean slow_mode = false;
     public enum STATE {
         IDLE,
@@ -52,7 +53,7 @@ public class DriveTrain implements Subsystem {
     }
 
     public STATE state = STATE.IDLE,lastState = STATE.IDLE;
-    public boolean IS_DIASABLED = false;
+    public boolean IS_DISABLED = false;
     private CachingDcMotorEx leftFront, leftBack, rightBack, rightFront;
 
     public static double pinPointxOffset = -115, pinPointyOffset = -2.5; // ar trb sa fie in mm //TODO:afla
@@ -63,11 +64,20 @@ public class DriveTrain implements Subsystem {
     Pose2d pose = new Pose2d(0,0,0);
     Pose2d target = new Pose2d(0,0,0);
     PoseVelocity2d speed = new PoseVelocity2d(new Vector2d(0,0),0);
+
+    public static double xSlowModeMultipler = 0.5,ySlowModeMultiplier = 0.5,hSlowModeMultiplier = 0.5;
     ElapsedTime timer = null,stable = null;
 
     /* PIDS */
     //TODO: tune this
     public static double xkP = 0.1,xD = 0.1;
+
+    public static double filterParameter= 0.3;
+    SlewRateFilter filterX = new SlewRateFilter(filterParameter);
+    SlewRateFilter filterY = new SlewRateFilter(filterParameter);
+    SlewRateFilter filterH = new SlewRateFilter(filterParameter);
+    public static boolean use_filter = false;
+
     public static double ykP = 0.1,ykD = 0.1;
     public static double hkP = 0.1,hkD = 0.1;
     public static PID xPID = new PID(xkP,0,xD);
@@ -81,7 +91,7 @@ public class DriveTrain implements Subsystem {
 
     public static double decelX = 20,deccelY = 20; // TODO: tune this
 
-    public static double xMultiplier = 1.25; // TODO: tune this
+    public static double xMultiplier = 1.40; // TODO: tune this
     double voltage = 0;
     public static boolean use_gliding = true;
 
@@ -95,14 +105,15 @@ public class DriveTrain implements Subsystem {
 
     public DriveTrain(HardwareMap hw, Pose2d startingPose,boolean auto,Robot robot) {
         this.robot = robot;
-        leftFront =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"lf"),0.005);
-        leftBack =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"lb"),0.005);
-        rightBack =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"rb"),0.005);
-        rightFront =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"rf"),0.005);
+        leftFront =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"leftFront"),0.005);
+        leftBack =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"leftBack"),0.005);
+        rightBack =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"rightBack"),0.005);
+        rightFront =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"rightFront"),0.005);
 
+
+
+        IS_AUTO = Globals.isAuto();
         initializeMotors();
-
-        IS_AUTO = auto;
         this.pose = startingPose;
         pinpoint = hw.get(GoBildaPinpointDriverRR.class,"odo");
 
@@ -152,14 +163,21 @@ public class DriveTrain implements Subsystem {
         rightBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        if(IS_AUTO) {
+            leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+            leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+            rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+            rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        }else {
+            leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        }
     }
     @Override
     public void update() {
-        if(IS_DIASABLED) return;
+        if(IS_DISABLED) return;
         updateLocalization();
 
 
@@ -407,7 +425,7 @@ public class DriveTrain implements Subsystem {
     }
 
     double cubicScaling(double value) {
-        return value * value * value; // value^3
+        return clamp(value * value * value,-1,1); // value^3
     }
     double deadzone = 0.05;
     public void setTargetPosition(Pose2d point, boolean finalAdjustment, boolean stop, double maxPower) {
@@ -443,9 +461,20 @@ public class DriveTrain implements Subsystem {
     public void drive(GamePadController gg) {
         state = STATE.DRIVE;
         max_speed = 1;
-        double x = scaleInput(gg.left_stick_x);
-        double y = scaleInput(gg.left_stick_y);
-        double h = scaleInput(gg.right_stick_x);
+        double x = cubicScaling(gg.left_stick_x);
+        double y = cubicScaling(gg.left_stick_y);
+        double h = cubicScaling(gg.right_stick_x);
+        if(use_filter) {
+            x = filterX.calculate(x);
+            y = filterY.calculate(y);
+            h = filterH.calculate(h);
+        }
+
+        if(slow_mode) {
+            x*=xSlowModeMultipler;
+            y*=ySlowModeMultiplier;
+            h*=hSlowModeMultiplier;
+        }
         Vector2D drive = new Vector2D(x,y);
         if (drive.magnitude() <= 0.05){
             drive.mult(0);

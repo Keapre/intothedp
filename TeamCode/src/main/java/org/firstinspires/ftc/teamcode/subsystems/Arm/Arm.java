@@ -24,7 +24,7 @@ import java.util.Queue;
 public class Arm implements Subsystem {
     public static boolean IS_DISABLED = false;
     public enum FSMState {
-        IDLE, RETRACTING_EXTENSION, ADJUSTING_PITCH, PRE_ADJUSTING_PITCH, EXTENDING_EXTENSION, MANUAL_CONTROL, OPERATION_COMPLETE,CHANGING_OUTTAKE
+        IDLE, RETRACTING_EXTENSION, ADJUSTING_PITCH, PRE_ADJUSTING_PITCH, EXTENDING_EXTENSION, MANUAL_CONTROL, OPERATION_COMPLETE,PRE_EXTENSION,CHANGING_OUTTAKE
     }
 
     public FSMState currentState = FSMState.IDLE;
@@ -77,20 +77,30 @@ public class Arm implements Subsystem {
     public static double raw_power_90 = 0.55;
     public boolean useRetractAuto = true;
     public double desiredExtension = 0;
+    public double desiredPitch = 0;
 
     public void setTargetState(ArmState newState) {
         previousState = targetState;
         targetState = newState;
         desiredExtension = targetState.getExtensionTarget();
-
+        desiredPitch = targetState.getPivotAngle();
         planTransitionSteps();
         currentState = nextStateInPlan();
     }
 
     public void changeExtension(double extension) {
         transitionPlan.clear();
+        transitionPlan.add(FSMState.PRE_EXTENSION);
         transitionPlan.add(FSMState.EXTENDING_EXTENSION);
         desiredExtension = extension;
+        desiredPitch = targetState.getPivotAngle();
+        currentState = nextStateInPlan();
+    }
+    public void changePitch(double pitch) {
+        transitionPlan.clear();
+        transitionPlan.add(FSMState.PRE_ADJUSTING_PITCH);
+        transitionPlan.add(FSMState.ADJUSTING_PITCH);
+        desiredPitch = pitch;
         currentState = nextStateInPlan();
     }
 
@@ -103,9 +113,6 @@ public class Arm implements Subsystem {
     }
 
 
-    public void changeDesiredExtension(double extension) {
-        desiredExtension = extension;
-    }
 
     public void update() {
         if(IS_DISABLED)  {
@@ -140,26 +147,26 @@ public class Arm implements Subsystem {
                 break;
             case PRE_ADJUSTING_PITCH:
                 extensionSubsystem.offset += extensionSubsystem.currentPos;
-                pitchSubsystem.setMode(Pitch.MODE.AUTO);
-                pitchSubsystem.setTarget(targetState.getPivotAngle());
+                pitchSubsystem.setTarget(desiredPitch);
                 currentState = nextStateInPlan();
                 break;
 
             case ADJUSTING_PITCH:
-                if (pitchSubsystem.isAtPosition(targetState.getPivotAngle())) {
+                if (pitchSubsystem.isAtPosition(desiredPitch)) {
                     //extensionSubsystem.updateKerem(pitchSubsystem.calculateAngle());
-                    if (targetState.getPivotAngle() == 0) pitchSubsystem.setMode(Pitch.MODE.IDLE);
+                    if (desiredPitch == 0) pitchSubsystem.setMode(Pitch.MODE.IDLE);
                     currentState = nextStateInPlan();
                 }
                 break;
-
-            case EXTENDING_EXTENSION:
-                extensionSubsystem.mode = Extension.MODE.AUTO;
-                if (desiredExtension == 0) {
-                    currentState = nextStateInPlan();
-                    break;
-                }
+            case PRE_EXTENSION:
                 extensionSubsystem.setTaget(extensionSubsystem.offset + desiredExtension);
+                currentState = nextStateInPlan();
+                break;
+            case EXTENDING_EXTENSION:
+//                if (desiredExtension == 0) {
+//                    currentState = nextStateInPlan();
+//                    break;
+//                }
                 if (extensionSubsystem.isAtPosition()) {
                     currentState = nextStateInPlan();
                 }
@@ -283,6 +290,7 @@ public class Arm implements Subsystem {
         transitionPlan.add(FSMState.PRE_ADJUSTING_PITCH);
         transitionPlan.add(FSMState.ADJUSTING_PITCH);
 
+        transitionPlan.add(FSMState.PRE_EXTENSION);
         transitionPlan.add(FSMState.EXTENDING_EXTENSION);
 
         transitionPlan.add(FSMState.OPERATION_COMPLETE);

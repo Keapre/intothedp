@@ -186,13 +186,13 @@ public class Specinem5 extends LinearOpMode {
 
         // 2) Arm movements
         robot.arm.setAutoTargetState(ArmState.SPECIMEN);
-        robot.arm.changeDesiredExtension(speciemExtension);
+        robot.arm.changeExtension(speciemExtension);
 
         waitUntilIdleArmAndDrive();
 
         // Move again
         robot.drive.setTargetPosition(specinem1, false, true, 0.85);
-        robot.arm.changeDesiredExtension(speciemExtension);
+        robot.arm.changeExtension(speciemExtension);
 
         waitUntilIdleArmAndDrive();
 
@@ -214,7 +214,7 @@ public class Specinem5 extends LinearOpMode {
         waitUntilIdleArmAndDrive();
 
         robot.arm.setAutoTargetState(ArmState.INTAKING);
-        robot.arm.changeDesiredExtension(extension1);
+        robot.arm.changeExtension(extension1);
         waitUntilIdleArm();
 
         // Claw operations

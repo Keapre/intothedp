@@ -103,7 +103,7 @@ public class samples4 extends LinearOpMode {
 
         // Raise the arm
         robot.arm.setAutoTargetState(ArmState.HIGHBASKET);
-        robot.arm.changeDesiredExtension(basketLength);
+        robot.arm.changeExtension(basketLength);
         waitUntilIdleArmAndDrive();
 
         // Move to 'scoreBasket2' (single point)
@@ -135,7 +135,7 @@ public class samples4 extends LinearOpMode {
 
         // Extend for the bucket
         robot.arm.setAutoTargetState(ArmState.INTAKING);
-        robot.arm.changeDesiredExtension(firstBucketExtension);
+        robot.arm.changeExtension(firstBucketExtension);
         waitUntilIdleArm();
 
         // Grab
@@ -149,7 +149,7 @@ public class samples4 extends LinearOpMode {
         // Move back to 'scoreBasket1'
         robot.drive.setTargetPosition(scoreBasket1,true,true,0.7);
         robot.arm.setAutoTargetState(ArmState.HIGHBASKET);
-        robot.arm.changeDesiredExtension(basketLength);
+        robot.arm.changeExtension(basketLength);
         waitUntilIdleArmAndDrive();
 
         // Now go to 'scoreBasket2' 
@@ -179,7 +179,7 @@ public class samples4 extends LinearOpMode {
         waitUntilIdleDrive();
 
         robot.arm.setAutoTargetState(ArmState.INTAKING);
-        robot.arm.changeDesiredExtension(secondBucketExtension);
+        robot.arm.changeExtension(secondBucketExtension);
         waitUntilIdleArm();
 
         robot.sleep(0.3);
@@ -191,7 +191,7 @@ public class samples4 extends LinearOpMode {
 
         robot.drive.setTargetPosition(scoreBasket1,true,true,0.7);
         robot.arm.setAutoTargetState(ArmState.HIGHBASKET);
-        robot.arm.changeDesiredExtension(basketLength);
+        robot.arm.changeExtension(basketLength);
         waitUntilIdleArmAndDrive();
 
         robot.sleep(0.1);
@@ -218,7 +218,7 @@ public class samples4 extends LinearOpMode {
         waitUntilIdleDrive();
 
         robot.arm.setAutoTargetState(ArmState.INTAKING);
-        robot.arm.changeDesiredExtension(thirdBucketExtension);
+        robot.arm.changeExtension(thirdBucketExtension);
         waitUntilIdleArm();
 
         robot.sleep(0.3);
@@ -230,7 +230,7 @@ public class samples4 extends LinearOpMode {
 
         robot.drive.setTargetPosition(scoreBasket1,true,true,0.7);
         robot.arm.setAutoTargetState(ArmState.HIGHBASKET);
-        robot.arm.changeDesiredExtension(basketLength);
+        robot.arm.changeExtension(basketLength);
         waitUntilIdleArmAndDrive();
 
         robot.sleep(0.1);

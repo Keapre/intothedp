@@ -109,6 +109,7 @@ public class Pitch {
     {
         controller.reset();
         target = pos;
+        mode = MODE.AUTO;
     }
     public double calculateAngle() {
         return currentPos / PitchConstants.tickPerDegree;

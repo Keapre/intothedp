@@ -22,6 +22,7 @@ import org.firstinspires.ftc.teamcode.Utils.ArmStates.SPECIMENTELEOP;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.STATE;
 import org.firstinspires.ftc.teamcode.Utils.Files.BlackBox.BlackBoxLogger;
 import org.firstinspires.ftc.teamcode.Utils.Files.BlackBox.BlackBoxTestingOp;
+import org.firstinspires.ftc.teamcode.Utils.Globals;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Arm;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.ArmState;
@@ -51,6 +52,7 @@ public class TeleOp extends OpMode {
 
     @Override
     public void init() {
+        Globals.IS_AUTO = false;
         setOpMode(this);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         gg = new GamePadController(gamepad1);

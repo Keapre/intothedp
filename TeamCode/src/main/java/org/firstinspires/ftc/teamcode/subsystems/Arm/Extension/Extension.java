@@ -54,6 +54,8 @@ public class Extension {
 
 
     public void setTaget(double target) {
+        mode = MODE.AUTO;
+        controller.reset();
         this.target = target;
     }
     public void changeRawPower(double power) {
@@ -84,7 +86,7 @@ public class Extension {
     }
 
     public boolean isAtPosition() {
-        return Math.abs(currentPos - target) < ExtensionConstants.pointThreeshold;
+        return Math.abs(currentPos - target) <= ExtensionConstants.pointThreeshold;
     }
     public static double valueSHit = 36;//should lower this fr fr
 
@@ -130,7 +132,7 @@ public class Extension {
                 motor.setPower(Utils.minMaxClip(power,-1, 1));
                 break;
             case MANUAL:
-                motor.setPower(Utils.minMaxClip(-1,1,power));
+                motor.setPower(Utils.minMaxClip(-1,1,power + ff));
                 break;
             case IDLE:
                 motor.setPower(-0.01);
