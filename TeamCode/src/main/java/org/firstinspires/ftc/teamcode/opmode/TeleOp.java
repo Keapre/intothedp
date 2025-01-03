@@ -24,6 +24,7 @@ import org.firstinspires.ftc.teamcode.Utils.Files.BlackBox.BlackBoxLogger;
 import org.firstinspires.ftc.teamcode.Utils.Files.BlackBox.BlackBoxTestingOp;
 import org.firstinspires.ftc.teamcode.Utils.Globals;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
+import org.firstinspires.ftc.teamcode.Utils.Wrappers.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Arm;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.ArmState;
 
@@ -35,23 +36,18 @@ public class TeleOp extends OpMode {
     GamePadController gg;
     Pose2d startPose =  new Pose2d(0,0,Math.toRadians(270));
 
-    double test = 0;
     long lastLoopFinish;
 
-    STATE SpeciemnTeleOp = new SPECIMENTELEOP();
-    STATE SPECIMEN_SLAM = new SPECIMENSLAM();
-    STATE DEFAULT = new DEFAUlT();
-    STATE HIGHBASKET = new HIGHBASKET();
-    STATE INTAKING = new INTAKING();
-    STATE specimenbar = new SPECIMEN();
-    STATE specimengard = new SPECIMENGARD();
     public static double slow_extension_limit = 150;
     ElapsedTime timer = null;
     BlackBoxLogger logger = null;
+    private boolean endgame = false,park = false;
+    public static double parkTime = 7;
     public static boolean useLogger = true;
 
     @Override
     public void init() {
+        TelemetryUtil.setup();
         Globals.IS_AUTO = false;
         setOpMode(this);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -128,11 +124,16 @@ public class TeleOp extends OpMode {
         }
     }
     public void updateDrive() {
-        if(robot.arm.extensionSubsystem.getPosition()>=slow_extension_limit) {
-            robot.drive.slow_mode = true;
-        }else {
-            robot.drive.slow_mode = false;
+        //total = 2 min = 120 sec
+        if(timer.time() > 90 && !endgame) {
+            endgame = true;
+            gg.rumble(100);
         }
+        if(!park && timer.time() > 120 - parkTime) {
+            park = true;
+            gg.rumble(100);
+        }
+        robot.drive.slow_mode = robot.arm.extensionSubsystem.getPosition() >= slow_extension_limit;
         if(gg.left_stick_x == 0 && gg.left_stick_y == 0 && gg.right_stick_x == 0 && gg.right_stick_y == 0) {
             robot.drive.setMotorPowers(0,0,0,0);
             return;
@@ -167,6 +168,7 @@ public class TeleOp extends OpMode {
         telemetry.addData("Sample Rate (Hz) ",1/((double)(System.currentTimeMillis() - lastLoopFinish)/1000.0));
         addStatistics();
         telemetry.update();
+        TelemetryUtil.sendTelemetry();
         lastLoopFinish = System.currentTimeMillis();
     }
 

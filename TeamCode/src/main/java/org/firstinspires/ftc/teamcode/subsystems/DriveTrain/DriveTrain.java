@@ -56,7 +56,7 @@ public class DriveTrain implements Subsystem {
     public boolean IS_DISABLED = false;
     private CachingDcMotorEx leftFront, leftBack, rightBack, rightFront;
 
-    public static double pinPointxOffset = -115, pinPointyOffset = -2.5; // ar trb sa fie in mm //TODO:afla
+    public static double pinPointxOffset = 128.50, pinPointyOffset = 5.5; // ar trb sa fie in mm //odometria din stanga (x)
     GoBildaPinpointDriverRR pinpoint;
 
     boolean IS_AUTO = false;
@@ -65,7 +65,7 @@ public class DriveTrain implements Subsystem {
     Pose2d target = new Pose2d(0,0,0);
     PoseVelocity2d speed = new PoseVelocity2d(new Vector2d(0,0),0);
 
-    public static double xSlowModeMultipler = 0.5,ySlowModeMultiplier = 0.5,hSlowModeMultiplier = 0.5;
+    public double xSlowModeMultipler = 0.5,ySlowModeMultiplier = 0.5,hSlowModeMultiplier = 0.5;
     ElapsedTime timer = null,stable = null;
 
     /* PIDS */
@@ -214,7 +214,7 @@ public class DriveTrain implements Subsystem {
             case DRIVE:
                 break;
         }
-        setPowerVector(powerVector);
+        setPowerVector();
         updateTelemetry();
         lastState = state;
     }
@@ -259,6 +259,21 @@ public class DriveTrain implements Subsystem {
             }
         }
     }
+    public void xSlowAdjust(double addon) {
+        xSlowModeMultipler+=addon;
+        xSlowModeMultipler = clamp(xSlowModeMultipler,0,1);
+    }
+
+    public void ySlowAdjust(double addon) {
+        ySlowModeMultiplier+=addon;
+        ySlowModeMultiplier = clamp(ySlowModeMultiplier,0,1);
+    }
+
+    public void hSlowAdjust(double addon) {
+        hSlowModeMultiplier+=addon;
+        hSlowModeMultiplier = clamp(hSlowModeMultiplier,0,1);
+    }
+
     public void updateTelemetry() {
 
         TelemetryUtil.packet.put("Drivetrain State", state);
@@ -399,8 +414,7 @@ public class DriveTrain implements Subsystem {
     }
 
 
-    public void setPowerVector(Pose2d power) {
-        powerVector = power;
+    public void setPowerVector() {
         double x = powerVector.position.x * xMultiplier;
         double y = powerVector.position.y;
         double h = powerVector.heading.toDouble();

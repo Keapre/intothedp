@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.HIGHBASKET;
@@ -41,6 +42,7 @@ public class samples4 extends LinearOpMode {
     // Park pose
     Pose2d park = new Pose2d(25,9,Math.toRadians(180));
 
+    boolean[] took = new boolean[3];
     // Arm state objects
     INTAKING intaking = new INTAKING();
     HIGHBASKET high   = new HIGHBASKET();
@@ -95,7 +97,34 @@ public class samples4 extends LinearOpMode {
         robot.stop();
     }
 
+    public void pickUpSample(int i) {
+        //time to spare 2 sec
+        robot.arm.clawSubsystem.tiltState = Claw.tiltMode.DOWN;
+        robot.sleep(0.1);
+        ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+        double base_pos = robot.arm.extensionSubsystem.getCurrentPosition();
+        //move forward 100 ticks
 
+        while(robot.arm.extensionSubsystem.getCurrentPosition() - base_pos < 100 && timer.milliseconds() < 2000 && opModeIsActive() && !isStopRequested()) {
+            if(robot.arm.clawSubsystem.isUnderSample()) {
+                robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
+                robot.arm.extensionSubsystem.manualControl(0);
+                robot.sleep(0.2);
+                if(robot.arm.clawSubsystem.checkTook()) {
+                    took[i] = true;
+                    return;
+                }else {
+                    robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
+                    return;
+                }
+            }
+            robot.arm.extensionSubsystem.manualControl(0.2);
+            robot.sleep(0.1);
+        }
+        if(timer.milliseconds() > 2000) {
+            robot.arm.extensionSubsystem.manualControl(0);
+        }
+    }
     public void placeSpecimen() {
         // Single-point drive to 'scoreBasket1'
         robot.drive.setTargetPosition(scoreBasket1, false, true, 0.85);
@@ -139,13 +168,13 @@ public class samples4 extends LinearOpMode {
         waitUntilIdleArm();
 
         // Grab
-        robot.sleep(0.3);
-        robot.arm.clawSubsystem.tiltState = Claw.tiltMode.DOWN;
-        robot.sleep(0.25);
-        robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
+        robot.arm.clawSubsystem.activateClawLed();
         robot.sleep(0.1);
-        robot.arm.clawSubsystem.tiltState = Claw.tiltMode.MID;
+        pickUpSample(0);
+        robot.arm.clawSubsystem.deactivateClawLed();
 
+
+        if(!took[0]) return;
         // Move back to 'scoreBasket1'
         robot.drive.setTargetPosition(scoreBasket1,true,true,0.7);
         robot.arm.setAutoTargetState(ArmState.HIGHBASKET);
@@ -181,13 +210,13 @@ public class samples4 extends LinearOpMode {
         robot.arm.setAutoTargetState(ArmState.INTAKING);
         robot.arm.changeExtension(secondBucketExtension);
         waitUntilIdleArm();
+        robot.arm.clawSubsystem.activateClawLed();
 
-        robot.sleep(0.3);
-        robot.arm.clawSubsystem.tiltState = Claw.tiltMode.DOWN;
-        robot.sleep(0.25);
-        robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
-        robot.sleep(0.1);
-        robot.arm.clawSubsystem.tiltState = Claw.tiltMode.MID;
+        robot.sleep(0.2);
+        pickUpSample(1);
+        robot.arm.clawSubsystem.deactivateClawLed();
+
+        if(!took[1]) return;
 
         robot.drive.setTargetPosition(scoreBasket1,true,true,0.7);
         robot.arm.setAutoTargetState(ArmState.HIGHBASKET);
@@ -220,13 +249,12 @@ public class samples4 extends LinearOpMode {
         robot.arm.setAutoTargetState(ArmState.INTAKING);
         robot.arm.changeExtension(thirdBucketExtension);
         waitUntilIdleArm();
+        robot.arm.clawSubsystem.activateClawLed();
+        robot.sleep(0.2);
+        pickUpSample(2);
 
-        robot.sleep(0.3);
-        robot.arm.clawSubsystem.tiltState = Claw.tiltMode.DOWN;
-        robot.sleep(0.25);
-        robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
-        robot.sleep(0.1);
-        robot.arm.clawSubsystem.tiltState = Claw.tiltMode.MID;
+        robot.arm.clawSubsystem.deactivateClawLed();
+        if(!took[2]) return;
 
         robot.drive.setTargetPosition(scoreBasket1,true,true,0.7);
         robot.arm.setAutoTargetState(ArmState.HIGHBASKET);

@@ -53,6 +53,7 @@ public class Claw {
         this.leftDiffy = new CachingServo(hardwareMap.get(Servo.class, "diffyLeft"));
         this.rightDiffy = new CachingServo(hardwareMap.get(Servo.class, "diffyRight"));
         sensor = new OPColorSensor(hardwareMap,"intakeSensor");
+        deactivateClawLed();
     }
 
 
@@ -65,7 +66,7 @@ public class Claw {
     }
 
     ElapsedTime timerClaw = null;
-    void checkTook() {
+    public boolean checkTook() {
         if(sensor.tookit()) {
             if(timerClaw == null) {
                 timerClaw = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
@@ -73,29 +74,44 @@ public class Claw {
             if(blue) {
                 if(sensor.isRed()) {
                     clawPos = CLAWPOS.OPEN;
+                    return false;
                 }else {
                     tiltState = tiltMode.MID;
                     rotateState = RotateMode.ORIZONTAL;
+                    return true;
                 }
             }else {
                 if(sensor.isBlue()) {
                     clawPos = CLAWPOS.OPEN;
+                    return false;
                 }else {
                     rotateState = RotateMode.ORIZONTAL;
                     tiltState = tiltMode.MID;
+                    return true;
                 }
             }
         }else {
             timerClaw = null;
         }
+        return false;
     }
+    public boolean isUnderSample() {
+        if(blue) {
+            return sensor.isBlue() || sensor.isYellow();
+        }else {
+            return sensor.isRed() || sensor.isYellow();
+        }
+    }
+
+    public void activateClawLed() {
+        sensor.enableLED(true);
+    }
+
+    public void deactivateClawLed() {
+        sensor.enableLED(false);
+    }
+
     public void update() {
-//        if(arm.targetState.getPitchAngle()==0) {
-//            if(lastClawPose==CLAWPOS.OPEN && clawPos == CLAWPOS.CLOSE) sensor.enableLED(true);
-//            checkTook();
-//        }else{
-//            if(lastClawPose == CLAWPOS.CLOSE && clawPos == CLAWPOS.OPEN) sensor.enableLED(false);
-//        }
         switch (clawPos) {
             case OPEN:
                 claw.setPosition(ClawConstants.clawOpen);

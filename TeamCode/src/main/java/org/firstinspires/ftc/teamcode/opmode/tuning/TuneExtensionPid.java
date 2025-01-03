@@ -35,6 +35,7 @@ public class TuneExtensionPid extends LinearOpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         waitForStart();
+        robot.start();
 
         while(opModeIsActive()) {
             if(prev_target!=target) {
