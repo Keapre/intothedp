@@ -78,15 +78,17 @@ public class Pitch {
         //REVERSE IF NEEDED
     }
 
-
+    double minnLinerPos = 0,maxxLinearPos = 0;
     public void updateRegreesion() {
         lutExtendIntake = new InterpLUT();
-        lutExtendIntake.add(currentPos,1);
+        minnLinerPos = currentPos;
+        maxxLinearPos = currentPos + 250;
+        lutExtendIntake.add(currentPos-1,1);
         lutExtendIntake.add(currentPos+50,1.2);
         lutExtendIntake.add(currentPos+100,1.2);
         lutExtendIntake.add(currentPos+150,1.4);
         lutExtendIntake.add(currentPos+200,1.6);
-        lutExtendIntake.add(currentPos+250,1.8);
+        lutExtendIntake.add(currentPos+251,1.8);
         lutExtendIntake.createLUT();
         //TODO:tune this
     }
@@ -151,7 +153,7 @@ public class Pitch {
         if(lutExtendIntake == null) {
             updateRegreesion();
         }
-        ff*=lutExtendIntake.get(robot.arm.extensionSubsystem.getPosition());
+        ff*=lutExtendIntake.get(clamp(robot.arm.extensionSubsystem.getPosition(),minnLinerPos,maxxLinearPos));
         switch (mode) {
             case AUTO:
                 pid();

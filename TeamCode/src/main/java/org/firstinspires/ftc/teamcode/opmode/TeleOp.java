@@ -43,7 +43,7 @@ public class TeleOp extends OpMode {
     BlackBoxLogger logger = null;
     private boolean endgame = false,park = false;
     public static double parkTime = 7;
-    public static boolean useLogger = true;
+    public static boolean useLogger = false;
 
     @Override
     public void init() {

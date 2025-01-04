@@ -39,7 +39,7 @@ public class FindTickPerDegree extends LinearOpMode {
                 double tickPerDegree = ticksRecorded[0] / 15;
                 for(int i = 0; i < ticksRecorded.length; i++){
                     for(int j = i+1; j < ticksRecorded.length; j++) {
-                        tickPerDegree = (tickPerDegree + (ticksRecorded[j] - ticksRecorded[i]) / 15) / 2;
+                        tickPerDegree = (tickPerDegree + (ticksRecorded[j] - ticksRecorded[i]) / ((j-i)*15)) / 2;
                     }
                 }
                 telemetry.addData("ticks", Arrays.toString(ticksRecorded));

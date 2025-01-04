@@ -19,11 +19,12 @@ public class SlowModeTuner extends LinearOpMode {
         Globals.IS_AUTO = false;
         robot = new Robot(this,new Pose2d(0,0,Math.toRadians(270)));
         gg = new GamePadController(gamepad1);
+        robot.arm.IS_DISABLED = true;
 
         waitForStart();
         robot.start();
         while (opModeIsActive()) {
-
+            gg.update();
             if(gg.aOnce()) {
                 robot.drive.slow_mode = !robot.drive.slow_mode;
             }

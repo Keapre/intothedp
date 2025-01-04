@@ -22,7 +22,7 @@ import java.util.Queue;
 
 @Config
 public class Arm implements Subsystem {
-    public static boolean IS_DISABLED = false;
+    public  boolean IS_DISABLED = false;
     public enum FSMState {
         IDLE, RETRACTING_EXTENSION, ADJUSTING_PITCH, PRE_ADJUSTING_PITCH, EXTENDING_EXTENSION, MANUAL_CONTROL, OPERATION_COMPLETE,PRE_EXTENSION,CHANGING_OUTTAKE
     }
@@ -146,6 +146,7 @@ public class Arm implements Subsystem {
                 }
                 break;
             case PRE_ADJUSTING_PITCH:
+
                 extensionSubsystem.offset += extensionSubsystem.currentPos;
                 pitchSubsystem.setTarget(desiredPitch);
                 currentState = nextStateInPlan();
@@ -155,15 +156,18 @@ public class Arm implements Subsystem {
                 if (pitchSubsystem.isAtPosition(desiredPitch)) {
                     //extensionSubsystem.updateKerem(pitchSubsystem.calculateAngle());
                     if (desiredPitch == 0) pitchSubsystem.setMode(Pitch.MODE.IDLE);
+                    pitchSubsystem.updateRegreesion();
                     currentState = nextStateInPlan();
                 }
                 break;
             case PRE_EXTENSION:
+
                 extensionSubsystem.setTaget(extensionSubsystem.offset + desiredExtension);
                 currentState = nextStateInPlan();
                 break;
             case EXTENDING_EXTENSION:
-//                if (desiredExtension == 0) {
+
+                //                if (desiredExtension == 0) {
 //                    currentState = nextStateInPlan();
 //                    break;
 //                }

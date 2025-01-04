@@ -41,6 +41,8 @@ public class DriveTrain implements Subsystem {
 
     private Robot robot;
 
+    public static boolean useEquation = true;
+
     public boolean slow_mode = false;
     public enum STATE {
         IDLE,
@@ -85,14 +87,12 @@ public class DriveTrain implements Subsystem {
     public static PID hPID = new PID(hkP,0,hkD);
 
     public static  double kS = 0.05; // TODO: tune this
-    private static final double NOMINAL_VOLTAGE = 13.2;
     Pose2d powerVector = new Pose2d(0,0,0);
     private VoltageSensor voltageSensor;
 
     public static double decelX = 20,deccelY = 20; // TODO: tune this
 
     public static double xMultiplier = 1.40; // TODO: tune this
-    double voltage = 0;
     public static boolean use_gliding = true;
 
     public static double xThreeshold = 2,yThreeshold = 2,hThreeshold = 0.2; //TODO:maybe tune this also
@@ -382,53 +382,11 @@ public class DriveTrain implements Subsystem {
         rightFront.setPower(0);
     }
 
-    private double equationMotor(double rawPower) {
-        double scale = (robot.getVoltage() > 0)
-                ? robot.getNormalizedVoltage()
-                : 1.0;
-
-        rawPower*=scale;
-        double scaledKs = kS * scale * Math.signum(rawPower);
-        double finalPower = Utils.minMaxClip(scaledKs + rawPower,-max_speed,max_speed);
-        if(state == STATE.DRIVE) {
-            if(Math.abs(rawPower) < 0.01) {
-                finalPower = 0;
-            }
-        }
-        return finalPower;
-    }
-    public void normalizeArray(double[] arr) {
-        double largest = 1;
-        for (int i = 0; i < arr.length; i++) {
-            largest = Math.max(largest, Math.abs(arr[i]));
-        }
-        for (int i = 0; i < arr.length; i++) {
-            arr[i] /= largest;
-        }
-    }
-    public void setMotorPowers(double lf, double lr, double rr, double rf) {
-        leftFront.setPower(clamp(lf,-1,1));
-        leftBack.setPower(clamp(lr,-1,1));
-        rightBack.setPower(clamp(rr,-1,1));
-        rightFront.setPower(clamp(rf,-1,1));
-    }
 
 
-    public void setPowerVector() {
-        double x = powerVector.position.x * xMultiplier;
-        double y = powerVector.position.y;
-        double h = powerVector.heading.toDouble();
-        double[] powers = {
-                equationMotor(x - h - y),
-                equationMotor(x - h + y),
-                equationMotor(x + h - y),
-                equationMotor(x + h + y)
-        };
 
-        normalizeArray(powers);
-        setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
-    }
 
+    public double strafe,forward,h;
 
     public double smoothControls(double value) {
         return 0.5*Math.tan(1.12*value);
@@ -475,29 +433,79 @@ public class DriveTrain implements Subsystem {
     public void drive(GamePadController gg) {
         state = STATE.DRIVE;
         max_speed = 1;
-        double x = cubicScaling(gg.left_stick_x);
-        double y = cubicScaling(gg.left_stick_y);
-        double h = cubicScaling(gg.right_stick_x);
+        useEquation = false;
+        strafe = cubicScaling(gg.left_stick_x);
+        forward = -cubicScaling(gg.left_stick_y);
+        h = cubicScaling(gg.right_stick_x);
         if(use_filter) {
-            x = filterX.calculate(x);
-            y = filterY.calculate(y);
+            strafe = filterX.calculate(strafe);
+            forward= filterY.calculate(forward);
             h = filterH.calculate(h);
         }
 
         if(slow_mode) {
-            x*=xSlowModeMultipler;
-            y*=ySlowModeMultiplier;
+            strafe*=xSlowModeMultipler;
+            forward*=ySlowModeMultiplier;
             h*=hSlowModeMultiplier;
         }
-        Vector2D drive = new Vector2D(x,y);
+        Vector2D drive = new Vector2D(forward,strafe);
         if (drive.magnitude() <= 0.05){
             drive.mult(0);
         }
         double botHeading = pose.heading.toDouble();
-        double rotX = drive.x * Math.cos(-botHeading) - drive.y * Math.sin(-botHeading);
-        double rotY = drive.x * Math.sin(-botHeading) + drive.y * Math.cos(-botHeading);
+        double rotX = drive.y * Math.cos(-botHeading) - drive.x * Math.sin(-botHeading);
+        double rotY = drive.y * Math.sin(-botHeading) + drive.x * Math.cos(-botHeading);
+
 
         powerVector = new Pose2d(rotX ,rotY,h);
+    }
+
+    public void setPowerVector() {
+        double x = powerVector.position.x * xMultiplier;
+        double y = powerVector.position.y;
+        double h = powerVector.heading.toDouble();
+        double[] powers = {
+                equationMotor(x-h-y),
+                equationMotor(x-h+y),
+                equationMotor(x+h-y),
+                equationMotor(x+h+y)
+        };
+
+        normalizeArray(powers);
+        setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+    }
+    private double equationMotor(double rawPower) {
+        if(!useEquation) return rawPower;
+
+        double scale = (robot.getVoltage() > 0)
+                ? robot.getNormalizedVoltage()
+                : 1.0;
+
+
+        rawPower*=scale;
+        double scaledKs = kS * scale * Math.signum(rawPower);
+        double finalPower = Utils.minMaxClip(scaledKs + rawPower,-max_speed,max_speed);
+        if(state == STATE.DRIVE) {
+            if(Math.abs(rawPower) < 0.01) {
+                finalPower = 0;
+            }
+        }
+        return finalPower;
+    }
+    public void normalizeArray(double[] arr) {
+        double largest = 1;
+        for (int i = 0; i < arr.length; i++) {
+            largest = Math.max(largest, Math.abs(arr[i]));
+        }
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] /= largest;
+        }
+    }
+    public void setMotorPowers(double lf, double lr, double rr, double rf) {
+        leftFront.setPower(clamp(lf,-1,1));
+        leftBack.setPower(clamp(lr,-1,1));
+        rightBack.setPower(clamp(rr,-1,1));
+        rightFront.setPower(clamp(rf,-1,1));
     }
     public boolean isBusy() {
         return state != STATE.IDLE;
