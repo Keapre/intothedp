@@ -4,7 +4,7 @@ import com.acmerobotics.dashboard.config.Config;
 
 @Config
 public class PitchConstants {
-    public static double tickPerDegree = 6.10352;
+    public static double tickPerDegree = 5.99902;
     public static double kP = 0.013;
     public static double kD = 0.00025;
 

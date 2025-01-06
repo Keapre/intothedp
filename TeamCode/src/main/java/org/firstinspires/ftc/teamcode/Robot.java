@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.util.ThreadPool;
 import org.firstinspires.ftc.teamcode.Utils.Globals;
 import org.firstinspires.ftc.teamcode.Utils.Subsystem;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.CachingVoltageSensor;
+import org.firstinspires.ftc.teamcode.Utils.Wrappers.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Arm;
 import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.Drive;
 import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.DriveTrain;
@@ -41,7 +42,6 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
     private List<Subsystem> subsystems;
     private List<Subsystem> subsystemsWithProblems;
     private ExecutorService subsystemUpdateExecutor;
-    public FtcDashboard dashboard;
     public MovingStatistics top250, top100, top10;
     public Map<Subsystem, MovingStatistics> top100Subsystems = new HashMap<>();
 
@@ -56,6 +56,7 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
         double startTime, temp;
         while (!Thread.currentThread().isInterrupted()) {
             try {
+                TelemetryUtil.sendTelemetry();
                 startTime = getCurrentTime(); // Get start time of update
 //                hub1.clearBulkCache();
 //                hub2.clearBulkCache();
@@ -87,13 +88,12 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
     };
 
     public Robot(OpMode opMode,Pose2d startPose) {
+        TelemetryUtil.setup();
         // Initialize statistics
         top10 = new MovingStatistics(10);
         top100 = new MovingStatistics(100);
         top250 = new MovingStatistics(250);
 
-        dashboard = FtcDashboard.getInstance();
-        dashboard.setTelemetryTransmissionInterval(25);
 
         hub1 = opMode.hardwareMap.get(LynxModule.class, "Control Hub");
 

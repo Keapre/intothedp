@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 
-@Disabled
+
 
 @TeleOp(name = "extension")
 @Config

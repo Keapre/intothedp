@@ -51,11 +51,12 @@ public class Pitch {
 
     public Pitch(HardwareMap hardwareMap,boolean isAutonomous,Robot robot) {
         this.robot = robot;
-        extension2 = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class,"pivot2"),0.0);
-        extension1 = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class,"pivot1"),0.0);
+        extension2 = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class,"pivot1"),0.0);
+        extension1 = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class,"pivot2"),0.0);
         limitSwitch = hardwareMap.get(DigitalChannel.class, "limit");
         extension1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         encoder = new Encoder(extension1);
+        encoder.setDirection(Encoder.Direction.REVERSE);
 
         limitSwitch.setMode(DigitalChannel.Mode.INPUT);
 

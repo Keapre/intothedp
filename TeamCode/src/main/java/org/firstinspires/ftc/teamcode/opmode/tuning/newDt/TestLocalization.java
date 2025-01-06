@@ -18,12 +18,10 @@ public class TestLocalization extends LinearOpMode {
         Robot robot = new Robot(this,new Pose2d(47, 47, Math.toRadians(270)));
         GamePadController gpc = new GamePadController(gamepad1);
         robot.arm.IS_DISABLED = true;
-        TelemetryUtil.setup();
         double lastLoopFinish = System.currentTimeMillis();
 
         waitForStart();
         robot.start();
-        TelemetryUtil.setup();
         while (opModeIsActive()) {
             gpc.update();
             robot.drive.drive(gpc);
@@ -36,7 +34,6 @@ public class TestLocalization extends LinearOpMode {
             telemetry.addData("voltage",robot.getVoltage());
             lastLoopFinish = System.currentTimeMillis();
             telemetry.update();
-            TelemetryUtil.sendTelemetry();
         }
     }
 }

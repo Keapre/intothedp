@@ -17,7 +17,7 @@ public class FindTickPerDegree extends LinearOpMode {
 
     GamePadController gg;
     Robot robot = null;
-    Double[] ticksRecorded = new Double[360/15];
+    Double[] ticksRecorded = new Double[180/15];
     @Override
     public void runOpMode() throws InterruptedException {
         Globals.IS_AUTO = false;
@@ -26,7 +26,7 @@ public class FindTickPerDegree extends LinearOpMode {
         int currentTick = 0;
 
         waitForStart();
-
+        robot.start();
         while(opModeIsActive()){
             gg.update();
 
@@ -45,9 +45,11 @@ public class FindTickPerDegree extends LinearOpMode {
                 telemetry.addData("ticks", Arrays.toString(ticksRecorded));
 
                 telemetry.addData("Tick per degree", tickPerDegree);
-                telemetry.update();
+
             }
 
+            telemetry.addData("ticks recorded",robot.arm.pitchSubsystem.getCurrentPos());
+            telemetry.update();
         }
     }
 }

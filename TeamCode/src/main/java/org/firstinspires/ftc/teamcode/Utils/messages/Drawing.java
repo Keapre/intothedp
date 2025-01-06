@@ -8,9 +8,13 @@ public final class Drawing {
     private Drawing() {}
 
 
-    public static void drawRobot(Canvas c, Pose2d t) {
+    public static void drawRobot(Canvas c, Pose2d t,boolean currentPose) {
         final double ROBOT_RADIUS = 9;
-
+        if(currentPose) {
+            c.setStroke("blue");
+        }else {
+            c.setStroke("red");
+        }
         c.setStrokeWidth(1);
         c.strokeCircle(t.position.x, t.position.y, ROBOT_RADIUS);
 

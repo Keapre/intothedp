@@ -134,10 +134,6 @@ public class TeleOp extends OpMode {
             gg.rumble(100);
         }
         robot.drive.slow_mode = robot.arm.extensionSubsystem.getPosition() >= slow_extension_limit;
-        if(gg.left_stick_x == 0 && gg.left_stick_y == 0 && gg.right_stick_x == 0 && gg.right_stick_y == 0) {
-            robot.drive.setMotorPowers(0,0,0,0);
-            return;
-        }
         robot.drive.drive(gg);
     }
     public void updateTelemetry() {

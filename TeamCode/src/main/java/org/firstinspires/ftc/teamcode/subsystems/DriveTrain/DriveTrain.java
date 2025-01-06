@@ -26,6 +26,7 @@ import org.firstinspires.ftc.teamcode.Utils.Control.SquidController;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.Utils.geometry.Path;
 import org.firstinspires.ftc.teamcode.Utils.geometry.Vector2D;
+import org.firstinspires.ftc.teamcode.Utils.messages.Drawing;
 
 /*
 IMPROVEMENTS
@@ -44,6 +45,7 @@ public class DriveTrain implements Subsystem {
     public static boolean useEquation = true;
 
     public boolean slow_mode = false;
+    public static boolean useFieldCentric = false;
     public enum STATE {
         IDLE,
         GOING_TO_POINT,
@@ -86,7 +88,7 @@ public class DriveTrain implements Subsystem {
     public static PID yPID = new PID(ykP,0,ykD);
     public static PID hPID = new PID(hkP,0,hkD);
 
-    public static  double kS = 0.05; // TODO: tune this
+    public static  double kS = 0.0255965909; // TODO: tune this
     Pose2d powerVector = new Pose2d(0,0,0);
     private VoltageSensor voltageSensor;
 
@@ -112,7 +114,7 @@ public class DriveTrain implements Subsystem {
 
 
 
-        IS_AUTO = Globals.isAuto();
+        IS_AUTO = Globals.IS_AUTO;
         initializeMotors();
         this.pose = startingPose;
         pinpoint = hw.get(GoBildaPinpointDriverRR.class,"odo");
@@ -284,11 +286,13 @@ public class DriveTrain implements Subsystem {
 
         TelemetryUtil.packet.put("maxPower", max_speed);
 
-        TelemetryUtil.packet.fieldOverlay().setStroke("red");
-        TelemetryUtil.packet.fieldOverlay().strokeCircle(target.position.x, target.position.y, xThreeshold);
+        Drawing.drawRobot(TelemetryUtil.packet.fieldOverlay(),pose,true);
+//        TelemetryUtil.packet.fieldOverlay().setStroke("red");
+//        TelemetryUtil.packet.fieldOverlay().strokeCircle(target.position.x, target.position.y, xThreeshold);
 
-        TelemetryUtil.packet.fieldOverlay().setStroke("blue");
-        TelemetryUtil.packet.fieldOverlay().strokeCircle(pose.position.x, pose.position.y, xThreeshold);
+//        TelemetryUtil.packet.fieldOverlay().setStroke("blue");
+//        TelemetryUtil.packet.fieldOverlay().strokeCircle(pose.position.x, pose.position.y, xThreeshold);
+        Drawing.drawRobot(TelemetryUtil.packet.fieldOverlay(),target,false);
 
     }
 
@@ -453,10 +457,16 @@ public class DriveTrain implements Subsystem {
             drive.mult(0);
         }
         double botHeading = pose.heading.toDouble();
-        double rotX = drive.y * Math.cos(-botHeading) - drive.x * Math.sin(-botHeading);
-        double rotY = drive.y * Math.sin(-botHeading) + drive.x * Math.cos(-botHeading);
+//        double rotX = drive.y * Math.cos(-botHeading) - drive.x * Math.sin(-botHeading);
+//        double rotY = drive.y * Math.sin(-botHeading) + drive.x * Math.cos(-botHeading);
 
+        double rotX = strafe;
+        double rotY = forward;
 
+        if(useFieldCentric) {
+            rotX = drive.y * Math.cos(-botHeading) - drive.x * Math.sin(-botHeading);
+            rotY = drive.y * Math.sin(-botHeading) + drive.x * Math.cos(-botHeading);
+        }
         powerVector = new Pose2d(rotX ,rotY,h);
     }
 
@@ -465,10 +475,10 @@ public class DriveTrain implements Subsystem {
         double y = powerVector.position.y;
         double h = powerVector.heading.toDouble();
         double[] powers = {
-                equationMotor(x-h-y),
-                equationMotor(x-h+y),
-                equationMotor(x+h-y),
-                equationMotor(x+h+y)
+                equationMotor(y+x+h),
+                equationMotor(y-x+h),
+                equationMotor(y+x-h),
+                equationMotor(y-x-h)
         };
 
         normalizeArray(powers);

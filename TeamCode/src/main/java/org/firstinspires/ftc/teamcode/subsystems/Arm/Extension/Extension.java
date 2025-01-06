@@ -32,7 +32,7 @@ public class Extension {
     public double offset;
 
     public MODE mode = MODE.AUTO;
-    double angle = 0;
+    public double angle = 0;
     public PIDFController controller = new PIDFController(ExtensionConstants.kP,0,ExtensionConstants.kD,0);
 
     Encoder encoder;
@@ -44,7 +44,6 @@ public class Extension {
         motor = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "extend"),0.02);
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-        motor.setDirection(DcMotorSimple.Direction.REVERSE);
         encoder = new Encoder(motor);
         motor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         offset = encoder.getCurrentPosition();
@@ -120,6 +119,7 @@ public class Extension {
             timer = null;
         }
     }
+
     public void update() {
         angle = robot.arm.pitchSubsystem.get_angle();
         currentPos = getCurrentPos(angle);
@@ -130,6 +130,9 @@ public class Extension {
                 pidUpdate();
                 power*=robot.getNormalizedVoltage();
                 motor.setPower(Utils.minMaxClip(power,-1, 1));
+                break;
+            case RAW_POWER:
+                motor.setPower(raw_power);
                 break;
             case MANUAL:
                 motor.setPower(Utils.minMaxClip(-1,1,power + ff));

@@ -6,6 +6,7 @@ import android.util.Log;
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.util.InterpLUT;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.DEFAUlT;
@@ -36,7 +37,7 @@ public class Arm implements Subsystem {
     public Extension extensionSubsystem;
     public Queue<FSMState> transitionPlan;
     public Pitch pitchSubsystem;
-    public static double timerthreeshold = 100;
+    public static double timerthreeshold = 50;
 
     public Claw clawSubsystem;
     GamePadController gg;
@@ -111,7 +112,7 @@ public class Arm implements Subsystem {
         desiredExtension = targetState.getExtensionTarget();
         currentState = nextStateInPlan();
     }
-
+    ElapsedTime partTimer = null;
 
 
     public void update() {
@@ -123,8 +124,6 @@ public class Arm implements Subsystem {
 //        }
         if (!manualControl && currentState != FSMState.RETRACTING_EXTENSION && currentState != FSMState.EXTENDING_EXTENSION) {
             extensionSubsystem.mode = Extension.MODE.IDLE;
-        } else if (!manualControl && currentState == FSMState.RETRACTING_EXTENSION) {
-            extensionSubsystem.mode = Extension.MODE.AUTO;
         }
         switch (currentState) {
             case IDLE:
@@ -133,23 +132,26 @@ public class Arm implements Subsystem {
             case CHANGING_OUTTAKE:
                 clawSubsystem.tiltState = targetState.getTiltState();
                 clawSubsystem.rotateState = targetState.getRotatePos();
+                currentState = nextStateInPlan();
                 break;
             case RETRACTING_EXTENSION:
                 extensionSubsystem.mode = Extension.MODE.RAW_POWER;
-                extensionSubsystem.changeRawPower(raw_power_0);
+                extensionSubsystem.changeRawPower(-raw_power_0);
                 if (pitchSubsystem.calculateAngle() > 80) {
-                    extensionSubsystem.changeRawPower(raw_power_90);
+                    extensionSubsystem.changeRawPower(-raw_power_90);
                 }
                 if (extensionSubsystem.getTimer() >= timerthreeshold) {
                     extensionSubsystem.mode = Extension.MODE.IDLE;
+                    partTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
                     currentState = nextStateInPlan();
                 }
                 break;
             case PRE_ADJUSTING_PITCH:
-
-                extensionSubsystem.offset += extensionSubsystem.currentPos;
-                pitchSubsystem.setTarget(desiredPitch);
-                currentState = nextStateInPlan();
+                if(partTimer.time()>=timerthreeshold + 75) {
+                    extensionSubsystem.offset += extensionSubsystem.currentPos;
+                    pitchSubsystem.setTarget(desiredPitch);
+                    currentState = nextStateInPlan();
+                }
                 break;
 
             case ADJUSTING_PITCH:

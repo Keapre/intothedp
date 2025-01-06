@@ -17,13 +17,11 @@ public class TuneKs extends LinearOpMode {
     public static double x = 0,y = 0.0,z = 0;
     @Override
     public void runOpMode() throws InterruptedException {
-        TelemetryUtil.setup();
         Robot robot = new Robot(this,new Pose2d(47, 47, Math.toRadians(270)));
-        DriveTrain drive = new DriveTrain(hardwareMap,new Pose2d(47, 47, Math.toRadians(270)),true,robot);
         waitForStart();
+        robot.start();
         while (opModeIsActive()) {
-            drive.setCustomPowerVector(new Pose2d(new Vector2d(x,y),z));
-            TelemetryUtil.sendTelemetry();
+            robot.drive.setCustomPowerVector(new Pose2d(new Vector2d(x,y),z));
         }
     }
 }

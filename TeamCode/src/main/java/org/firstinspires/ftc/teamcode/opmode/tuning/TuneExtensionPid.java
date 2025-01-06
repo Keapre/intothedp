@@ -46,7 +46,10 @@ public class TuneExtensionPid extends LinearOpMode {
             telemetry.addData("target",target);
             telemetry.addData("currentPos",robot.arm.extensionSubsystem.currentPos);
             telemetry.addData("arm state",robot.arm.currentState);
-            telemetry.addData("angle",robot.arm.pitchSubsystem.get_angle());
+            telemetry.addData("extension state",robot.arm.extensionSubsystem.mode);
+            telemetry.addData("ff",robot.arm.extensionSubsystem.ff);
+            telemetry.addData("angle",robot.arm.extensionSubsystem.angle);
+            telemetry.addData("power",robot.arm.extensionSubsystem.power);
             telemetry.update();
         }
     }

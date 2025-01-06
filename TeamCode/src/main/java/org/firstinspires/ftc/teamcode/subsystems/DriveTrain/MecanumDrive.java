@@ -412,10 +412,10 @@ public class MecanumDrive implements Subsystem {
             drawPoseHistory(c);
 
             c.setStroke("#4CAF50");
-            Drawing.drawRobot(c, txWorldTarget.value());
+            Drawing.drawRobot(c, txWorldTarget.value(),false);
 
             c.setStroke("#3F51B5");
-            Drawing.drawRobot(c, pose);
+            Drawing.drawRobot(c, pose,true);
 
             c.setStroke("#4CAF50FF");
             c.setStrokeWidth(1);
@@ -535,10 +535,10 @@ public class MecanumDrive implements Subsystem {
             drawPoseHistory(c);
 
             c.setStroke("#4CAF50");
-            Drawing.drawRobot(c, txWorldTarget.value());
+            Drawing.drawRobot(c, txWorldTarget.value(),false);
 
             c.setStroke("#3F51B5");
-            Drawing.drawRobot(c, pose);
+            Drawing.drawRobot(c, pose,true);
 
             c.setStroke("#7C4DFFFF");
             c.fillCircle(turn.beginPose.position.x, turn.beginPose.position.y, 2);
