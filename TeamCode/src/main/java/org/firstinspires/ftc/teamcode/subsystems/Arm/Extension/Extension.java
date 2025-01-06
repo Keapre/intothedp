@@ -68,7 +68,6 @@ public class Extension {
     public void pidUpdate() {
         controller.setPIDF(ExtensionConstants.kP, 0, ExtensionConstants.kD, 0);
         power = controller.calculate(currentPos,target);
-        updateFeedForward();
         power+=ff;
     }
 
@@ -125,6 +124,7 @@ public class Extension {
         currentPos = getCurrentPos(angle);
         if(IS_DISABLED) return;
         checkTimer();
+        updateFeedForward();
         switch (mode) {
             case AUTO:
                 pidUpdate();

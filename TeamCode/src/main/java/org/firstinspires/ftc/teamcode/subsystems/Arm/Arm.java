@@ -163,9 +163,11 @@ public class Arm implements Subsystem {
                 }
                 break;
             case PRE_EXTENSION:
-
-                extensionSubsystem.setTaget(extensionSubsystem.offset + desiredExtension);
-                currentState = nextStateInPlan();
+                if(partTimer.time()>=timerthreeshold + 75) {
+                    extensionSubsystem.offset += extensionSubsystem.currentPos;
+                    extensionSubsystem.setTaget(extensionSubsystem.offset + desiredExtension);
+                    currentState = nextStateInPlan();
+                }
                 break;
             case EXTENDING_EXTENSION:
 
@@ -295,6 +297,7 @@ public class Arm implements Subsystem {
 
         transitionPlan.add(FSMState.PRE_ADJUSTING_PITCH);
         transitionPlan.add(FSMState.ADJUSTING_PITCH);
+        //transitionPlan.add(FSMState.RETRACTING_EXTENSION);
 
         transitionPlan.add(FSMState.PRE_EXTENSION);
         transitionPlan.add(FSMState.EXTENDING_EXTENSION);
@@ -310,7 +313,7 @@ public class Arm implements Subsystem {
 
         transitionPlan.add(FSMState.PRE_ADJUSTING_PITCH);
         transitionPlan.add(FSMState.ADJUSTING_PITCH);
-
+        transitionPlan.add(FSMState.RETRACTING_EXTENSION);
 //        if (Math.abs(extensionSubsystem.getCurrentPosition() - targetState.extensionTarget) > 10) {
 //            transitionPlan.add(FSMState.EXTENDING_EXTENSION);
 //        }

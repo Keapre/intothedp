@@ -487,9 +487,7 @@ public class DriveTrain implements Subsystem {
     private double equationMotor(double rawPower) {
         if(!useEquation) return rawPower;
 
-        double scale = (robot.getVoltage() > 0)
-                ? robot.getNormalizedVoltage()
-                : 1.0;
+        double scale = robot.getNormalizedVoltage();
 
 
         rawPower*=scale;
