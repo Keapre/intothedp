@@ -96,6 +96,16 @@ public class MecanumUtil {
         return new Motion(vD, thetaD, vTheta);
     }
 
+    public static Motion motionFromPowerVector(double x,double y,double h) {
+        y*=-1;
+        double vD = Math.min(Math.sqrt(Math.pow(x, 2) +
+                        Math.pow(y, 2)),
+                1);
+        double thetaD = Math.atan2(-x, -y);
+        double vTheta = h;
+        return new Motion(vD, thetaD, vTheta);
+    }
+
     /**
      * Mecanum wheels, used to get individual motor powers.
      */
@@ -129,6 +139,15 @@ public class MecanumUtil {
         public Wheels scaleWheelPower(double scalar) {
             return new Wheels(frontLeft * scalar, frontRight * scalar,
                     backLeft * scalar, backRight * scalar);
+        }
+
+        private double applyEquation(double power,double voltage,double ks) {
+            return (voltage * power) + (ks * Math.signum(power) * voltage);
+        }
+        public Wheels scaleAutoPowers(double voltage,double ks) {
+            return new Wheels(applyEquation(frontLeft,voltage,ks),applyEquation(frontRight,voltage,ks),
+                    applyEquation(backLeft,voltage,ks),applyEquation(backRight,voltage,ks));
+
         }
     }
 

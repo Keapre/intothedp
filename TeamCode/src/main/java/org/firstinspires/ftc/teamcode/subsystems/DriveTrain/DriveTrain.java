@@ -17,6 +17,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.Utils.Caching.CachingDcMotorEx;
 import org.firstinspires.ftc.teamcode.Utils.Globals;
+import org.firstinspires.ftc.teamcode.Utils.MecanumUtil;
 import org.firstinspires.ftc.teamcode.Utils.Subsystem;
 import org.firstinspires.ftc.teamcode.Utils.Utils;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.Filters.SlewRateFilter;
@@ -474,24 +475,30 @@ public class DriveTrain implements Subsystem {
         double x = powerVector.position.x * xMultiplier;
         double y = powerVector.position.y;
         double h = powerVector.heading.toDouble();
-        double[] powers = {
-                equationMotor(y+x+h),
-                equationMotor(y-x+h),
-                equationMotor(y+x-h),
-                equationMotor(y-x-h)
-        };
+//        double[] powers = {
+//                equationMotor(y+x+h),
+//                equationMotor(y-x+h),
+//                equationMotor(y+x-h),
+//                equationMotor(y-x-h)
+//        };
+//
+//        normalizeArray(powers);
+        MecanumUtil.Motion motion  = MecanumUtil.motionFromPowerVector(x,y,h);
+        if(!Globals.IS_AUTO && useFieldCentric) {
+            motion = motion.toFieldCentricMotion(pose.heading.toDouble());
+        }
+        MecanumUtil.Wheels wheels = MecanumUtil.motionToWheelsFullSpeed(motion).scaleWheelPower(1);
+        if(Globals.IS_AUTO) {
+            wheels = MecanumUtil.motionToWheelsFullSpeed(motion).scaleAutoPowers(robot.getNormalizedVoltage(),kS);
+        }
 
-        normalizeArray(powers);
-        setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+        setMotorPowers(wheels.frontLeft,wheels.backLeft,wheels.backRight,wheels.frontRight);
+        //setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
     }
     private double equationMotor(double rawPower) {
-        if(!useEquation) return rawPower;
-
-        double scale = robot.getNormalizedVoltage();
 
 
-        rawPower*=scale;
-        double scaledKs = kS * scale * Math.signum(rawPower);
+        double scaledKs = kS * Math.signum(rawPower);
         double finalPower = Utils.minMaxClip(scaledKs + rawPower,-max_speed,max_speed);
         if(state == STATE.DRIVE) {
             if(Math.abs(rawPower) < 0.01) {
