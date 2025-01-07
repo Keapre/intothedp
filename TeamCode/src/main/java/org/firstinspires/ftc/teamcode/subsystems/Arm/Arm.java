@@ -37,7 +37,8 @@ public class Arm implements Subsystem {
     public Extension extensionSubsystem;
     public Queue<FSMState> transitionPlan;
     public Pitch pitchSubsystem;
-    public static double timerthreeshold = 50;
+    public static double timerthreeshold = 150;
+    public static double timerthreeshold2 = 125;
 
     public Claw clawSubsystem;
     GamePadController gg;
@@ -68,14 +69,14 @@ public class Arm implements Subsystem {
             Log.w(TAG, "Failed to initialize Claw: " + e.getMessage());
         }
         transitionPlan = new LinkedList<>();
-        targetState = ArmState.DEFAULT;
+        setTargetState(ArmState.INTAKING);
         previousState = targetState;
         currentState = FSMState.IDLE;
 
     }
 
-    public static double raw_power_0 = 0.85;
-    public static double raw_power_90 = 0.55;
+    public static double raw_power_0 = 1;
+    public static double raw_power_90 = 0.85;
     public boolean useRetractAuto = true;
     public double desiredExtension = 0;
     public double desiredPitch = 0;
@@ -99,9 +100,10 @@ public class Arm implements Subsystem {
     }
     public void changePitch(double pitch) {
         transitionPlan.clear();
-        transitionPlan.add(FSMState.PRE_ADJUSTING_PITCH);
+
         transitionPlan.add(FSMState.ADJUSTING_PITCH);
         desiredPitch = pitch;
+        pitchSubsystem.setTarget(desiredPitch);
         currentState = nextStateInPlan();
     }
 
@@ -114,7 +116,9 @@ public class Arm implements Subsystem {
     }
     ElapsedTime partTimer = null;
 
+    public static double timer0 = 20;
 
+    ElapsedTime atThreeshold = null;
     public void update() {
         if(IS_DISABLED)  {
             return;
@@ -147,7 +151,10 @@ public class Arm implements Subsystem {
                 }
                 break;
             case PRE_ADJUSTING_PITCH:
-                if(partTimer.time()>=timerthreeshold + 75) {
+                if(desiredPitch == 0 && pitchSubsystem.getCurrentPos() != 0) {
+                    desiredPitch = 20;
+                }
+                if(partTimer.time()>=timerthreeshold2) {
                     extensionSubsystem.offset += extensionSubsystem.currentPos;
                     pitchSubsystem.setTarget(desiredPitch);
                     currentState = nextStateInPlan();
@@ -155,19 +162,27 @@ public class Arm implements Subsystem {
                 break;
 
             case ADJUSTING_PITCH:
+
                 if (pitchSubsystem.isAtPosition(desiredPitch)) {
+                    if(atThreeshold == null) atThreeshold = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
                     //extensionSubsystem.updateKerem(pitchSubsystem.calculateAngle());
-                    if (desiredPitch == 0) pitchSubsystem.setMode(Pitch.MODE.IDLE);
-                    pitchSubsystem.updateRegreesion();
+                    if (desiredPitch == 20) {
+                        pitchSubsystem.setMode(Pitch.MODE.IDLE);
+
+                    }
+                   // pitchSubsystem.updateRegreesion();
                     currentState = nextStateInPlan();
+                }else {
+                    atThreeshold = null;
                 }
                 break;
             case PRE_EXTENSION:
-                if(partTimer.time()>=timerthreeshold + 75) {
-                    extensionSubsystem.offset += extensionSubsystem.currentPos;
-                    extensionSubsystem.setTaget(extensionSubsystem.offset + desiredExtension);
-                    currentState = nextStateInPlan();
-                }
+//                if(partTimer.time()>=timerthreeshold + 75) {
+//                    extensionSubsystem.offset += extensionSubsystem.currentPos;
+//
+//                }
+                extensionSubsystem.setTaget(desiredExtension);
+                currentState = nextStateInPlan();
                 break;
             case EXTENDING_EXTENSION:
 
@@ -313,7 +328,7 @@ public class Arm implements Subsystem {
 
         transitionPlan.add(FSMState.PRE_ADJUSTING_PITCH);
         transitionPlan.add(FSMState.ADJUSTING_PITCH);
-        transitionPlan.add(FSMState.RETRACTING_EXTENSION);
+        //transitionPlan.add(FSMState.RETRACTING_EXTENSION);
 //        if (Math.abs(extensionSubsystem.getCurrentPosition() - targetState.extensionTarget) > 10) {
 //            transitionPlan.add(FSMState.EXTENDING_EXTENSION);
 //        }

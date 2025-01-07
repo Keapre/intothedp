@@ -111,6 +111,7 @@ public class Drive extends MecanumDrive{
 
 
         if (fieldCentric) {
+            updatePoseEstimate();
             motion = motion.toFieldCentricMotion(pose.heading.toDouble());
         }
         MecanumUtil.Wheels wh;

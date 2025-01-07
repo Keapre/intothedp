@@ -33,12 +33,12 @@ import org.firstinspires.ftc.teamcode.subsystems.Arm.ArmState;
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOp Blue")
 public class TeleOp extends OpMode {
     Robot robot;
-    GamePadController gg;
+    GamePadController gg,gg2;
     Pose2d startPose =  new Pose2d(0,0,Math.toRadians(270));
 
     long lastLoopFinish;
 
-    public static double slow_extension_limit = 150;
+    public static double slow_extension_limit = 200;
     ElapsedTime timer = null;
     BlackBoxLogger logger = null;
     private boolean endgame = false,park = false;
@@ -52,6 +52,7 @@ public class TeleOp extends OpMode {
         setOpMode(this);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         gg = new GamePadController(gamepad1);
+        gg2 = new GamePadController(gamepad2);
         robot = new Robot(this,startPose);
         lastLoopFinish = System.currentTimeMillis();
         logger = new BlackBoxLogger();
@@ -91,9 +92,11 @@ public class TeleOp extends OpMode {
     @Override
     public void loop()
     {
+        gg2.update();
         gg.update();
         updateDrive();
         updateArm();
+        hang();
         updateTelemetry();
         if(useLogger) logger.writeData();
     }
@@ -135,6 +138,18 @@ public class TeleOp extends OpMode {
         }
         robot.drive.slow_mode = robot.arm.extensionSubsystem.getPosition() >= slow_extension_limit;
         robot.drive.drive(gg);
+    }
+
+    public void hang() {
+        if(gg2.aOnce()) {
+            robot.hang.setServo();
+        }
+
+        if(gg2.bOnce()) {
+            robot.hang.setCloseServo();
+        }
+
+        robot.hang.changePower(gg2);
     }
     public void updateTelemetry() {
         telemetry.addLine();

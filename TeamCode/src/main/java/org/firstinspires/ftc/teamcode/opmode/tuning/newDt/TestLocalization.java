@@ -15,10 +15,10 @@ public class TestLocalization extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         Globals.IS_AUTO = false;
-        Robot robot = new Robot(this,new Pose2d(47, 47, Math.toRadians(270)));
+        Robot robot = new Robot(this,new Pose2d(47, 47, Math.toRadians(0)));
         GamePadController gpc = new GamePadController(gamepad1);
         robot.arm.IS_DISABLED = true;
-        double lastLoopFinish = System.currentTimeMillis();
+        long lastLoopFinish = System.currentTimeMillis();
 
         waitForStart();
         robot.start();
@@ -26,9 +26,11 @@ public class TestLocalization extends LinearOpMode {
             gpc.update();
             robot.drive.drive(gpc);
 
+            telemetry.addData("STATE",robot.drive.state);
             telemetry.addData("Power Vector", String.valueOf(robot.drive.getPowerVector()));
             telemetry.addData("Sample Rate (Hz) ",1/((double)(System.currentTimeMillis() - lastLoopFinish)/1000.0));
             telemetry.addData("strafe",robot.drive.strafe);
+            telemetry.addData("pose",robot.drive.getPose().toString());
             telemetry.addData("forward",robot.drive.forward);
             telemetry.addData("h",robot.drive.h);
             telemetry.addData("voltage",robot.getVoltage());

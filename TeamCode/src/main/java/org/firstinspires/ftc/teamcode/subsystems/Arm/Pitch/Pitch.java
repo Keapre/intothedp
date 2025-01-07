@@ -6,6 +6,7 @@ import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.util.InterpLUT;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -19,8 +20,8 @@ public class Pitch {
     public static boolean IS_DISABLED = false;
     private Robot robot;
 
-    CachingDcMotorEx extension2; // non ecoder
-    CachingDcMotorEx extension1; // with encoder
+    public CachingDcMotorEx extension2; // non ecoder
+    public CachingDcMotorEx extension1; // with encoder
     Encoder encoder = null;
 
 
@@ -55,18 +56,20 @@ public class Pitch {
         extension1 = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class,"pivot2"),0.0);
         limitSwitch = hardwareMap.get(DigitalChannel.class, "limit");
         extension1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
         encoder = new Encoder(extension1);
         encoder.setDirection(Encoder.Direction.REVERSE);
 
         limitSwitch.setMode(DigitalChannel.Mode.INPUT);
-
         initializeMotors();
+
 
         if(isAutonomous) {
             mode = MODE.AUTO;
         }
         currentPos = encoder.getCurrentPosition();
         offset = currentPos;
+        controller.reset();
     }
 
     public void initializeMotors() {
@@ -75,6 +78,9 @@ public class Pitch {
 
         extension1.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         extension2.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+
+        extension2.setDirection(DcMotorSimple.Direction.REVERSE);
+        extension1.setDirection(DcMotorSimple.Direction.REVERSE);
 
         //REVERSE IF NEEDED
     }
@@ -94,7 +100,7 @@ public class Pitch {
         //TODO:tune this
     }
     public double getTrueCurrentPosition() {
-        return encoder.getCurrentPosition();
+        return extension1.getCurrentPosition();
     }
 
     public double getCurrentPos() {
@@ -151,22 +157,23 @@ public class Pitch {
         angle = calculateAngle();
         if(IS_DISABLED) return;
         ff = Math.cos(Math.toRadians(angle)) * PitchConstants.max_f;
-        if(lutExtendIntake == null) {
-            updateRegreesion();
-        }
-        ff*=lutExtendIntake.get(clamp(robot.arm.extensionSubsystem.getPosition(),minnLinerPos,maxxLinearPos));
+//        if(lutExtendIntake == null) {
+//            updateRegreesion();
+//        }'[
+        //ff*=(1 + (600/robot.arm.extensionSubsystem.currentPos));
+//        ff*=lutExtendIntake.get(clamp(robot.arm.extensionSubsystem.getPosition(),minnLinerPos,maxxLinearPos));
         switch (mode) {
             case AUTO:
                 pid();
-                extension1.setPower(Utils.minMaxClip((motor1Power + ff) * robot.getNormalizedVoltage(), -1, 1));
-                extension2.setPower(Utils.minMaxClip((motor2Power + ff) * robot.getNormalizedVoltage(),-1, 1));
+                extension1.setPower(Utils.minMaxClip(motor1Power + ff  , -1, 1));
+                extension2.setPower(Utils.minMaxClip(motor2Power+ff,-1, 1));
                 break;
             case MANUAL:
                 extension1.setPower(Utils.minMaxClip(-1,1,motor1Power + ff));
                 extension2.setPower(Utils.minMaxClip(-1,1,motor2Power + ff));
                 break;
             case IDLE:
-                if(target == 0) {
+                if(target == 20) {
                     extension1.setPower(0);
                     extension2.setPower(0);
                 }

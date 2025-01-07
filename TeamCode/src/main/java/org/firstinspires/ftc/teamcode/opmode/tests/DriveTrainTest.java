@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.Drive;
-@Disabled
+
 
 @TeleOp(name = "drivetraintest")
 public class DriveTrainTest extends LinearOpMode {

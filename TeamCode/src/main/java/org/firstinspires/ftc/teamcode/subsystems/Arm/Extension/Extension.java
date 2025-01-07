@@ -83,7 +83,7 @@ public class Extension {
         return currentPos;
     }
 
-    public boolean isAtPosition() {
+    public boolean  isAtPosition() {
         return Math.abs(currentPos - target) <= ExtensionConstants.pointThreeshold;
     }
     public static double valueSHit = 36;//should lower this fr fr
@@ -138,7 +138,7 @@ public class Extension {
                 motor.setPower(Utils.minMaxClip(-1,1,power + ff));
                 break;
             case IDLE:
-                motor.setPower(-0.01);
+                motor.setPower(ExtensionConstants.idlePower);
                 break;
         }
         previous_angle = angle;

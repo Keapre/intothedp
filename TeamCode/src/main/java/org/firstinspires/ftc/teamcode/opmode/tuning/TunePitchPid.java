@@ -25,6 +25,7 @@ then the linear regression based on extension
 public class TunePitchPid extends LinearOpMode {
 
     Robot robot;
+    GamePadController gg;
 
     public static double target = 0;
     private double prev_target = target;
@@ -33,19 +34,26 @@ public class TunePitchPid extends LinearOpMode {
         Globals.IS_AUTO = false;
         robot = new Robot(this,new Pose2d(0,0,0));
         robot.drive.IS_DISABLED = true;
+        gg = new GamePadController(gamepad1);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         waitForStart();
         robot.start();
         while (opModeIsActive()) {
-            if(target!=prev_target) {
+            gg.update();
+
+            if(gg.aOnce()) {
                 robot.arm.changePitch(target);
-            }
-            if(robot.arm.pitchSubsystem.mode == Pitch.MODE.AUTO && robot.arm.pitchSubsystem.isAtPosition(target)){
-                robot.arm.pitchSubsystem.setMode(Pitch.MODE.IDLE);
             }
             telemetry.addData("target",target);
             telemetry.addData("pos",robot.arm.pitchSubsystem.getCurrentPos());
+            telemetry.addData("state",robot.arm.pitchSubsystem.mode);
+            telemetry.addData("ff",robot.arm.pitchSubsystem.ff);
+            telemetry.addData("power",robot.arm.pitchSubsystem.motor1Power);
+            telemetry.addData("power 1",robot.arm.pitchSubsystem.extension1.getPower());
+            telemetry.addData("power 2",robot.arm.pitchSubsystem.extension2.getPower());
+            telemetry.addData("real pos",robot.arm.pitchSubsystem.extension1.getCurrentPosition());
+            telemetry.addData("offset",robot.arm.pitchSubsystem.offset);
             telemetry.update();
             prev_target = target;
         }

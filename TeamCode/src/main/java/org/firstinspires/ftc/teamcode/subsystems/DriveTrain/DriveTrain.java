@@ -3,8 +3,12 @@ package org.firstinspires.ftc.teamcode.subsystems.DriveTrain;
 import static com.arcrobotics.ftclib.util.MathUtils.clamp;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.DualNum;
+import com.acmerobotics.roadrunner.MecanumKinematics;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
+import com.acmerobotics.roadrunner.PoseVelocity2dDual;
+import com.acmerobotics.roadrunner.Time;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.GoBildaPinpointDriver;
 import com.acmerobotics.roadrunner.ftc.GoBildaPinpointDriverRR;
@@ -46,7 +50,7 @@ public class DriveTrain implements Subsystem {
     public static boolean useEquation = true;
 
     public boolean slow_mode = false;
-    public static boolean useFieldCentric = false;
+    public static boolean useFieldCentric = true;
     public enum STATE {
         IDLE,
         GOING_TO_POINT,
@@ -70,7 +74,8 @@ public class DriveTrain implements Subsystem {
     Pose2d target = new Pose2d(0,0,0);
     PoseVelocity2d speed = new PoseVelocity2d(new Vector2d(0,0),0);
 
-    public double xSlowModeMultipler = 0.5,ySlowModeMultiplier = 0.5,hSlowModeMultiplier = 0.5;
+    public double xSlowModeMultipler = 0.6,ySlowModeMultiplier = 0.6,hSlowModeMultiplier = 0.5;
+    public double xNormalModeMultipler = 0.9,ySNormalModeMultiplier = 0.9,hNormalModeMultiplier = 0.9;
     ElapsedTime timer = null,stable = null;
 
     /* PIDS */
@@ -90,12 +95,12 @@ public class DriveTrain implements Subsystem {
     public static PID hPID = new PID(hkP,0,hkD);
 
     public static  double kS = 0.0255965909; // TODO: tune this
-    Pose2d powerVector = new Pose2d(0,0,0);
+    PoseVelocity2d powerVector = new PoseVelocity2d(new Vector2d(0,0),0);
     private VoltageSensor voltageSensor;
 
     public static double decelX = 20,deccelY = 20; // TODO: tune this
 
-    public static double xMultiplier = 1.40; // TODO: tune this
+    public static double xMultiplier = 1.1; // TODO: tune this
     public static boolean use_gliding = true;
 
     public static double xThreeshold = 2,yThreeshold = 2,hThreeshold = 0.2; //TODO:maybe tune this also
@@ -108,10 +113,10 @@ public class DriveTrain implements Subsystem {
 
     public DriveTrain(HardwareMap hw, Pose2d startingPose,boolean auto,Robot robot) {
         this.robot = robot;
-        leftFront =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"leftFront"),0.005);
-        leftBack =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"leftBack"),0.005);
-        rightBack =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"rightBack"),0.005);
-        rightFront =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"rightFront"),0.005);
+        leftFront =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"leftFront"),0);
+        leftBack =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"leftBack"),0);
+        rightBack =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"rightBack"),0.0);
+        rightFront =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"rightFront"),0);
 
 
 
@@ -126,7 +131,7 @@ public class DriveTrain implements Subsystem {
 
         pinpoint.resetPosAndIMU();
         try {
-            Thread.sleep(500);
+            Thread.sleep(300);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -147,19 +152,18 @@ public class DriveTrain implements Subsystem {
         return max_speed;
     }
 
-    public void setCustomPowerVector(Pose2d power) {
-        powerVector = new Pose2d(power.position.x,power.position.y, power.heading.toDouble());
+    public void setCustomPowerVector(PoseVelocity2d power) {
+        powerVector = new PoseVelocity2d(new Vector2d(power.linearVel.x,power.linearVel.y), power.angVel);
     }
 
-    public Pose2d getPowerVector() {
+    public PoseVelocity2d getPowerVector() {
         return powerVector;
     }
     public Pose2d getPose() {
         return pose;
     }
     void initializeMotors() {
-        leftFront.setDirection(DcMotor.Direction.REVERSE);
-        leftBack.setDirection(DcMotor.Direction.REVERSE);
+
 
         leftFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         leftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -177,6 +181,8 @@ public class DriveTrain implements Subsystem {
             rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
+        leftFront.setDirection(DcMotor.Direction.REVERSE);
+        leftBack.setDirection(DcMotor.Direction.REVERSE);
     }
     @Override
     public void update() {
@@ -298,9 +304,6 @@ public class DriveTrain implements Subsystem {
     }
 
     public void updateLocalization() {
-        if(lastPinPoint!=pose) {
-            pinpoint.setPosition(pose);
-        }
         pinpoint.update();
         pose = pinpoint.getPositionRR();
         speed = pinpoint.getVelocityRR();
@@ -342,7 +345,7 @@ public class DriveTrain implements Subsystem {
         if(hError < 0.1) {
             hPower = 0;
         }
-        powerVector = new Pose2d(xPower,yPower,hPower);
+        powerVector = new PoseVelocity2d(new Vector2d(xPower,yPower),hPower);
     }
     public void setFinalAdjustment(boolean finalAdjustment) {
         this.fine_stop = finalAdjustment;
@@ -380,7 +383,7 @@ public class DriveTrain implements Subsystem {
     }
 
     void motorsOff() {
-        powerVector = new Pose2d(0,0,0);
+        powerVector = new PoseVelocity2d(new Vector2d(0,0),0);
         leftFront.setPower(0);
         leftBack.setPower(0);
         rightBack.setPower(0);
@@ -438,43 +441,64 @@ public class DriveTrain implements Subsystem {
     public void drive(GamePadController gg) {
         state = STATE.DRIVE;
         max_speed = 1;
-        useEquation = false;
-        strafe = cubicScaling(gg.left_stick_x);
-        forward = -cubicScaling(gg.left_stick_y);
-        h = cubicScaling(gg.right_stick_x);
-        if(use_filter) {
-            strafe = filterX.calculate(strafe);
-            forward= filterY.calculate(forward);
-            h = filterH.calculate(h);
-        }
+//        useEquation = false;
+//        strafe = gg.left_stick_x;
+//        forward = gg.left_stick_y;
+//        h = gg.right_stick_x;
+//        if(use_filter) {
+//            strafe = filterX.calculate(strafe);
+//            forward= filterY.calculate(forward);
+//            h = filterH.calculate(h);
+//        }
+//
+//        if(slow_mode) {
+//            strafe*=xSlowModeMultipler;
+//            forward*=ySlowModeMultiplier;
+//            h*=hSlowModeMultiplier;
+//        }
+        MecanumUtil.Motion motion;
+        double left_stick_x = -cubicScaling(gg.left_stick_x);
+        double left_stick_y = -cubicScaling(gg.left_stick_y);
+        double right_stick_x = -cubicScaling(gg.right_stick_x);
+        double right_stick_y = gg.right_stick_y;
+
+
 
         if(slow_mode) {
-            strafe*=xSlowModeMultipler;
-            forward*=ySlowModeMultiplier;
-            h*=hSlowModeMultiplier;
+            left_stick_y*=ySlowModeMultiplier;
+            left_stick_x*=xSlowModeMultipler;
+            right_stick_x*=hSlowModeMultiplier;
+        }else {
+            left_stick_y*=ySNormalModeMultiplier;
+            left_stick_x*=xNormalModeMultipler;
+            right_stick_x*=hNormalModeMultiplier;
         }
-        Vector2D drive = new Vector2D(forward,strafe);
-        if (drive.magnitude() <= 0.05){
-            drive.mult(0);
-        }
-        double botHeading = pose.heading.toDouble();
-//        double rotX = drive.y * Math.cos(-botHeading) - drive.x * Math.sin(-botHeading);
-//        double rotY = drive.y * Math.sin(-botHeading) + drive.x * Math.cos(-botHeading);
-
-        double rotX = strafe;
-        double rotY = forward;
-
+        left_stick_x*=xMultiplier;
+        Vector2d translational = new Vector2d(left_stick_y,left_stick_x);
         if(useFieldCentric) {
-            rotX = drive.y * Math.cos(-botHeading) - drive.x * Math.sin(-botHeading);
-            rotY = drive.y * Math.sin(-botHeading) + drive.x * Math.cos(-botHeading);
+            translational = pose.heading.inverse().times(translational);
         }
-        powerVector = new Pose2d(rotX ,rotY,h);
+/*        motorPowers[0] = ffMotor.compute(wh.frontLeft,PARAMS.maxProfileAccel);
+        motorPowers[1] = ffMotor.compute(wh.backLeft,PARAMS.maxProfileAccel);
+        motorPowers[2] = ffMotor.compute(wh.backRight,PARAMS.maxProfileAccel);
+        motorPowers[3] = ffMotor.compute(wh.frontRight,PARAMS.maxProfileAccel);*/
+        powerVector = new PoseVelocity2d(translational,right_stick_x);
     }
+    public void setDrivePowers(PoseVelocity2d powers) {
+        MecanumKinematics.WheelVelocities<Time> wheelVels = new MecanumKinematics(1).inverse(
+                PoseVelocity2dDual.constant(powers, 1));
 
+        double maxPowerMag = 1;
+        for (DualNum<Time> power : wheelVels.all()) {
+            maxPowerMag = Math.max(maxPowerMag, power.value());
+        }
+
+        leftFront.setPower(wheelVels.leftFront.get(0) / maxPowerMag);
+        leftBack.setPower(wheelVels.leftBack.get(0) / maxPowerMag);
+        rightBack.setPower(wheelVels.rightBack.get(0) / maxPowerMag);
+        rightFront.setPower(wheelVels.rightFront.get(0) / maxPowerMag);
+    }
     public void setPowerVector() {
-        double x = powerVector.position.x * xMultiplier;
-        double y = powerVector.position.y;
-        double h = powerVector.heading.toDouble();
 //        double[] powers = {
 //                equationMotor(y+x+h),
 //                equationMotor(y-x+h),
@@ -483,16 +507,8 @@ public class DriveTrain implements Subsystem {
 //        };
 //
 //        normalizeArray(powers);
-        MecanumUtil.Motion motion  = MecanumUtil.motionFromPowerVector(x,y,h);
-        if(!Globals.IS_AUTO && useFieldCentric) {
-            motion = motion.toFieldCentricMotion(pose.heading.toDouble());
-        }
-        MecanumUtil.Wheels wheels = MecanumUtil.motionToWheelsFullSpeed(motion).scaleWheelPower(1);
-        if(Globals.IS_AUTO) {
-            wheels = MecanumUtil.motionToWheelsFullSpeed(motion).scaleAutoPowers(robot.getNormalizedVoltage(),kS);
-        }
-
-        setMotorPowers(wheels.frontLeft,wheels.backLeft,wheels.backRight,wheels.frontRight);
+        setDrivePowers(powerVector);
+        //setMotorPowers(wheels.frontLeft,wheels.backLeft,wheels.backRight,wheels.frontRight);
         //setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
     }
     private double equationMotor(double rawPower) {
@@ -559,7 +575,7 @@ public class DriveTrain implements Subsystem {
             }
         }
 
-        powerVector = new Pose2d(xPower,yPower,hPower);
+        powerVector = new PoseVelocity2d(new Vector2d(xPower,yPower),hPower);
 
     }
 

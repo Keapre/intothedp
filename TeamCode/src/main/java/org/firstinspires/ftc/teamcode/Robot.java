@@ -20,6 +20,7 @@ import org.firstinspires.ftc.teamcode.Utils.Wrappers.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Arm;
 import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.Drive;
 import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.DriveTrain;
+import org.firstinspires.ftc.teamcode.subsystems.Hang.Hang;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,6 +36,7 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
 
     public DriveTrain drive;
     public Arm arm;
+    public Hang hang;
     CachingVoltageSensor voltageSensor;
 
     private LynxModule hub1;
@@ -102,7 +104,7 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
         //region Initialize subsystems
         subsystems = new ArrayList<>();
         try {
-            drive = new DriveTrain(opMode.hardwareMap,startPose,Globals.isAuto(),this);
+            drive = new DriveTrain(opMode.hardwareMap,startPose,Globals.IS_AUTO,this);
             subsystems.add(drive);
             Log.w(TAG, "DriveTrain intialized successfully");
         } catch (Exception e) {
@@ -114,6 +116,13 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
             Log.w(TAG, "arm intialized successfully");
         } catch (Exception e) {
             Log.w(TAG, "Failed to initialize Arm: " + e.getMessage());
+        }
+
+        try {
+            hang = new Hang(opMode.hardwareMap);
+            subsystems.add(hang);
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to initialize Hang: " + e.getMessage());
         }
         voltageSensor = new CachingVoltageSensor(opMode.hardwareMap);
 
