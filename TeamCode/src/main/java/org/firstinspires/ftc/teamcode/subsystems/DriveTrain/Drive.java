@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems.DriveTrain;
 
 import android.util.Log;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.ftc.FlightRecorder;
@@ -16,11 +17,11 @@ import org.firstinspires.ftc.teamcode.Utils.MecanumUtil;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 import org.firstinspires.ftc.teamcode.Utils.messages.PoseMessage;
 
-
+@Config
 public class Drive extends MecanumDrive{
     public static class Params {
-        public double xOffset = -115;
-        public double yOffset = -2.5;
+        public double xOffset = -128.5;
+        public double yOffset = 6;
 
 
         public double encoderResolution = GoBildaPinpointDriverRR.goBILDA_4_BAR_POD;
@@ -30,7 +31,7 @@ public class Drive extends MecanumDrive{
     }
     public static Params PARAMS = new Params();
     public GoBildaPinpointDriverRR pinpoint;
-    public static boolean usePin = false;
+    public static boolean usePin = true;
 
     @Override
     public void update() {

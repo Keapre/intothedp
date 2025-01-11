@@ -52,8 +52,6 @@ public class Claw {
         this.claw = new CachingServo(hardwareMap.get(Servo.class, "claw"));
         this.leftDiffy = new CachingServo(hardwareMap.get(Servo.class, "diffyLeft"));
         this.rightDiffy = new CachingServo(hardwareMap.get(Servo.class, "diffyRight"));
-        sensor = new OPColorSensor(hardwareMap,"intakeSensor");
-        deactivateClawLed();
     }
 
 
@@ -66,35 +64,35 @@ public class Claw {
     }
 
     ElapsedTime timerClaw = null;
-    public boolean checkTook() {
-        if(sensor.tookit()) {
-            if(timerClaw == null) {
-                timerClaw = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-            }
-            if(blue) {
-                if(sensor.isRed()) {
-                    clawPos = CLAWPOS.OPEN;
-                    return false;
-                }else {
-                    tiltState = tiltMode.MID;
-                    rotateState = RotateMode.ORIZONTAL;
-                    return true;
-                }
-            }else {
-                if(sensor.isBlue()) {
-                    clawPos = CLAWPOS.OPEN;
-                    return false;
-                }else {
-                    rotateState = RotateMode.ORIZONTAL;
-                    tiltState = tiltMode.MID;
-                    return true;
-                }
-            }
-        }else {
-            timerClaw = null;
-        }
-        return false;
-    }
+//    public boolean checkTook() {
+//        if(sensor.tookit()) {
+//            if(timerClaw == null) {
+//                timerClaw = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+//            }
+//            if(blue) {
+//                if(sensor.isRed()) {
+//                    clawPos = CLAWPOS.OPEN;
+//                    return false;
+//                }else {
+//                    tiltState = tiltMode.MID;
+//                    rotateState = RotateMode.ORIZONTAL;
+//                    return true;
+//                }
+//            }else {
+//                if(sensor.isBlue()) {
+//                    clawPos = CLAWPOS.OPEN;
+//                    return false;
+//                }else {
+//                    rotateState = RotateMode.ORIZONTAL;
+//                    tiltState = tiltMode.MID;
+//                    return true;
+//                }
+//            }
+//        }else {
+//            timerClaw = null;
+//        }
+//        return false;
+//    }
     public boolean isUnderSample() {
         if(blue) {
             return sensor.isBlue() || sensor.isYellow();
@@ -103,13 +101,13 @@ public class Claw {
         }
     }
 
-    public void activateClawLed() {
-        sensor.enableLED(true);
-    }
-
-    public void deactivateClawLed() {
-        sensor.enableLED(false);
-    }
+//    public void activateClawLed() {
+//        sensor.enableLED(true);
+//    }
+//
+//    public void deactivateClawLed() {
+//        sensor.enableLED(false);
+//    }
 
     public void update() {
         switch (clawPos) {

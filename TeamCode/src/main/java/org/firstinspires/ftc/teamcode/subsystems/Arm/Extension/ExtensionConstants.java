@@ -9,6 +9,7 @@ public class ExtensionConstants {
     public static double kI = 0.0;
     public static double kD = 0;
     public static double idlePower = 0;
+    public static double valueSHit = 0;//should lower this fr fr;
 
     public static double kf = 0; //0.20 //probabil o sa actioneze ca un ks
     //thresholds

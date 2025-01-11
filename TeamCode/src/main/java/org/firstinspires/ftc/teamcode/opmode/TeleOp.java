@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.opmode;
 
 import static org.firstinspires.ftc.teamcode.Utils.OpModeUtils.setOpMode;
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -27,6 +29,8 @@ import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Arm;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.ArmState;
+import org.firstinspires.ftc.teamcode.subsystems.Arm.Claw.Claw;
+import org.firstinspires.ftc.teamcode.subsystems.Hang.Hang;
 
 
 @Config
@@ -41,27 +45,28 @@ public class TeleOp extends OpMode {
     public static double slow_extension_limit = 200;
     ElapsedTime timer = null;
     BlackBoxLogger logger = null;
-    private boolean endgame = false,park = false;
-    public static double parkTime = 7;
+    private boolean endgame = false,park = false,park2 = false;
+    public static double parkTime = 10;
+    public static double parkTime2 = 5;
     public static boolean useLogger = false;
 
     @Override
     public void init() {
         TelemetryUtil.setup();
         Globals.IS_AUTO = false;
-        setOpMode(this);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         gg = new GamePadController(gamepad1);
         gg2 = new GamePadController(gamepad2);
         robot = new Robot(this,startPose);
         lastLoopFinish = System.currentTimeMillis();
-        logger = new BlackBoxLogger();
     }
 
 
     @Override
     public void start() {
         robot.start();
+        robot.arm.clawSubsystem.tiltState = Claw.tiltMode.MID;
+        robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
         timer = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
     }
     private boolean isManualControlActivated() {
@@ -109,18 +114,24 @@ public class TeleOp extends OpMode {
             robot.arm.manualControl = false;
         }
         if(gg.bOnce()) {
-            if(robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
+            Log.w("debug", "b pressed");
+
+            if(robot.arm.targetState == ArmState.HIGHBASKET && robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
+                robot.arm.setTargetState(ArmState.DEFAULT);
+            }
+            else if(robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
                 robot.arm.setTargetState(ArmState.INTAKING);
             }
         }
         if (gg.yOnce()) {
-            if( robot.arm.getCurrentState() == Arm.FSMState.IDLE && robot.arm.targetState == ArmState.SPECIMENGARD) {
-                robot.arm.setTargetState(ArmState.SPECIMENSLAM);
-            }else if(robot.arm.getCurrentState() == Arm.FSMState.IDLE && robot.arm.targetState != ArmState.SPECIMENGARD) {
+            Log.w("debug", "y pressed");
+
+            if( robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
                 robot.arm.setTargetState(ArmState.SPECIMENGARD);
             }
         }
         if(gg.xOnce()) {
+            Log.w("debug", "x pressed");
             if( robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
                 robot.arm.setTargetState(ArmState.HIGHBASKET);
             }
@@ -130,13 +141,21 @@ public class TeleOp extends OpMode {
         //total = 2 min = 120 sec
         if(timer.time() > 90 && !endgame) {
             endgame = true;
-            gg.rumble(100);
+            gg.rumble(250);
         }
         if(!park && timer.time() > 120 - parkTime) {
             park = true;
-            gg.rumble(100);
+            gg.rumble(250);
+        }
+        if(!park2 && timer.time() > 120 - parkTime2) {
+            park2 = true;
+            gg.rumble(250);
         }
         robot.drive.slow_mode = robot.arm.extensionSubsystem.getPosition() >= slow_extension_limit;
+//
+//        if(robot.arm.targetState == ArmState.HIGHBASKET || robot.arm.targetState == ArmState.SPECIMENGARD) {
+//            robot.drive.slow_mode = true;
+//        }
         robot.drive.drive(gg);
     }
 
@@ -149,6 +168,9 @@ public class TeleOp extends OpMode {
             robot.hang.setCloseServo();
         }
 
+        if(gg2.yOnce()) {
+            robot.hang.startClimb();
+        }
         robot.hang.changePower(gg2);
     }
     public void updateTelemetry() {

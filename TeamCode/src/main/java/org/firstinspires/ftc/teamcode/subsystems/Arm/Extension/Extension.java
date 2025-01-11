@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems.Arm.Extension;
 
+import static com.arcrobotics.ftclib.util.MathUtils.clamp;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -12,6 +14,7 @@ import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.Utils.Caching.CachingDcMotorEx;
 import org.firstinspires.ftc.teamcode.Utils.Utils;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.Encoder;
+import org.firstinspires.ftc.teamcode.Utils.geometry.Path;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Arm;
 
 @Config
@@ -54,7 +57,6 @@ public class Extension {
 
     public void setTaget(double target) {
         mode = MODE.AUTO;
-        controller.reset();
         this.target = target;
     }
     public void changeRawPower(double power) {
@@ -86,7 +88,6 @@ public class Extension {
     public boolean  isAtPosition() {
         return Math.abs(currentPos - target) <= ExtensionConstants.pointThreeshold;
     }
-    public static double valueSHit = 36;//should lower this fr fr
 
     public double getTimer() {
         if(timer==null) return 0;
@@ -100,7 +101,7 @@ public class Extension {
     }
 
     public double getCurrentPos(double angle) {
-        return getTrueCurrentPosition() - offset - (Math.sin(Math.toRadians(angle)) * valueSHit);
+        return getTrueCurrentPosition() - offset - (Math.sin(Math.toRadians(clamp(angle,0,90)) * ExtensionConstants.valueSHit)) ;
     }
 
     public void checkTimer() {
@@ -128,8 +129,7 @@ public class Extension {
         switch (mode) {
             case AUTO:
                 pidUpdate();
-                power*=robot.getNormalizedVoltage();
-                motor.setPower(Utils.minMaxClip(power,-1, 1));
+                motor.setPower(Utils.minMaxClip(power + ff,-1, 1));
                 break;
             case RAW_POWER:
                 motor.setPower(raw_power);

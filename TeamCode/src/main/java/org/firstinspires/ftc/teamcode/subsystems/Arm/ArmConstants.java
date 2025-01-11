@@ -15,12 +15,14 @@ public class ArmConstants {
 
     public static double INTAKING_EXTENSION = 0;
     public static double INTAKING_PITCH = 0;
+    public static double START_EXTENSION = 0;
+    public static double START_PITCH = 170;
 
     public static double SPECIMEN_EXTENSION = 430;
     public static double SPECIMEN_PITCH = 320;
 
     public static double SPECIMENGARD_EXTENSION = 0;
-    public static double SPECIMENGARD_PITCH = 95;
+    public static double SPECIMENGARD_PITCH = 78;
 
     public static double SPECIMENSLAM_EXTENSION = 0;
     public static double SPECIMENSLAM_PITCH = 670;

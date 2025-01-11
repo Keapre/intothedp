@@ -2,49 +2,43 @@ package org.firstinspires.ftc.teamcode.Utils.geometry;
 
 import com.acmerobotics.roadrunner.Pose2d;
 
-import java.util.List;
+import java.util.ArrayList;
 
-/**
- * Represents a list of Pose2d waypoints that the robot should follow in sequence.
- */
 public class Path {
-    private List<Pose2d> points;
-    private int index = 0;
-
-    public Path(List<Pose2d> points) {
-        this.points = points;
+    ArrayList<Pose> poses = new ArrayList<>();
+    int get_currentPoseIndex = 0;
+    public Path(ArrayList<Pose> poses) {
+        this.poses = poses;
+        get_currentPoseIndex = 0;
     }
 
-    /** Reset to start at the first waypoint. */
     public void reset() {
-        index = 0;
+        get_currentPoseIndex = 0;
+    }
+    public Pose get_currentPose(){
+        return poses.get(get_currentPoseIndex);
     }
 
-    /** Returns the current target Pose2d or null if the path is complete. */
-    public Pose2d getCurrentTarget() {
-        if (isComplete()) return null;
-        return points.get(index);
+    public Pose get_nextPose(){
+        return poses.get(get_currentPoseIndex + 1);
     }
 
-    /** Move to the next waypoint in the list. */
-    public void nextPoint() {
-        index++;
+    public void incrementPoseIndex(){
+        get_currentPoseIndex++;
     }
 
-    public boolean isTransition() {
-        return index != points.size() - 1;
+    public Pose next() {
+        if(!isLast()) incrementPoseIndex();
+        return get_currentPose();
+    }
+    public boolean isLast() {
+        return get_currentPoseIndex == poses.size() - 1;
     }
 
-    /** Returns true if we have visited all waypoints. */
-    public boolean isComplete() {
-        return index >= points.size();
+    public boolean isFinished() {
+        return get_currentPoseIndex == poses.size();
     }
 
-    public int getIndex() {
-        return index;
-    }
 
-    public int size() {
-        return points.size();
-    }
+
 }

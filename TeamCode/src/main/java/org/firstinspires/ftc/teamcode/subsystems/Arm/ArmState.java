@@ -9,11 +9,11 @@ import java.util.function.Supplier;
 @Config
 public enum ArmState {
     DEFAULT(
-            () -> ArmConstants.DEFAULT_EXTENSION,
-            () -> ArmConstants.DEFAULT_PITCH,
+            ()-> (double) 0,
+            () -> (double) 0,
             ArmConstants.OPEN_CLAW,
             ArmConstants.ORIZONTAL_ROTATE,
-            ArmConstants.DOWN_TILT
+            ArmConstants.MID_TILT
     ),
     HIGHBASKET(
             () -> ArmConstants.HIGHBASKET_EXTENSION,
@@ -36,6 +36,13 @@ public enum ArmState {
             ArmConstants.ORIZONTAL_ROTATE,
             ArmConstants.DOWN_TILT
     ),
+    START_POS(
+            () -> ArmConstants.START_EXTENSION,
+            () -> ArmConstants.START_PITCH,
+            ArmConstants.CLOSE_CLAW,
+            ArmConstants.ORIZONTAL_ROTATE,
+            ArmConstants.UP_TILT
+    ),
     SPECIMENGARD(
             () -> ArmConstants.SPECIMENGARD_EXTENSION,
             () -> ArmConstants.SPECIMENGARD_PITCH,
@@ -47,8 +54,8 @@ public enum ArmState {
             () -> ArmConstants.SPECIMENSLAM_EXTENSION,
             () -> ArmConstants.SPECIMENSLAM_PITCH,
             ArmConstants.CLOSE_CLAW,
-            ArmConstants.VERTICAL_ROTATE,
-            ArmConstants.MID_TILT
+            ArmConstants.ORIZONTAL_ROTATE ,
+            ArmConstants.UP_TILT
     );
 
 

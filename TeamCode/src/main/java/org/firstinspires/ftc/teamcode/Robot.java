@@ -20,6 +20,7 @@ import org.firstinspires.ftc.teamcode.Utils.Wrappers.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Arm;
 import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.Drive;
 import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.DriveTrain;
+import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.P2Pdrive;
 import org.firstinspires.ftc.teamcode.subsystems.Hang.Hang;
 
 import java.util.ArrayList;
@@ -34,7 +35,8 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
     public static final String TAG = "Robot";
 
 
-    public DriveTrain drive;
+    public DriveTrain drive = null;
+    public P2Pdrive autoDrive;
     public Arm arm;
     public Hang hang;
     CachingVoltageSensor voltageSensor;
@@ -104,9 +106,17 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
         //region Initialize subsystems
         subsystems = new ArrayList<>();
         try {
-            drive = new DriveTrain(opMode.hardwareMap,startPose,Globals.IS_AUTO,this);
-            subsystems.add(drive);
-            Log.w(TAG, "DriveTrain intialized successfully");
+            if(Globals.IS_AUTO) {
+                autoDrive = new P2Pdrive(opMode.hardwareMap, startPose, Globals.IS_AUTO);
+                subsystems.add(autoDrive);
+                Log.w(TAG, "P2Pdrive intialized successfully");
+            }else {
+                drive = new DriveTrain(opMode.hardwareMap,startPose,Globals.IS_AUTO,this);
+                subsystems.add(drive);
+                Log.w(TAG, "DriveTrain intialized successfully");
+            }
+
+
         } catch (Exception e) {
             Log.w(TAG, "Failed to initialize DriveTrain: " + e.getMessage());
         }

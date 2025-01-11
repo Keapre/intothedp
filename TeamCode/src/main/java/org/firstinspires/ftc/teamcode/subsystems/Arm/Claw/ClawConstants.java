@@ -7,8 +7,8 @@ import com.acmerobotics.dashboard.config.Config;
 @Config
 public class ClawConstants {
     //Claw positions
-    public static double clawOpen = 0.34;
-    public static double clawClose = 0.85;
+    public static double clawOpen = 0.22;
+    public static double clawClose = 0.58;
 
     //Diffy positions
 
@@ -22,10 +22,10 @@ public class ClawConstants {
         }
     }
 
-    public static DiffyPositions down_horizontal = new DiffyPositions(0.15, 1);
-    public static DiffyPositions down_vertical = new DiffyPositions(0, 0.78);
-    public static DiffyPositions mid = new DiffyPositions(0.71, 0.42);
-    public static DiffyPositions up = new DiffyPositions(1, 0.13);
+    public static DiffyPositions down_horizontal = new DiffyPositions(0.18, 0.97);
+    public static DiffyPositions down_vertical = new DiffyPositions(0, 0.79);
+    public static DiffyPositions mid = new DiffyPositions(0.73, 0.39);
+    public static DiffyPositions up = new DiffyPositions(1, 0.11);
     public static DiffyPositions slamPos = new DiffyPositions(0.32, 0.02);
 
 

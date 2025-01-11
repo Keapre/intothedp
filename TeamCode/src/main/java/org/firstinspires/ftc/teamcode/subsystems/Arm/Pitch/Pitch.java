@@ -25,7 +25,8 @@ public class Pitch {
     Encoder encoder = null;
 
 
-    public PIDController controller = new PIDController(PitchConstants.kP, 0, PitchConstants.kD);
+    PIDController controller = new PIDController(PitchConstants.kP, 0, PitchConstants.kD);
+    PIDController holdingController = new PIDController(PitchConstants.holdingkP, 0, PitchConstants.holdingkD);
 
     public enum MODE {
         MANUAL,
@@ -69,7 +70,6 @@ public class Pitch {
         }
         currentPos = encoder.getCurrentPosition();
         offset = currentPos;
-        controller.reset();
     }
 
     public void initializeMotors() {
@@ -111,12 +111,12 @@ public class Pitch {
         return Math.abs(target -currentPos) <= PitchConstants.threshold;
     }
     public boolean isAt0() {
-        return Math.abs(currentPos-PitchConstants.lowThreshold) < PitchConstants.threshold;
+        return Math.abs(currentPos-20) < PitchConstants.lowThreshold;
     }
 
     public void setTarget(double pos)
     {
-        controller.reset();
+        //controller.reset();
         target = pos;
         mode = MODE.AUTO;
     }
@@ -150,13 +150,16 @@ public class Pitch {
     public void setMode(MODE md) {
         this.mode = md;
     }
-
+    public boolean USE_EXTENSTIONFEED = false;
     public void update() {
         checkForSwitch();
         currentPos = getTrueCurrentPosition() - offset;
         angle = calculateAngle();
         if(IS_DISABLED) return;
-        ff = Math.cos(Math.toRadians(angle)) * PitchConstants.max_f;
+        ff = Math.cos(Math.toRadians(clamp(angle,0,90)) )* PitchConstants.max_f;
+        if(USE_EXTENSTIONFEED) {
+            ff *= (1 + (clamp(robot.arm.extensionSubsystem.currentPos,0,1000)) * PitchConstants.extensionVar);
+        }
 //        if(lutExtendIntake == null) {
 //            updateRegreesion();
 //        }'[

@@ -219,7 +219,7 @@ public class DriveTrain implements Subsystem {
                 }
                 break;
             case PATH_FOLLOW:
-                doPathFollowLogic();
+//                doPathFollowLogic();
             case DRIVE:
                 break;
         }
@@ -228,46 +228,46 @@ public class DriveTrain implements Subsystem {
         lastState = state;
     }
 
-    private void doPathFollowLogic() {
-        if(path == null || path.isComplete()) {
-            state = STATE.IDLE;
-            return;
-        }
-
-        Pose2d currentWaypoint = path.getCurrentTarget();
-        if(currentWaypoint == null) {
-            state = STATE.IDLE;
-            return;
-        }
-
-        this.target = currentWaypoint;
-        if(path.isTransition()) {
-            stop = false;
-        }else {
-            stop = true;
-        }
-        calculateErrors();
-        pidDrive();
-
-
-        if(atTarget()) {
-            path.nextPoint();
-
-            if(path.isComplete()) {
-                if(fine_stop) {
-                    state = STATE.FINE_CONTROL;
-                } else {
-                    state = STATE.IDLE;
-                }
-            } else {
-                xPID.reset();
-                yPID.reset();
-                hPID.reset();
-                timer = null;
-                stable = null;
-            }
-        }
-    }
+//    private void doPathFollowLogic() {
+//        if(path == null || path.isComplete()) {
+//            state = STATE.IDLE;
+//            return;
+//        }
+//
+//        Pose2d currentWaypoint = path.getCurrentTarget();
+//        if(currentWaypoint == null) {
+//            state = STATE.IDLE;
+//            return;
+//        }
+//
+//        this.target = currentWaypoint;
+//        if(path.isTransition()) {
+//            stop = false;
+//        }else {
+//            stop = true;
+//        }
+//        calculateErrors();
+//        pidDrive();
+//
+//
+//        if(atTarget()) {
+//            path.nextPoint();
+//
+//            if(path.isComplete()) {
+//                if(fine_stop) {
+//                    state = STATE.FINE_CONTROL;
+//                } else {
+//                    state = STATE.IDLE;
+//                }
+//            } else {
+//                xPID.reset();
+//                yPID.reset();
+//                hPID.reset();
+//                timer = null;
+//                stable = null;
+//            }
+//        }
+//    }
     public void xSlowAdjust(double addon) {
         xSlowModeMultipler+=addon;
         xSlowModeMultipler = clamp(xSlowModeMultipler,0,1);
@@ -291,6 +291,7 @@ public class DriveTrain implements Subsystem {
         TelemetryUtil.packet.put("yError", yError);
         TelemetryUtil.packet.put("turnError (deg)", Math.toDegrees(hError));
 
+        TelemetryUtil.packet.put("pose",pose.toString());
         TelemetryUtil.packet.put("maxPower", max_speed);
 
         Drawing.drawRobot(TelemetryUtil.packet.fieldOverlay(),pose,true);
@@ -306,6 +307,7 @@ public class DriveTrain implements Subsystem {
     public void updateLocalization() {
         pinpoint.update();
         pose = pinpoint.getPositionRR();
+        TelemetryUtil.packet.put("x",pinpoint.getPosX());
         speed = pinpoint.getVelocityRR();
         lastPinPoint = pose;
     }
@@ -392,7 +394,70 @@ public class DriveTrain implements Subsystem {
 
 
 
-
+//    void goToTarget() {
+//
+//        if (timer == null) timer = new ElapsedTime();
+//        if (stable == null) stable = new ElapsedTime();
+//         PoseVelocity2d vel = updatePoseEstimate();
+//        currentPose = new Pose(pose.position.x, pose.position.y, pose.heading.toDouble());
+//        if(!path.isLast()) {
+//            MAX_TRANSLATIONAL_SPEED = 0.95;
+//            MAX_ROTATIONAL_SPEED = 0.75;
+//            //transition
+//            if(isFinishedTransition(currentPose)) {
+//                timer = null;
+//                stable = null;
+//
+//                targetPose = path.next();
+//                return;
+//            }
+//        }
+//        if(path.isLast()) {
+//            MAX_TRANSLATIONAL_SPEED = 0.6;//0.75
+//            MAX_ROTATIONAL_SPEED = 0.45;//0.6
+//            if(isFinishedLast(currentPose)) {
+//                timer = null;
+//                stable = null;
+//                xController.reset();
+//                yController.reset();
+//                hController.reset();
+//                setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
+//                driveMode = DriveMode.IDLE;
+//            }
+//        }
+//
+//
+////        xController.setPIDF(xP, 0.0, xD, 0);
+////        yController.setPIDF(yP, 0.0, yD, 0);
+////        hController.setPIDF(hP, 0.0, hD, 0);
+//
+//        if(targetPose.heading - currentPose.heading > Math.PI) targetPose.heading -= 2 * Math.PI;
+//        if(targetPose.heading - currentPose.heading < -Math.PI) targetPose.heading += 2 * Math.PI;
+//
+//        double xPower = xController.calculate(currentPose.x, targetPose.x);
+//        double yPower = yController.calculate(currentPose.y, targetPose.y);
+//        double hPower = hController.calculate(currentPose.heading, targetPose.heading);
+//
+//        Log.w("Robot power","xPower" + xPower);
+//        Log.w("Robot power","yPower" + yPower);
+//        Log.w("Robot power","hPower" + hPower);
+//        double x_rotated = xPower * Math.cos(-currentPose.heading) - yPower * Math.sin(-currentPose.heading);
+//        double y_rotated = xPower * Math.sin(-currentPose.heading) + yPower * Math.cos(-currentPose.heading);
+//
+//        hPower = Range.clip(hPower, -MAX_ROTATIONAL_SPEED, MAX_ROTATIONAL_SPEED);
+//        x_rotated = Range.clip(x_rotated, -MAX_TRANSLATIONAL_SPEED / X_GAIN, MAX_TRANSLATIONAL_SPEED / X_GAIN);
+//        y_rotated = Range.clip(y_rotated, -MAX_TRANSLATIONAL_SPEED, MAX_TRANSLATIONAL_SPEED);
+//
+//        Log.w("Robot power","x_rotated" + x_rotated);
+//        Log.w("Robot power","y_rotated" + y_rotated);
+//        Log.w("Robot power","h" + hPower);
+//
+//        Log.w("Robot power", "target pose"+ String.valueOf(targetPose));
+//        Log.w("Robot power", "target pose"+ String.valueOf(currentPose));
+//        Log.w("Robot power", "state"+ driveMode);
+//        setDrivePowers(new PoseVelocity2d(new Vector2d(x_rotated,y_rotated),hPower));
+//
+//    }
 
     public double strafe,forward,h;
 
@@ -414,7 +479,6 @@ public class DriveTrain implements Subsystem {
 
     private void setPath(Path path, boolean finalAdjustment, boolean stop, double maxPower) {
         this.path = path;
-        this.path.reset();  // start at the first waypoint
         this.fine_stop = finalAdjustment;
         this.stop = stop;
         this.max_speed = Math.abs(maxPower);
@@ -547,9 +611,9 @@ public class DriveTrain implements Subsystem {
         yPID.updatePID(ykP,0,ykD);
         hPID.updatePID(hkP,0,hkD);
 
-        double xPower = xPID.update(xError,-1,1);
+        double xPower = -xPID.update(xError,-1,1);
         double yPower = yPID.update(yError,-1,1);
-        double hPower = hPID.update(hError,-1,1);
+        double hPower = -hPID.update(hError,-1,1);
 
         xPower = Utils.minMaxClip(xPower,-max_speed,max_speed);
         yPower = Utils.minMaxClip(yPower,-max_speed,max_speed);
