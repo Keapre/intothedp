@@ -152,26 +152,44 @@ public class TeleOp extends OpMode {
             gg.rumble(250);
         }
         robot.drive.slow_mode = robot.arm.extensionSubsystem.getPosition() >= slow_extension_limit;
-//
-//        if(robot.arm.targetState == ArmState.HIGHBASKET || robot.arm.targetState == ArmState.SPECIMENGARD) {
+
+//        if(robot.arm.targetState == ArmState.SPECIMENGARD) {
 //            robot.drive.slow_mode = true;
 //        }
         robot.drive.drive(gg);
     }
 
     public void hang() {
-        if(gg2.aOnce()) {
+//        if(gg2.aOnce()) {
+//            robot.hang.setServo();
+//        }
+//
+//        if(gg2.bOnce()) {
+//            robot.hang.setCloseServo();
+//        }
+//
+//        if(gg2.yOnce()) {
+//            robot.hang.startClimb();
+//        }
+//        robot.hang.changePower(gg2);
+        if(gg.dpadLeftOnce()){
             robot.hang.setServo();
         }
-
-        if(gg2.bOnce()) {
+        if(gg.dpadRightOnce()){
             robot.hang.setCloseServo();
         }
-
-        if(gg2.yOnce()) {
-            robot.hang.startClimb();
+        if(gg.dpadUp()){
+            robot.hang.changePower(-1);
         }
-        robot.hang.changePower(gg2);
+       else  if(gg.dpadDown()){
+            robot.hang.changePower(1);
+        }
+       else{
+           robot.hang.changePower(0);
+        }
+       if(gg.rightStickButtonOnce()){
+           robot.hang.startClimb();
+       }
     }
     public void updateTelemetry() {
         telemetry.addLine();
@@ -185,6 +203,8 @@ public class TeleOp extends OpMode {
         telemetry.addData("Extension power",robot.arm.extensionSubsystem.power);
         telemetry.addData("Extension pos",robot.arm.extensionSubsystem.currentPos);
         telemetry.addData("extension offset",robot.arm.extensionSubsystem.offset);
+        telemetry.addData("maxx Amp",robot.arm.extensionSubsystem.getMaxAmps());
+        telemetry.addData("Amp",robot.arm.extensionSubsystem.getAmp());
         telemetry.addData("Pith angle",robot.arm.pitchSubsystem.get_angle());
         telemetry.addData("Pith pos",robot.arm.pitchSubsystem.getCurrentPos());
         telemetry.addData("target angle",robot.arm.targetState.getPivotAngle());

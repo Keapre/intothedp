@@ -22,7 +22,7 @@ public class ArmConstants {
     public static double SPECIMEN_PITCH = 320;
 
     public static double SPECIMENGARD_EXTENSION = 0;
-    public static double SPECIMENGARD_PITCH = 78;
+    public static double SPECIMENGARD_PITCH = 75.5;
 
     public static double SPECIMENSLAM_EXTENSION = 0;
     public static double SPECIMENSLAM_PITCH = 670;

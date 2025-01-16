@@ -38,8 +38,8 @@ public class Arm implements Subsystem {
     public Extension extensionSubsystem;
     public Queue<FSMState> transitionPlan;
     public Pitch pitchSubsystem;
-    public static double timerthreeshold = 140;
-    public static double timerthreeshold2 = 50;
+    public static double timerthreeshold = 120;
+    public static double timerthreeshold2 = 15;
 
     public Claw clawSubsystem;
     GamePadController gg;
@@ -75,8 +75,8 @@ public class Arm implements Subsystem {
 
     }
 
-    public static double raw_power_0 = 1;
-    public static double raw_power_90 = 1;
+    public static double raw_power_0 = 0.8;
+    public static double raw_power_90 = 0.8;
     public boolean useRetractAuto = true;
     public double desiredExtension = 0;
     public double desiredPitch = 0;
@@ -128,6 +128,7 @@ public class Arm implements Subsystem {
     public static double timer0 = 20;
 
     ElapsedTime atThreeshold = null;
+    ElapsedTime claW = null;
     ElapsedTime adjustingPitchTimer = null;
     public void update() {
 
@@ -143,12 +144,21 @@ public class Arm implements Subsystem {
         switch (currentState) {
             case IDLE:
                 if (desiredPitch == 20) pitchSubsystem.mode = Pitch.MODE.IDLE;
+                claW = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
                 break;
             case CHANGING_OUTTAKE:
                 Log.w("debug", "update");
                 if(targetState == ArmState.DEFAULT || targetState == ArmState.SPECIMENGARD) clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
-                clawSubsystem.tiltState = targetState.getTiltState();
-                clawSubsystem.rotateState = targetState.getRotatePos();
+//                if((previousState == ArmState.INTAKING || previousState == ArmState.DEFAULT) && targetState == ArmState.HIGHBASKET) {
+//                    clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
+//                    if(claW.time() > 20) {
+//                        clawSubsystem.tiltState = targetState.getTiltState();
+//                        clawSubsystem.rotateState = targetState.getRotatePos();
+//                    }
+
+                    clawSubsystem.tiltState = targetState.getTiltState();
+                    clawSubsystem.rotateState = targetState.getRotatePos();
+
                 currentState = nextStateInPlan();
                 break;
             case RETRACTING_EXTENSION:
@@ -165,7 +175,7 @@ public class Arm implements Subsystem {
                 break;
             case EXTEND_MAX_FOR_TIME:
                 extensionSubsystem.mode = Extension.MODE.RAW_POWER;
-                extensionSubsystem.changeRawPower(raw_power_0);
+                extensionSubsystem.changeRawPower(1);
                 if(extensionSubsystem.currentPos > desiredExtension) {
                     extensionSubsystem.mode = Extension.MODE.IDLE;
                     currentState = nextStateInPlan();
@@ -193,7 +203,7 @@ public class Arm implements Subsystem {
                 if ((desiredPitch!=20 && pitchSubsystem.isAtPosition(desiredPitch) || (desiredPitch == 20 && pitchSubsystem.isAt0()))) {
                     if(atThreeshold == null) atThreeshold = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
                     //extensionSubsystem.updateKerem(pitchSubsystem.calculateAngle());
-                   // pitchSubsystem.updateRegreesion();
+                    // pitchSubsystem.updateRegreesion();
                     currentState = nextStateInPlan();
                 }else {
                     atThreeshold = null;
@@ -315,6 +325,8 @@ public class Arm implements Subsystem {
                 clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
                 clawSubsystem.tiltState = Claw.tiltMode.MID;
             } else if (clawSubsystem.tiltState == Claw.tiltMode.MID) {
+                clawSubsystem.tiltState = Claw.tiltMode.UP2;
+            } else if (clawSubsystem.tiltState == Claw.tiltMode.UP2) {
                 clawSubsystem.tiltState = Claw.tiltMode.UP;
             }
         }
@@ -330,6 +342,8 @@ public class Arm implements Subsystem {
             } else if (clawSubsystem.tiltState == Claw.tiltMode.MID) {
                 clawSubsystem.tiltState = Claw.tiltMode.DOWN;
             } else if (clawSubsystem.tiltState == Claw.tiltMode.UP) {
+                clawSubsystem.tiltState = Claw.tiltMode.UP2;
+            } else if (clawSubsystem.tiltState == Claw.tiltMode.UP2) {
                 clawSubsystem.tiltState = Claw.tiltMode.MID;
             }
         }

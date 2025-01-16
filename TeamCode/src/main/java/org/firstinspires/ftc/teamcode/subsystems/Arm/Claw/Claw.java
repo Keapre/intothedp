@@ -36,6 +36,7 @@ public class Claw {
     }
 
     public enum tiltMode {
+        UP2,
         UP,
         MID,
         DOWN
@@ -144,6 +145,10 @@ public class Claw {
             case UP:
                 rightDiffy.setPosition(ClawConstants.up.right);
                 leftDiffy.setPosition(ClawConstants.up.left);
+                break;
+            case UP2:
+                rightDiffy.setPosition(ClawConstants.up2.right);
+                leftDiffy.setPosition(ClawConstants.up2.left);
                 break;
 
         }

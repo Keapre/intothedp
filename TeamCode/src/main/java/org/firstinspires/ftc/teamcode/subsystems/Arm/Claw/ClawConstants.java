@@ -26,6 +26,7 @@ public class ClawConstants {
     public static DiffyPositions down_vertical = new DiffyPositions(0, 0.79);
     public static DiffyPositions mid = new DiffyPositions(0.73, 0.39);
     public static DiffyPositions up = new DiffyPositions(1, 0.11);
+    public static DiffyPositions up2 = new DiffyPositions(0.86, 0.25);
     public static DiffyPositions slamPos = new DiffyPositions(0.32, 0.02);
 
 

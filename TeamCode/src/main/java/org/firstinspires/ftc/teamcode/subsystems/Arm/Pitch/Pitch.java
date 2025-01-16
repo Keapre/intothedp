@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems.Arm.Pitch;
 
 import static com.arcrobotics.ftclib.util.MathUtils.clamp;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.util.InterpLUT;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -15,6 +16,7 @@ import org.firstinspires.ftc.teamcode.Utils.Caching.CachingDcMotorEx;
 import org.firstinspires.ftc.teamcode.Utils.Utils;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.Encoder;
 
+@Config
 
 public class Pitch {
     public static boolean IS_DISABLED = false;
@@ -156,7 +158,7 @@ public class Pitch {
         currentPos = getTrueCurrentPosition() - offset;
         angle = calculateAngle();
         if(IS_DISABLED) return;
-        ff = Math.cos(Math.toRadians(clamp(angle,0,90)) )* PitchConstants.max_f;
+        ff = Math.cos(Math.toRadians(angle))* PitchConstants.max_f;
         if(USE_EXTENSTIONFEED) {
             ff *= (1 + (clamp(robot.arm.extensionSubsystem.currentPos,0,1000)) * PitchConstants.extensionVar);
         }
@@ -168,7 +170,7 @@ public class Pitch {
         switch (mode) {
             case AUTO:
                 pid();
-                extension1.setPower(Utils.minMaxClip(motor1Power + ff  , -1, 1));
+                extension1.setPower(Utils.minMaxClip(motor1Power +ff  , -1, 1));
                 extension2.setPower(Utils.minMaxClip(motor2Power+ff,-1, 1));
                 break;
             case MANUAL:

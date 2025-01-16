@@ -22,11 +22,14 @@ public class Hang implements Subsystem {
     }
 
     double power = 0;
-    public void changePower(GamePadController gg) {
-        power = gg.left_trigger - gg.right_trigger;
+//    public void changePower(GamePadController gg) {
+//        power = gg.left_trigger - gg.right_trigger;
+//    }
+    public void changePower(float ggpow){
+        power = ggpow;
     }
 
-    public static double idlePower = 0.2;
+    public static double idlePower = 0.35;
     public boolean idleActivated = false;
 
     @Override

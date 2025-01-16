@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.Utils.Caching.CachingDcMotorEx;
 import org.firstinspires.ftc.teamcode.Utils.Utils;
@@ -36,6 +37,7 @@ public class Extension {
 
     public MODE mode = MODE.AUTO;
     public double angle = 0;
+    private double maxx = 0;
     public PIDFController controller = new PIDFController(ExtensionConstants.kP,0,ExtensionConstants.kD,0);
 
     Encoder encoder;
@@ -53,7 +55,7 @@ public class Extension {
     }
 
     public static double raw_power = 0;
-
+    private double currentAmp = 0;
 
     public void setTaget(double target) {
         mode = MODE.AUTO;
@@ -89,6 +91,15 @@ public class Extension {
         return Math.abs(currentPos - target) <= ExtensionConstants.pointThreeshold;
     }
 
+    public double getMaxAmps() {
+        maxx = Math.max(maxx,currentAmp);
+        return maxx ;
+
+    }
+    public double getAmp()
+    {
+        return currentAmp;
+    }
     public double getTimer() {
         if(timer==null) return 0;
         return timer.time();
@@ -121,6 +132,7 @@ public class Extension {
     }
 
     public void update() {
+        currentAmp = motor.getCurrent(CurrentUnit.AMPS);
         angle = robot.arm.pitchSubsystem.get_angle();
         currentPos = getCurrentPos(angle);
         if(IS_DISABLED) return;

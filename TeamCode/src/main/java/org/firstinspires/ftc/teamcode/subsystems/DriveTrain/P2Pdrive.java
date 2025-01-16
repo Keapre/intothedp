@@ -22,7 +22,7 @@ public class P2Pdrive extends Drive{
     private ElapsedTime timer;
     private ElapsedTime stable;
 
-    public static double STABLE_MS = 50;
+    public static double STABLE_MS = 35;
     public static double DEAD_MS = 2500;
 
     public static  double  MAX_TRANSLATIONAL_SPEED = 0.7;
@@ -41,7 +41,7 @@ public class P2Pdrive extends Drive{
     public static double hP = 0.7;
     public static double hD = 0.08;
 
-    Path path = null;
+    public Path path = null;
 
     public  PIDFController xController = new PIDFController(xP, 0.0, xD, 0);
     public  PIDFController yController = new PIDFController(yP, 0.0, yD, 0);
@@ -71,12 +71,15 @@ public class P2Pdrive extends Drive{
 
     }
 
-    public static double maxRotateFinalSpeed = 0.6;
-    public static double maxTranslationFinalSpeed = 0.6;
-    public static double maxTranslationTransSpeed = 0.75;
-    public static double maxRotateTranslationalSpeed = 0.75;
+    public static double maxRotateFinalSpeed = 0.83;
+    public static double maxTranslationFinalSpeed = 0.9;
+    public static double maxTranslationTransSpeed = 1;
+    public static double maxRotateTranslationalSpeed = 0.9;
 
     public void setTargetPose(Pose2d targetPose) {
+        xController.reset();
+        yController.reset();
+        hController.reset();
         ArrayList<Pose> temp = new ArrayList<>();
         temp.add(new Pose(targetPose));
         setTargetPose(new Path(temp));
