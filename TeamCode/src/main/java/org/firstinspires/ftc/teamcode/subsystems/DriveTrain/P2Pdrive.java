@@ -22,12 +22,12 @@ public class P2Pdrive extends Drive{
     private ElapsedTime timer;
     private ElapsedTime stable;
 
-    public static double STABLE_MS = 35;
-    public static double DEAD_MS = 2500;
+    public static double STABLE_MS = 25;
+    public static double DEAD_MS = 2000;
 
     public static  double  MAX_TRANSLATIONAL_SPEED = 0.7;
     public static  double  MAX_ROTATIONAL_SPEED = 0.5;
-    private final double X_GAIN = 1.40;
+    private final double X_GAIN = 1.20;
 
     public Pose targetPose;
     public Pose currentPose;
@@ -38,7 +38,7 @@ public class P2Pdrive extends Drive{
     public static double yP = 0.107;
     public static double yD = 0.0125;
 
-    public static double hP = 0.7;
+    public static double hP = 1.3;
     public static double hD = 0.08;
 
     public Path path = null;
@@ -48,8 +48,8 @@ public class P2Pdrive extends Drive{
     public  PIDFController hController = new PIDFController(hP, 0.0, hD, 0);
 
     public Pose2d targetPose2d;
-    public static double ALLOWED_TRANSLATIONAL_ERROR = 1.5;
-    public static double ALLOWED_HEADING_ERROR = 0.085;
+    public static double ALLOWED_TRANSLATIONAL_ERROR = 2.5;
+    public static double ALLOWED_HEADING_ERROR = 3;
 
 
     public DriveMode driveMode = DriveMode.IDLE;
@@ -97,7 +97,7 @@ public class P2Pdrive extends Drive{
         Pose delta = targetPose.subtract(currentPose);
 
         if (delta.toVec2D().magnitude() > ALLOWED_TRANSLATIONAL_ERROR
-                || Math.abs(delta.heading) > ALLOWED_HEADING_ERROR) {
+                || Math.abs(Math.toDegrees(delta.heading)) > ALLOWED_HEADING_ERROR) {
             stable.reset();
         }
 
@@ -107,7 +107,7 @@ public class P2Pdrive extends Drive{
         Pose delta = targetPose.subtract(currentPose);
 
         if (delta.toVec2D().magnitude() > ALLOWED_TRANSLATIONAL_ERROR + 8.5
-                || Math.abs(delta.heading) > ALLOWED_HEADING_ERROR + 6) {
+                || Math.abs(Math.toDegrees(delta.heading)) > ALLOWED_HEADING_ERROR + 4) {
             return false;
         }
         return true;

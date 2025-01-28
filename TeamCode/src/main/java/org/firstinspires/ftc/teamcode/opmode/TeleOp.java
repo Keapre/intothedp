@@ -126,14 +126,33 @@ public class TeleOp extends OpMode {
         if (gg.yOnce()) {
             Log.w("debug", "y pressed");
 
-            if( robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
-                robot.arm.setTargetState(ArmState.SPECIMENGARD);
+//            if( robot.arm.getCurrentState() == Arm.FSMState.IDLE && robot.arm.targetState==ArmState.INTAKING) {
+//                robot.arm.setTargetState(ArmState.SPECIMENGARD);
+//            } else if(robot.arm.getCurrentState() == Arm.FSMState.IDLE && robot.arm.targetState==ArmState.SPECIMENGARD) {
+//                robot.arm.setTargetState(ArmState.SpecimenBar);
+//            }
+            if(robot.arm.getCurrentState() == Arm.FSMState.IDLE)
+            {
+                switch (robot.arm.targetState)
+                {
+                    case SPECIMENGARD:
+                        robot.arm.setTargetState(ArmState.SpecimenBar);
+                        break;
+                    case SpecimenBar:
+                        robot.arm.setTargetState(ArmState.SPECIMENGARD);
+                        break;
+                    default:
+                        robot.arm.setTargetState(ArmState.SPECIMENGARD);
+                        break;
+                }
             }
+
         }
+
         if(gg.xOnce()) {
             Log.w("debug", "x pressed");
             if( robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
-                robot.arm.setTargetState(ArmState.HIGHBASKET);
+                robot.arm.setTargetState(ArmState.HighBasketTeleOp);
             }
         }
     }

@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Robot;
+import org.firstinspires.ftc.teamcode.Utils.Globals;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 
 @Config
@@ -27,8 +28,10 @@ public class TuneExtensionPid extends LinearOpMode {
     tune first Kf si dupa coeficienti
 
      */
+    long lastLoopFinish = System.currentTimeMillis();
     @Override
     public void runOpMode() throws InterruptedException {
+        Globals.IS_AUTO = false;
         robot = new Robot(this,new Pose2d(0,0,0));
         robot.drive.IS_DISABLED = true;
         gg = new GamePadController(gamepad1);
@@ -50,6 +53,9 @@ public class TuneExtensionPid extends LinearOpMode {
             telemetry.addData("ff",robot.arm.extensionSubsystem.ff);
             telemetry.addData("angle",robot.arm.extensionSubsystem.angle);
             telemetry.addData("power",robot.arm.extensionSubsystem.power);
+            telemetry.addData("Sample Rate (Hz) ",1/((double)(System.currentTimeMillis() - lastLoopFinish)/1000.0));
+            lastLoopFinish = System.currentTimeMillis();
+            telemetry.addData("pos",robot.arm.extensionSubsystem.getTrueCurrentPosition());
             telemetry.update();
         }
     }

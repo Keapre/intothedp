@@ -23,11 +23,12 @@ public class P2Ptuning extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        waitForStart();
+
         gg = new GamePadController(gamepad1);
         dt = new P2Pdrive(hardwareMap,startPose,true);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         dt.setTargetPose(startPose);
+        waitForStart();
         while(opModeIsActive()) {
             gg.update();
             if(gg.aOnce()) {
@@ -39,7 +40,7 @@ public class P2Ptuning extends LinearOpMode {
             dt.update();
             telemetry.addData("error on x",dt.targetPose.x - dt.currentPose.x);
             telemetry.addData("error on y",dt.targetPose.y - dt.currentPose.y);
-            telemetry.addData("error on h",Math.toDegrees(dt.targetPose.y - dt.currentPose.y));
+            telemetry.addData("error on h",Math.toDegrees(dt.targetPose.heading - dt.currentPose.heading));
             telemetry.addData("Pose x", dt.currentPose.x);
             telemetry.addData("Pose y", dt.currentPose.y);
             telemetry.addData("Pose heading", Math.toDegrees(dt.currentPose.heading));

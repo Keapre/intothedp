@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmode.tuning;
 
+import android.hardware.Sensor;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -8,6 +10,7 @@ import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import org.firstinspires.ftc.teamcode.Utils.messages.Drawing;
 import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.Drive;
@@ -16,6 +19,9 @@ import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.Drive;
 public class LocalizationTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
+        DigitalChannel test;
+        test = hardwareMap.get(DigitalChannel.class, "limit");
+        test.setMode(DigitalChannel.Mode.INPUT);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         Drive drive = new Drive(hardwareMap, new Pose2d(47, 47, Math.toRadians(270)),false);
@@ -37,6 +43,7 @@ public class LocalizationTest extends LinearOpMode {
             telemetry.addData("y", drive.pose.position.y);
             telemetry.addData("heading (deg)", Math.toDegrees(drive.pose.heading.toDouble()));
             telemetry.addData("heading",drive.pose.heading.toDouble());
+            telemetry.addData("sensor state", test.getState());
             telemetry.update();
 
             TelemetryPacket packet = new TelemetryPacket();

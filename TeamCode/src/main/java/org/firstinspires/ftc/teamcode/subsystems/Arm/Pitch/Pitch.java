@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.Utils.Caching.CachingDcMotorEx;
 import org.firstinspires.ftc.teamcode.Utils.Utils;
+import org.firstinspires.ftc.teamcode.Utils.Wrappers.Debouncer;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.Encoder;
 
 @Config
@@ -30,10 +31,12 @@ public class Pitch {
     PIDController controller = new PIDController(PitchConstants.kP, 0, PitchConstants.kD);
     PIDController holdingController = new PIDController(PitchConstants.holdingkP, 0, PitchConstants.holdingkD);
 
+    Debouncer debouncer;
     public enum MODE {
         MANUAL,
         AUTO,
-        IDLE
+        IDLE,
+        RAW_POWER
     }
 
     public double motor1Power = 0;
@@ -49,7 +52,7 @@ public class Pitch {
     public static double currentPos = 0;
     public MODE mode = MODE.AUTO;
 
-    private double target = 0;
+    public double target = 0;
 
 
 
@@ -60,6 +63,7 @@ public class Pitch {
         limitSwitch = hardwareMap.get(DigitalChannel.class, "limit");
         extension1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
+        debouncer =  new Debouncer(0.1, Debouncer.DebounceType.kBoth);;
         encoder = new Encoder(extension1);
         encoder.setDirection(Encoder.Direction.REVERSE);
 
@@ -129,10 +133,8 @@ public class Pitch {
     public double get_angle() {
         return angle;
     }
-    public void checkForSwitch() {
-        if(limitSwitch.getState()) {
-            offset = getTrueCurrentPosition();
-        }
+    public boolean checkForSwitch() {
+        return debouncer.calculate(limitSwitch.getState());
     }
     public double getTarget() {
         return target;
@@ -144,7 +146,10 @@ public class Pitch {
         motor1Power = clamp(motor1Power,PitchConstants.low_Value,PitchConstants.max_Value);
         motor2Power = motor1Power;
     }
-
+    private double raw_power = 0;
+    public void changeRawPower(double target) {
+        this.raw_power = target;
+    }
     public MODE getMode() {
         return mode;
     }
@@ -154,7 +159,9 @@ public class Pitch {
     }
     public boolean USE_EXTENSTIONFEED = false;
     public void update() {
-        checkForSwitch();
+        if(checkForSwitch()) {
+            offset = getTrueCurrentPosition();
+        }
         currentPos = getTrueCurrentPosition() - offset;
         angle = calculateAngle();
         if(IS_DISABLED) return;
@@ -168,14 +175,18 @@ public class Pitch {
         //ff*=(1 + (600/robot.arm.extensionSubsystem.currentPos));
 //        ff*=lutExtendIntake.get(clamp(robot.arm.extensionSubsystem.getPosition(),minnLinerPos,maxxLinearPos));
         switch (mode) {
+            case RAW_POWER:
+                extension1.setPower(raw_power);
+                extension2.setPower(raw_power);
+                break;
             case AUTO:
                 pid();
                 extension1.setPower(Utils.minMaxClip(motor1Power +ff  , -1, 1));
                 extension2.setPower(Utils.minMaxClip(motor2Power+ff,-1, 1));
                 break;
             case MANUAL:
-                extension1.setPower(Utils.minMaxClip(-1,1,motor1Power + ff));
-                extension2.setPower(Utils.minMaxClip(-1,1,motor2Power + ff));
+                extension1.setPower(Utils.minMaxClip(-1,1,motor1Power));
+                extension2.setPower(Utils.minMaxClip(-1,1,motor2Power));
                 break;
             case IDLE:
                 if(target == 20) {
@@ -183,8 +194,8 @@ public class Pitch {
                     extension2.setPower(0);
                 }
                 else {
-                    extension1.setPower(ff * robot.getNormalizedVoltage());
-                    extension2.setPower(ff * robot.getNormalizedVoltage());
+                    extension1.setPower(ff);
+                    extension2.setPower(ff);
                 }
                 break;
         }

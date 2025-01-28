@@ -22,7 +22,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Arm.Arm;
 public class Extension {
     public static boolean IS_DISABLED = false;
 
-    public CachingDcMotorEx motor;
+    public DcMotorEx motor;
 
     public enum MODE {
         MANUAL,
@@ -46,15 +46,15 @@ public class Extension {
     Robot robot;
     public Extension(HardwareMap hardwareMap, boolean isAuto, Robot robot) {
         this.robot  =robot;
-        motor = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "extend"),0.02);
+        motor = hardwareMap.get(DcMotorEx.class, "extend");
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         encoder = new Encoder(motor);
+        motor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         motor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         offset = encoder.getCurrentPosition();
     }
 
-    public static double raw_power = 0;
+    public double raw_power = 0;
     private double currentAmp = 0;
 
     public void setTaget(double target) {
@@ -63,6 +63,7 @@ public class Extension {
     }
     public void changeRawPower(double power) {
         raw_power = power;
+        mode = MODE.RAW_POWER;
     }
     double previous_angle = 0;
 
@@ -72,7 +73,6 @@ public class Extension {
     public void pidUpdate() {
         controller.setPIDF(ExtensionConstants.kP, 0, ExtensionConstants.kD, 0);
         power = controller.calculate(currentPos,target);
-        power+=ff;
     }
 
     public double ff = 0;
@@ -140,17 +140,20 @@ public class Extension {
         updateFeedForward();
         switch (mode) {
             case AUTO:
+                raw_power = 0;
                 pidUpdate();
-                motor.setPower(Utils.minMaxClip(power + ff,-1, 1));
+                motor.setPower(Utils.minMaxClip(power + ff ,ExtensionConstants.minPower, ExtensionConstants.maxPower));
                 break;
             case RAW_POWER:
                 motor.setPower(raw_power);
                 break;
             case MANUAL:
+                raw_power = 0;
                 motor.setPower(Utils.minMaxClip(-1,1,power + ff));
                 break;
             case IDLE:
-                motor.setPower(ExtensionConstants.idlePower);
+                raw_power = 0;
+                motor.setPower(ff);
                 break;
         }
         previous_angle = angle;

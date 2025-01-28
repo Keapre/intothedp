@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.subsystems.Arm;
 
 
+import static org.firstinspires.ftc.teamcode.subsystems.Arm.Pitch.PitchConstants.reverseSafePower;
+
 import android.util.Log;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -17,6 +19,7 @@ import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Claw.Claw;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Extension.Extension;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Pitch.Pitch;
+import org.firstinspires.ftc.teamcode.subsystems.Arm.Pitch.PitchConstants;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -26,7 +29,16 @@ public class Arm implements Subsystem {
     public  boolean IS_DISABLED = false;
     public enum FSMState {
         EXTEND_MAX_FOR_TIME,
-        IDLE, RETRACTING_EXTENSION, ADJUSTING_PITCH, PRE_ADJUSTING_PITCH, EXTENDING_EXTENSION, MANUAL_CONTROL, OPERATION_COMPLETE,PRE_EXTENSION,CHANGING_OUTTAKE
+        IDLE,
+        RETRACTING_EXTENSION,
+        RESET_PITCH,
+        ADJUSTING_PITCH,
+        PRE_ADJUSTING_PITCH,
+        EXTENDING_EXTENSION,
+        MANUAL_CONTROL,
+        OPERATION_COMPLETE,
+        PRE_EXTENSION,
+        CHANGING_OUTTAKE
     }
 
     public FSMState currentState = FSMState.IDLE;
@@ -70,7 +82,7 @@ public class Arm implements Subsystem {
             Log.w(TAG, "Failed to initialize Claw: " + e.getMessage());
         }
         transitionPlan = new LinkedList<>();
-        currentState = FSMState.IDLE;
+        planResetEncoders();
         adjustingPitchTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 
     }
@@ -104,6 +116,7 @@ public class Arm implements Subsystem {
         transitionPlan.clear();
 
         transitionPlan.add(FSMState.ADJUSTING_PITCH);
+        adjustingPitchTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         desiredPitch = pitch;
         pitchSubsystem.setTarget(desiredPitch);
         currentState = nextStateInPlan();
@@ -120,6 +133,7 @@ public class Arm implements Subsystem {
     public void fakePid(double addon) {
         transitionPlan.clear();
         desiredExtension = extensionSubsystem.currentPos + addon;
+        maxTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         transitionPlan.add(FSMState.EXTEND_MAX_FOR_TIME);
         currentState = nextStateInPlan();
     }
@@ -127,7 +141,9 @@ public class Arm implements Subsystem {
 
     public static double timer0 = 20;
 
+    ElapsedTime maxTimer = null;
     ElapsedTime atThreeshold = null;
+    ElapsedTime timerExtension = null;
     ElapsedTime claW = null;
     ElapsedTime adjustingPitchTimer = null;
     public void update() {
@@ -138,7 +154,7 @@ public class Arm implements Subsystem {
 //        if (currentTime - lastUpdateTime < UPDATE_INTERVAL_MS) {
 //            return;
 //        }
-        if (!manualControl && currentState != FSMState.RETRACTING_EXTENSION && currentState!=FSMState.PRE_EXTENSION && currentState != FSMState.EXTENDING_EXTENSION) {
+        if (!manualControl && currentState != FSMState.RETRACTING_EXTENSION && currentState!=FSMState.EXTEND_MAX_FOR_TIME  && currentState != FSMState.EXTENDING_EXTENSION) {
             extensionSubsystem.mode = Extension.MODE.IDLE;
         }
         switch (currentState) {
@@ -176,8 +192,17 @@ public class Arm implements Subsystem {
             case EXTEND_MAX_FOR_TIME:
                 extensionSubsystem.mode = Extension.MODE.RAW_POWER;
                 extensionSubsystem.changeRawPower(1);
-                if(extensionSubsystem.currentPos > desiredExtension) {
+                if(extensionSubsystem.currentPos > desiredExtension || maxTimer.time() > 2000) {
                     extensionSubsystem.mode = Extension.MODE.IDLE;
+                    currentState = nextStateInPlan();
+                }
+                break;
+            case RESET_PITCH:
+                pitchSubsystem.mode = Pitch.MODE.RAW_POWER;
+                pitchSubsystem.changeRawPower(reverseSafePower);
+                if(pitchSubsystem.checkForSwitch()) {
+                    pitchSubsystem.target = 20;
+                    pitchSubsystem.mode = Pitch.MODE.IDLE;
                     currentState = nextStateInPlan();
                 }
                 break;
@@ -214,17 +239,22 @@ public class Arm implements Subsystem {
 //                    extensionSubsystem.offset += extensionSubsystem.currentPos;
 //
 //                }
+                timerExtension = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
                 extensionSubsystem.setTaget(desiredExtension);
                 currentState = nextStateInPlan();
                 break;
             case EXTENDING_EXTENSION:
+//                if(timerExtension.time() > 2500) {
+//                    transitionPlan.add(FSMState.RETRACTING_EXTENSION);
+//                    currentState = nextStateInPlan();
+//                }
 
                 //                if (desiredExtension == 0) {
 //                    currentState = nextStateInPlan();
 //                    break;
 //                }
                 if (extensionSubsystem.isAtPosition()) {
-//                    currentState = nextStateInPlan();
+                    currentState = nextStateInPlan();
                 }
                 break;
 
@@ -288,38 +318,6 @@ public class Arm implements Subsystem {
                 clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
             else clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
         }
-//        if(gg.dpadLeftOnce()) {
-//            if(clawSubsystem.rotateState == Claw.RotateMode.VERTICAL) {
-//                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
-//            }else if(clawSubsystem.rotateState == Claw.RotateMode.ORIZONTAL) {
-//                clawSubsystem.rotateState = Claw.RotateMode.VERTICAL;
-//            }
-//        }
-//        if(gg.dpadRightOnce()) {
-//            if(clawSubsystem.rotateState == Claw.RotateMode.VERTICAL) {
-//                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
-//            }else if(clawSubsystem.rotateState == Claw.RotateMode.ORIZONTAL) {
-//                clawSubsystem.rotateState = Claw.RotateMode.VERTICAL;
-//            }
-//        }
-//        if(gg.dpadUpOnce()) {
-//            if (clawSubsystem.tiltState == Claw.tiltMode.DOWN) {
-//                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
-//                clawSubsystem.tiltState = Claw.tiltMode.MID;
-//            } else if (clawSubsystem.tiltState == Claw.tiltMode.MID) {
-//                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
-//                clawSubsystem.tiltState = Claw.tiltMode.UP;
-//            }
-//        }
-//        if(gg.dpadDownOnce()) {
-//            if(clawSubsystem.tiltState == Claw.tiltMode.UP) {
-//                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
-//                clawSubsystem.tiltState = Claw.tiltMode.MID;
-//            }else if(clawSubsystem.tiltState == Claw.tiltMode.MID) {
-//                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
-//                clawSubsystem.tiltState = Claw.tiltMode.DOWN;
-//            }
-//        }
         if (gg.rightBumperOnce()) {
             if (clawSubsystem.tiltState == Claw.tiltMode.DOWN) {
                 clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
@@ -350,6 +348,13 @@ public class Arm implements Subsystem {
     }
 
 
+    void planResetEncoders() {
+        transitionPlan.clear();
+        transitionPlan.add(FSMState.RETRACTING_EXTENSION);
+        transitionPlan.add(FSMState.RESET_PITCH);
+        currentState = nextStateInPlan();
+
+    }
 
     private void planAutoTransitionSteps() {
         Log.w("debug", "auto transitions");

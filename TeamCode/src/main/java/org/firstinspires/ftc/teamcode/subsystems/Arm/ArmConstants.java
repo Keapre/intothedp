@@ -22,12 +22,14 @@ public class ArmConstants {
     public static double SPECIMEN_PITCH = 320;
 
     public static double SPECIMENGARD_EXTENSION = 0;
-    public static double SPECIMENGARD_PITCH = 75.5;
+    public static double SPECIMENGARD_PITCH = 86;
 
     public static double SPECIMENSLAM_EXTENSION = 0;
     public static double SPECIMENSLAM_PITCH = 670;
 
     public static Claw.tiltMode MID_TILT = Claw.tiltMode.MID;
+    public static Claw.tiltMode UP2_TILT = Claw.tiltMode.UP2;
+    public static Claw.tiltMode GARD_TILT = Claw.tiltMode.MIDGARD;
     public static Claw.tiltMode DOWN_TILT = Claw.tiltMode.DOWN;
     public static Claw.tiltMode UP_TILT = Claw.tiltMode.UP;
 

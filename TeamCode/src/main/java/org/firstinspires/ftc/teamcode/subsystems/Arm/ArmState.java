@@ -29,6 +29,20 @@ public enum ArmState {
             ArmConstants.ORIZONTAL_ROTATE,
             ArmConstants.MID_TILT
     ),
+    HighBasketTeleOp(
+            () -> ArmConstants.HIGHBASKET_EXTENSION,
+            () -> ArmConstants.HIGHBASKET_PITCH,
+            ArmConstants.CLOSE_CLAW,
+            ArmConstants.ORIZONTAL_ROTATE,
+            ArmConstants.UP2_TILT
+    ),
+    SpecimenBar(
+            () -> ArmConstants.HIGHBASKET_EXTENSION,
+            () -> ArmConstants.HIGHBASKET_PITCH,
+            ArmConstants.CLOSE_CLAW,
+            ArmConstants.ORIZONTAL_ROTATE,
+            ArmConstants.UP_TILT
+    ),
     SPECIMEN(
             () -> ArmConstants.SPECIMEN_EXTENSION,
             () -> ArmConstants.SPECIMEN_PITCH,
@@ -48,7 +62,7 @@ public enum ArmState {
             () -> ArmConstants.SPECIMENGARD_PITCH,
             ArmConstants.OPEN_CLAW,
             ArmConstants.ORIZONTAL_ROTATE,
-            ArmConstants.MID_TILT
+            ArmConstants.GARD_TILT
     ),
     SPECIMENSLAM(
             () -> ArmConstants.SPECIMENSLAM_EXTENSION,

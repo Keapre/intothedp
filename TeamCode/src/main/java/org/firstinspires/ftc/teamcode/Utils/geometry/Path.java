@@ -15,6 +15,10 @@ public class Path {
     public void reset() {
         get_currentPoseIndex = 0;
     }
+    public boolean antePen() {
+        if(get_currentPoseIndex == 1 || get_currentPoseIndex == 0) return false;
+        return get_currentPoseIndex == poses.size() - 2;
+    }
     public Pose get_currentPose(){
         return poses.get(get_currentPoseIndex);
     }

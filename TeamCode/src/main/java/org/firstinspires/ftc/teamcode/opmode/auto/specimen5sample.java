@@ -23,8 +23,8 @@ import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.P2Pdrive;
 import java.util.ArrayList;
 
 @Config
-@Autonomous(name = "5 + 0")
-public class Specinem5 extends LinearOpMode {
+@Autonomous(name = "5 + 1")
+public class specimen5sample extends LinearOpMode {
     Robot robot = null;
     public static boolean useWait = false;
     Path xx;
@@ -32,7 +32,7 @@ public class Specinem5 extends LinearOpMode {
     Pose2d transBASKET = new Pose2d(40,51,Math.toRadians(180));
     Pose2d bucketFirst = new Pose2d(55,45,Math.toRadians(250));
 
-    public static boolean useSample = false;
+    public static boolean useSample = true;
     Path firstSample,secondSample,thirdSample,pickUP;
     Path secondPath,thirdPath,forthPath,fifthPath,sixthPath;
     Path PickUp2,PickUp3,PickUp5,PickUp4,PickUp6,PickUp7,PickUp8;
