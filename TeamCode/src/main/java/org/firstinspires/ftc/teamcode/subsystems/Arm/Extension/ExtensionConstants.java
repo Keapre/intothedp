@@ -17,6 +17,8 @@ public class ExtensionConstants {
     //thresholds
 
     public static double pointThreeshold = 9;
+    public static double at0Threeshold = 6;
+    public static double at0positionPitch = 40;
 
     public static double dynamicTimerThreshold = 3;
 }

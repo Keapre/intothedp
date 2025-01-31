@@ -19,32 +19,51 @@ public class Limelight extends LinearOpMode {
     public double rectangleOrientation(LLResult result) {
         List<List<Double>> targetCorners = result.getColorResults().get(0).getTargetCorners();
 
-
-        double xA, yA, xB, yB,xC,yC;
-        xA = targetCorners.get(0).get(0);
-        yA = targetCorners.get(0).get(1);
+        double xA, yA, xB, yB,xC,yC,xD,yD;
+        int size = targetCorners.size();
+        if(size < 4) {
+            return 0;
+        }
+        double minX=1e9,maxX=-1e9,minY=1e9,maxY=-1e9;
+//        xA = targetCorners.get(0).get(0);
+//        yA = targetCorners.get(0).get(1);
 
         telemetry.addData("corners",targetCorners.toString());
-        xB = targetCorners.get(1).get(0);
-        yB = targetCorners.get(1).get(1);
+//        xB = targetCorners.get(1).get(0);
+//        yB = targetCorners.get(1).get(1);
+//
+//        xC = targetCorners.get(2).get(0);
+//        yC = targetCorners.get(2).get(1);
+//
+//        xD = targetCorners.get(2).get(0);
+//        yD = targetCorners.get(2).get(1);
 
-        xC = targetCorners.get(2).get(0);
-        yC = targetCorners.get(2).get(1);
-        double x = xB - xA;
-        double y = yC - yA;
-        double angle = Math.atan2(y,x);
+        for(int i = 0; i < size; i++) {
+            double x = targetCorners.get(i).get(0);
+            double y = targetCorners.get(i).get(1);
+            minX = Math.min(minX,x);
+            maxX = Math.max(maxX,x);
+            minY = Math.min(minY,y);
+            maxY = Math.max(maxY,y);
+        }
 
-        double degreesSal = Math.toDegrees(angle);
+//
+//        double x = xB - xA;
+//        double y = yC - yA;
+//        double angle = Math.atan2(y,x);
 
-        double witdth = Math.abs(xB-xA);
-        double length = Math.abs(yA-yC);
-        if(witdth > length) {
+
+//
+        double length = maxX - minX;
+        double witdth = maxY - minY;
+        telemetry.addData("width",witdth);
+        telemetry.addData("length",length);
+        if(length > witdth) {
             telemetry.addData("Orientation","Horizontal");
         }else {
             telemetry.addData("Orientation","Vertical");
         }
-        Log.w("debug", "angle: " + degreesSal);
-        return degreesSal;
+        return 0;
     }
     @Override
     public void runOpMode() throws InterruptedException {

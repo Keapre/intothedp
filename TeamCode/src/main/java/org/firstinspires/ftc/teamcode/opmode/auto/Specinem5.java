@@ -398,7 +398,7 @@ public class Specinem5 extends LinearOpMode {
             telemetry.addData("robot arm",robot.arm.currentState);
             telemetry.addData("robot dt",robot.autoDrive.driveMode);
             telemetry.update();
-            robot.sleep(0.01);
+            robot.sleep(0.001);
         }
 
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
@@ -617,6 +617,7 @@ public class Specinem5 extends LinearOpMode {
         placeFifthSpecimen();
         if(useSample) placeSample();
         park();
+        robot.sleep(0.1);
         robot.stop();
     }
 }

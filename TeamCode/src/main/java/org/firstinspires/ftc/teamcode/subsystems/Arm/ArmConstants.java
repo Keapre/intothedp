@@ -10,7 +10,7 @@ public class ArmConstants {
     public static double DEFAULT_EXTENSION = 0;
     public static double DEFAULT_PITCH = 0;
 
-    public static double HIGHBASKET_EXTENSION = 530;
+    public static double HIGHBASKET_EXTENSION = 0;
     public static double HIGHBASKET_PITCH = 555;
 
     public static double INTAKING_EXTENSION = 0;
@@ -18,7 +18,7 @@ public class ArmConstants {
     public static double START_EXTENSION = 0;
     public static double START_PITCH = 170;
 
-    public static double SPECIMEN_EXTENSION = 430;
+    public static double SPECIMEN_EXTENSION = 0;
     public static double SPECIMEN_PITCH = 320;
 
     public static double SPECIMENGARD_EXTENSION = 0;

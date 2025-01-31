@@ -83,6 +83,7 @@ public class P2Pdrive extends Drive{
         ArrayList<Pose> temp = new ArrayList<>();
         temp.add(new Pose(targetPose));
         setTargetPose(new Path(temp));
+
         driveMode = DriveMode.GO_TO_TARGET;
     }
 

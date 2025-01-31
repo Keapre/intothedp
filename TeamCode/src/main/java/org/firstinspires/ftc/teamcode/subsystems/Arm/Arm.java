@@ -18,6 +18,7 @@ import org.firstinspires.ftc.teamcode.Utils.Subsystem;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Claw.Claw;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Extension.Extension;
+import org.firstinspires.ftc.teamcode.subsystems.Arm.Extension.ExtensionConstants;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Pitch.Pitch;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Pitch.PitchConstants;
 
@@ -38,7 +39,8 @@ public class Arm implements Subsystem {
         MANUAL_CONTROL,
         OPERATION_COMPLETE,
         PRE_EXTENSION,
-        CHANGING_OUTTAKE
+        CHANGING_OUTTAKE,
+        EXTEND_TILL_SENSOR
     }
 
     public FSMState currentState = FSMState.IDLE;
@@ -122,6 +124,9 @@ public class Arm implements Subsystem {
         currentState = nextStateInPlan();
     }
 
+    public void changeDesiredExtension(double extension) {
+        desiredExtension = extension;
+    }
     public void setAutoTargetState(ArmState newState) {
         previousState = targetState;
         targetState = newState;
@@ -148,18 +153,20 @@ public class Arm implements Subsystem {
     ElapsedTime adjustingPitchTimer = null;
     public void update() {
 
+        Log.w("Debug","arm case " + currentState);
+        Log.w("Debug","arm desiredEx" + desiredExtension);
         if(IS_DISABLED)  {
             return;
         }
 //        if (currentTime - lastUpdateTime < UPDATE_INTERVAL_MS) {
 //            return;
 //        }
-        if (!manualControl && currentState != FSMState.RETRACTING_EXTENSION && currentState!=FSMState.EXTEND_MAX_FOR_TIME  && currentState != FSMState.EXTENDING_EXTENSION) {
+        if (!manualControl && extensionSubsystem.mode!= Extension.MODE.RAW_POWER && currentState != FSMState.RETRACTING_EXTENSION && currentState!=FSMState.EXTEND_MAX_FOR_TIME  && currentState != FSMState.EXTENDING_EXTENSION) {
             extensionSubsystem.mode = Extension.MODE.IDLE;
         }
         switch (currentState) {
             case IDLE:
-                if (desiredPitch == 20) pitchSubsystem.mode = Pitch.MODE.IDLE;
+                if (desiredPitch == ExtensionConstants.at0positionPitch) pitchSubsystem.mode = Pitch.MODE.IDLE;
                 claW = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
                 break;
             case CHANGING_OUTTAKE:
@@ -180,10 +187,7 @@ public class Arm implements Subsystem {
             case RETRACTING_EXTENSION:
                 extensionSubsystem.mode = Extension.MODE.RAW_POWER;
                 extensionSubsystem.changeRawPower(-raw_power_0);
-                if (pitchSubsystem.calculateAngle() > 80) {
-                    extensionSubsystem.changeRawPower(-raw_power_90);
-                }
-                if (extensionSubsystem.getTimer() >= timerthreeshold) {
+                if (extensionSubsystem.checkSwitch() == true) {
                     extensionSubsystem.mode = Extension.MODE.IDLE;
                     partTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
                     currentState = nextStateInPlan();
@@ -201,7 +205,7 @@ public class Arm implements Subsystem {
                 pitchSubsystem.mode = Pitch.MODE.RAW_POWER;
                 pitchSubsystem.changeRawPower(reverseSafePower);
                 if(pitchSubsystem.checkForSwitch()) {
-                    pitchSubsystem.target = 20;
+                    pitchSubsystem.target = ExtensionConstants.at0positionPitch;
                     pitchSubsystem.mode = Pitch.MODE.IDLE;
                     currentState = nextStateInPlan();
                 }
@@ -209,14 +213,11 @@ public class Arm implements Subsystem {
             case PRE_ADJUSTING_PITCH:
 
                 if(desiredPitch == 0 && pitchSubsystem.getCurrentPos() != 0) {
-                    desiredPitch = 20;
+                    desiredPitch = ExtensionConstants.at0positionPitch;
                 }
-                if(partTimer.time()>=timerthreeshold2) {
-                    extensionSubsystem.offset += extensionSubsystem.currentPos;
-                    pitchSubsystem.setTarget(desiredPitch);
-                    adjustingPitchTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-                    currentState = nextStateInPlan();
-                }
+                pitchSubsystem.setTarget(desiredPitch);
+                adjustingPitchTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+                currentState = nextStateInPlan();
                 break;
 
             case ADJUSTING_PITCH:
@@ -225,7 +226,7 @@ public class Arm implements Subsystem {
                     resetMode();
                     break;
                 }
-                if ((desiredPitch!=20 && pitchSubsystem.isAtPosition(desiredPitch) || (desiredPitch == 20 && pitchSubsystem.isAt0()))) {
+                if ((desiredPitch!= ExtensionConstants.at0positionPitch && pitchSubsystem.isAtPosition(desiredPitch) || (desiredPitch == ExtensionConstants.at0positionPitch && pitchSubsystem.isAt0()))) {
                     if(atThreeshold == null) atThreeshold = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
                     //extensionSubsystem.updateKerem(pitchSubsystem.calculateAngle());
                     // pitchSubsystem.updateRegreesion();
@@ -356,6 +357,8 @@ public class Arm implements Subsystem {
 
     }
 
+
+
     private void planAutoTransitionSteps() {
         Log.w("debug", "auto transitions");
 
@@ -367,8 +370,8 @@ public class Arm implements Subsystem {
         transitionPlan.add(FSMState.ADJUSTING_PITCH);
         //transitionPlan.add(FSMState.RETRACTING_EXTENSION);
 
-//        transitionPlan.add(FSMState.PRE_EXTENSION);
-//        transitionPlan.add(FSMState.EXTENDING_EXTENSION);
+        transitionPlan.add(FSMState.PRE_EXTENSION);
+        transitionPlan.add(FSMState.EXTENDING_EXTENSION);
 
         transitionPlan.add(FSMState.OPERATION_COMPLETE);
 

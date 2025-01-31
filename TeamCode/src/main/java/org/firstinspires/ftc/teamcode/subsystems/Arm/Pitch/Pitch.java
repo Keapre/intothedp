@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.Utils.Caching.CachingDcMotorEx;
 import org.firstinspires.ftc.teamcode.Utils.Utils;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.Debouncer;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.Encoder;
+import org.firstinspires.ftc.teamcode.subsystems.Arm.Extension.ExtensionConstants;
 
 @Config
 
@@ -44,12 +45,12 @@ public class Pitch {
     public double ff = 0;
 
 
-    public static double angle = 0;
+    public  double angle = 0;
 
     DigitalChannel limitSwitch;
     public  double offset = 0;
     InterpLUT lutExtendIntake = null;
-    public static double currentPos = 0;
+    public  double currentPos = 0;
     public MODE mode = MODE.AUTO;
 
     public double target = 0;
@@ -69,8 +70,7 @@ public class Pitch {
 
         limitSwitch.setMode(DigitalChannel.Mode.INPUT);
         initializeMotors();
-
-
+        resetVar();
         if(isAutonomous) {
             mode = MODE.AUTO;
         }
@@ -78,6 +78,17 @@ public class Pitch {
         offset = currentPos;
     }
 
+    void resetVar() {
+        motor1Power = 0;
+        motor2Power = 0;
+        ff = 0;
+        angle = 0;
+        currentPos = 0;
+        target = 0;
+        mode = MODE.IDLE;
+        controller = new PIDController(PitchConstants.kP, 0, PitchConstants.kD);
+        offset = 0;
+    }
     public void initializeMotors() {
         extension2.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         extension1.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
@@ -91,20 +102,6 @@ public class Pitch {
         //REVERSE IF NEEDED
     }
 
-    double minnLinerPos = 0,maxxLinearPos = 0;
-    public void updateRegreesion() {
-        lutExtendIntake = new InterpLUT();
-        minnLinerPos = currentPos;
-        maxxLinearPos = currentPos + 250;
-        lutExtendIntake.add(currentPos-1,1);
-        lutExtendIntake.add(currentPos+50,1.2);
-        lutExtendIntake.add(currentPos+100,1.2);
-        lutExtendIntake.add(currentPos+150,1.4);
-        lutExtendIntake.add(currentPos+200,1.6);
-        lutExtendIntake.add(currentPos+251,1.8);
-        lutExtendIntake.createLUT();
-        //TODO:tune this
-    }
     public double getTrueCurrentPosition() {
         return extension1.getCurrentPosition();
     }
@@ -117,7 +114,7 @@ public class Pitch {
         return Math.abs(target -currentPos) <= PitchConstants.threshold;
     }
     public boolean isAt0() {
-        return Math.abs(currentPos-20) < PitchConstants.lowThreshold;
+        return Math.abs(currentPos- ExtensionConstants.at0positionPitch) < ExtensionConstants.at0Threeshold;
     }
 
     public void setTarget(double pos)
@@ -189,7 +186,7 @@ public class Pitch {
                 extension2.setPower(Utils.minMaxClip(-1,1,motor2Power));
                 break;
             case IDLE:
-                if(target == 20) {
+                if(target == ExtensionConstants.at0positionPitch) {
                     extension1.setPower(0);
                     extension2.setPower(0);
                 }

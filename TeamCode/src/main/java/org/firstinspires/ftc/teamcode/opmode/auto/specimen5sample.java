@@ -38,7 +38,7 @@ public class specimen5sample extends LinearOpMode {
     Path PickUp2,PickUp3,PickUp5,PickUp4,PickUp6,PickUp7,PickUp8;
     Pose2d park = new Pose2d(-40,57,Math.toRadians(180));
 
-    Pose2d startPose = new Pose2d(-16.8, 62, Math.toRadians(180));
+    Pose2d startPose = new Pose2d(-17, 62, Math.toRadians(180));
     Pose2d specinem1 = new Pose2d(-11.225201464074804, 49, Math.toRadians(113));
     Pose2d specinem1_1 = new Pose2d(-11.5, 33, Math.toRadians(90));
     Pose2d specimen2 = new Pose2d(-7.5, 33, Math.toRadians(90));
@@ -50,7 +50,7 @@ public class specimen5sample extends LinearOpMode {
     Pose2d pickUpspot = new Pose2d(-40 , 57.5, Math.toRadians(90));
     Pose2d pickUpspot1 = new Pose2d(-60 , 57.5, Math.toRadians(90));
     Pose2d transitionpickUpspot = new Pose2d(-41, 48, Math.toRadians(105));
-    Pose2d scoreBasket2 = new Pose2d(59,56.5,Math.toRadians(225));
+    Pose2d scoreBasket2 = new Pose2d(55,50.4,Math.toRadians(225));
 
 
     public static double diff = 125;
@@ -149,23 +149,23 @@ public class specimen5sample extends LinearOpMode {
     public static double extension2 = 480;
     public static double extension3 = 425;
 
-    public static double headingDegrees1 = 234.3;
-    public static double headingDegrees2 = 224;
-    public static double headingDegrees3 = 223.3;
+    public  static double headingDegrees1 = 234.3;
+    public  static double headingDegrees2 = 224;
+    public static   double headingDegrees3 = 223.3;
     public static double specimenSlam = 240;
     SPECIMEN specimen = new SPECIMEN();
     SPECIMENGARD gard = new SPECIMENGARD();
     INTAKING intaking = new INTAKING();
 
-    public static Pose2d moveFirstPos1 = new Pose2d(-35.24815500815084,46.491546390563485,Math.toRadians(headingDegrees1));
+    public  static Pose2d moveFirstPos1 = new Pose2d(-35.24815500815084,46.491546390563485,Math.toRadians(headingDegrees1));
     public static Pose2d transitionPoint = new Pose2d(-12.7,43.5,Math.toRadians(110));
     public static Pose2d moveFirstPos2 = new Pose2d(-31.7,45.107,Math.toRadians(131));
 
     public static Pose2d moveSecondPos1 = new Pose2d(-40.32611035925197,43.52032999354085,Math.toRadians(headingDegrees2));
-    public static Pose2d moveSecondPos2 = new Pose2d(-37.37830070435532,40.01918234036664,Math.toRadians(124));
+    public  static Pose2d moveSecondPos2 = new Pose2d(-37.37830070435532,40.01918234036664,Math.toRadians(124));
 
-    public static Pose2d moveThirdPos1 = new Pose2d(-50.9373077632874,42.20239882581816,Math.toRadians(headingDegrees3));
-    public static Pose2d moveThirdPos2 = new Pose2d(-32,44,Math.toRadians(120));
+    public  Pose2d moveThirdPos1 = new Pose2d(-50.9373077632874,42.20239882581816,Math.toRadians(headingDegrees3));
+    public  Pose2d moveThirdPos2 = new Pose2d(-32,44,Math.toRadians(120));
     INTAKING intaking2 = new INTAKING();
     INTAKING intaking3 = new INTAKING();
     HIGHBASKET high = new HIGHBASKET();
@@ -387,7 +387,7 @@ public class specimen5sample extends LinearOpMode {
         robot.sleep(0.1);
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
     }
-    public static double placeSpecimenDelta = 280;
+    public static double placeSpecimenDelta = 270;
 
     void placeThirdSpecimen() {
         PickUp5.reset();
@@ -465,7 +465,7 @@ public class specimen5sample extends LinearOpMode {
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
     }
 
-    public static double bucketExtenstion = 970;
+    public static double bucketExtenstion = 955;
     void placeSample() {
         pickUP.reset();
         robot.autoDrive.setTargetPose(PickUp7);
@@ -617,6 +617,7 @@ public class specimen5sample extends LinearOpMode {
         placeFifthSpecimen();
         if(useSample) placeSample();
         park();
+        robot.sleep(0.1);
         robot.stop();
     }
 }

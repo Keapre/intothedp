@@ -2,11 +2,14 @@ package org.firstinspires.ftc.teamcode.subsystems.Arm.Extension;
 
 import static com.arcrobotics.ftclib.util.MathUtils.clamp;
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -14,6 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.Utils.Caching.CachingDcMotorEx;
 import org.firstinspires.ftc.teamcode.Utils.Utils;
+import org.firstinspires.ftc.teamcode.Utils.Wrappers.Debouncer;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.Encoder;
 import org.firstinspires.ftc.teamcode.Utils.geometry.Path;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Arm;
@@ -38,8 +42,9 @@ public class Extension {
     public MODE mode = MODE.AUTO;
     public double angle = 0;
     private double maxx = 0;
-    public PIDFController controller = new PIDFController(ExtensionConstants.kP,0,ExtensionConstants.kD,0);
-
+     PIDFController controller = new PIDFController(ExtensionConstants.kP,0,ExtensionConstants.kD,0);
+    DigitalChannel limitSwitchExtension;
+    Debouncer debouncerExtension;
     Encoder encoder;
     ElapsedTime timer = null;
     double valueTimer = 0;
@@ -47,19 +52,45 @@ public class Extension {
     public Extension(HardwareMap hardwareMap, boolean isAuto, Robot robot) {
         this.robot  =robot;
         motor = hardwareMap.get(DcMotorEx.class, "extend");
-        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        encoder = new Encoder(motor);
-        motor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-        motor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        offset = encoder.getCurrentPosition();
+        resetVar();
+        resetMotorAndEncoder();
+        limitSwitchExtension = hardwareMap.get(DigitalChannel.class, "limitSwitchExtension");
+        limitSwitchExtension.setMode(DigitalChannel.Mode.INPUT);
+        debouncerExtension = new Debouncer(0.3 );
     }
 
+    public void resetVar() {
+        power = 0;
+        target = 0;
+        currentPos = 0;
+        offset = 0;
+        mode = MODE.IDLE;
+        angle = 0;
+        maxx = 0;
+        controller = new PIDFController(ExtensionConstants.kP,0,ExtensionConstants.kD,0);
+        timer = null;
+        valueTimer = 0;
+    }
+
+    public void resetMotorAndEncoder() {
+        motor.setPower(0);
+        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        encoder = new Encoder(motor);
+        offset = encoder.getCurrentPosition();
+        motor.setPower(0);
+        motor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+    }
     public double raw_power = 0;
     private double currentAmp = 0;
 
+    public boolean checkSwitch() {
+        return debouncerExtension.calculate(limitSwitchExtension.getState());
+    }
     public void setTaget(double target) {
         mode = MODE.AUTO;
         this.target = target;
+        controller.reset();
     }
     public void changeRawPower(double power) {
         raw_power = power;
@@ -115,6 +146,7 @@ public class Extension {
         return getTrueCurrentPosition() - offset - (Math.sin(Math.toRadians(clamp(angle,0,90)) * ExtensionConstants.valueSHit)) ;
     }
 
+
     public void checkTimer() {
         if(robot.arm.currentState == Arm.FSMState.RETRACTING_EXTENSION || robot.arm.currentState == Arm.FSMState.EXTENDING_EXTENSION) {
             if(timer == null) {
@@ -130,12 +162,21 @@ public class Extension {
             timer = null;
         }
     }
-
+    void resetEncoder() {
+        offset = encoder.getCurrentPosition();
+    }
     public void update() {
+
         currentAmp = motor.getCurrent(CurrentUnit.AMPS);
         angle = robot.arm.pitchSubsystem.get_angle();
         currentPos = getCurrentPos(angle);
+        Log.w("Debug","case +" + mode);
+        Log.w("Debug","current Pos: +" + currentPos);
+        Log.w("Debug","target Pos: +" + target);
         if(IS_DISABLED) return;
+        if(checkSwitch()) {
+            resetEncoder();
+        }
         checkTimer();
         updateFeedForward();
         switch (mode) {

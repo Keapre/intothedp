@@ -160,15 +160,15 @@ public class TeleOp extends OpMode {
         //total = 2 min = 120 sec
         if(timer.time() > 90 && !endgame) {
             endgame = true;
-            gg.rumble(250);
+            gg.rumble(450);
         }
         if(!park && timer.time() > 120 - parkTime) {
             park = true;
-            gg.rumble(250);
+            gg.rumble(450);
         }
         if(!park2 && timer.time() > 120 - parkTime2) {
             park2 = true;
-            gg.rumble(250);
+            gg.rumble(450);
         }
         robot.drive.slow_mode = robot.arm.extensionSubsystem.getPosition() >= slow_extension_limit;
 
@@ -234,6 +234,7 @@ public class TeleOp extends OpMode {
         telemetry.addData("Claw pos",robot.arm.clawSubsystem.clawPos);
         telemetry.addData("Claw state",robot.arm.clawSubsystem.tiltState);
         telemetry.addData("pitch ff",robot.arm.pitchSubsystem.ff);
+        telemetry.addData("extension switch",robot.arm.extensionSubsystem.checkSwitch());
         telemetry.addData("slowMode",robot.drive.slow_mode);
         telemetry.addLine();
         telemetry.addData("timer",timer.time());

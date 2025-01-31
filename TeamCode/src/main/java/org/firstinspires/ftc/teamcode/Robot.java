@@ -36,9 +36,9 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
 
 
     public DriveTrain drive = null;
-    public P2Pdrive autoDrive;
-    public Arm arm;
-    public Hang hang;
+    public P2Pdrive autoDrive = null;
+    public Arm arm = null;
+    public Hang hang = null;
     CachingVoltageSensor voltageSensor;
 
     private LynxModule hub1;
@@ -107,11 +107,11 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
         subsystems = new ArrayList<>();
         try {
             if(Globals.IS_AUTO) {
-                autoDrive = new P2Pdrive(opMode.hardwareMap, startPose, Globals.IS_AUTO);
+                autoDrive = new P2Pdrive(opMode.hardwareMap, startPose, true);
                 subsystems.add(autoDrive);
                 Log.w(TAG, "P2Pdrive intialized successfully");
             }else {
-                drive = new DriveTrain(opMode.hardwareMap,startPose,Globals.IS_AUTO,this);
+                drive = new DriveTrain(opMode.hardwareMap,startPose, false,this);
                 subsystems.add(drive);
                 Log.w(TAG, "DriveTrain intialized successfully");
             }
