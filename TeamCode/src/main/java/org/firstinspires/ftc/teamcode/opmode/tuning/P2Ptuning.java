@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.GamePadController;
+import org.firstinspires.ftc.teamcode.Utils.geometry.Pose;
 import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.P2Pdrive;
 
 
@@ -18,7 +19,7 @@ public class P2Ptuning extends LinearOpMode {
 
     GamePadController gg;
     P2Pdrive dt = null;
-    public static Pose2d targetPose = new Pose2d(-47,0,Math.toRadians(270));
+    public static Pose2d targetPose = new Pose2d(-47,0,Math.toRadians(180));
     public static Pose2d startPose = new Pose2d(-47,-47,Math.toRadians(270));
 
     @Override

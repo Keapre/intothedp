@@ -30,6 +30,7 @@ import org.firstinspires.ftc.teamcode.Utils.Wrappers.PID;
 import org.firstinspires.ftc.teamcode.Utils.Control.SquidController;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.Utils.geometry.Path;
+import org.firstinspires.ftc.teamcode.Utils.geometry.Pose;
 import org.firstinspires.ftc.teamcode.Utils.geometry.Vector2D;
 import org.firstinspires.ftc.teamcode.Utils.messages.Drawing;
 
@@ -72,6 +73,7 @@ public class DriveTrain implements Subsystem {
     Pose2d lastPinPoint = new Pose2d(0,0,0);
     Pose2d pose = new Pose2d(0,0,0);
     Pose2d target = new Pose2d(0,0,0);
+    Pose2d startPose;
     PoseVelocity2d speed = new PoseVelocity2d(new Vector2d(0,0),0);
 
     public double xSlowModeMultipler = 0.6,ySlowModeMultiplier = 0.6,hSlowModeMultiplier = 0.5;
@@ -118,6 +120,7 @@ public class DriveTrain implements Subsystem {
         rightBack =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"rightBack"),0.0);
         rightFront =  new CachingDcMotorEx(hw.get(DcMotorEx.class,"rightFront"),0);
 
+        startPose = startingPose;
 
 
         IS_AUTO = Globals.IS_AUTO;
@@ -525,7 +528,6 @@ public class DriveTrain implements Subsystem {
         double left_stick_y = -cubicScaling(gg.left_stick_y);
         double right_stick_x = -cubicScaling(gg.right_stick_x);
         double right_stick_y = gg.right_stick_y;
-
 
 
         if(slow_mode) {

@@ -49,6 +49,7 @@ public class Pitch {
 
     DigitalChannel limitSwitch;
     public  double offset = 0;
+    private double currentEncoderPos = 0;
     InterpLUT lutExtendIntake = null;
     public  double currentPos = 0;
     public MODE mode = MODE.AUTO;
@@ -71,10 +72,8 @@ public class Pitch {
         limitSwitch.setMode(DigitalChannel.Mode.INPUT);
         initializeMotors();
         resetVar();
-        if(isAutonomous) {
-            mode = MODE.AUTO;
-        }
         currentPos = encoder.getCurrentPosition();
+        currentEncoderPos = currentPos;
         offset = currentPos;
     }
 
@@ -102,8 +101,12 @@ public class Pitch {
         //REVERSE IF NEEDED
     }
 
+    public void updateTrueCurrentPosition() {
+        currentEncoderPos = encoder.getCurrentPosition();
+    }
+
     public double getTrueCurrentPosition() {
-        return extension1.getCurrentPosition();
+        return currentEncoderPos;
     }
 
     public double getCurrentPos() {
@@ -140,7 +143,6 @@ public class Pitch {
         mode = MODE.AUTO;
         controller.setPID(PitchConstants.kP, 0, PitchConstants.kD);
         motor1Power = controller.calculate(currentPos,target);
-        motor1Power = clamp(motor1Power,PitchConstants.low_Value,PitchConstants.max_Value);
         motor2Power = motor1Power;
     }
     private double raw_power = 0;
@@ -156,6 +158,7 @@ public class Pitch {
     }
     public boolean USE_EXTENSTIONFEED = false;
     public void update() {
+        updateTrueCurrentPosition();
         if(checkForSwitch()) {
             offset = getTrueCurrentPosition();
         }
@@ -178,8 +181,8 @@ public class Pitch {
                 break;
             case AUTO:
                 pid();
-                extension1.setPower(Utils.minMaxClip(motor1Power +ff  , -1, 1));
-                extension2.setPower(Utils.minMaxClip(motor2Power+ff,-1, 1));
+                extension1.setPower(Utils.minMaxClip(motor1Power +ff  , PitchConstants.low_Value, PitchConstants.max_Value));
+                extension2.setPower(Utils.minMaxClip(motor2Power +ff  , PitchConstants.low_Value, PitchConstants.max_Value));
                 break;
             case MANUAL:
                 extension1.setPower(Utils.minMaxClip(-1,1,motor1Power));

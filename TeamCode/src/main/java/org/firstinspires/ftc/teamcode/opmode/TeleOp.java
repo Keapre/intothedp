@@ -37,15 +37,15 @@ import org.firstinspires.ftc.teamcode.subsystems.Hang.Hang;
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOp Blue")
 public class TeleOp extends OpMode {
     Robot robot;
-    GamePadController gg,gg2;
-    Pose2d startPose =  new Pose2d(0,0,Math.toRadians(270));
+    GamePadController gg, gg2;
+    Pose2d startPose = new Pose2d(0, 0, Math.toRadians(270));
 
     long lastLoopFinish;
 
     public static double slow_extension_limit = 200;
     ElapsedTime timer = null;
     BlackBoxLogger logger = null;
-    private boolean endgame = false,park = false,park2 = false;
+    private boolean endgame = false, park = false, park2 = false;
     public static double parkTime = 10;
     public static double parkTime2 = 5;
     public static boolean useLogger = false;
@@ -57,7 +57,7 @@ public class TeleOp extends OpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         gg = new GamePadController(gamepad1);
         gg2 = new GamePadController(gamepad2);
-        robot = new Robot(this,startPose);
+        robot = new Robot(this, startPose);
         lastLoopFinish = System.currentTimeMillis();
     }
 
@@ -69,6 +69,7 @@ public class TeleOp extends OpMode {
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
         timer = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
     }
+
     private boolean isManualControlActivated() {
         return Math.abs(gg.left_trigger) > 0.1 || Math.abs(gg.right_trigger) > 0.1 || gg.aOnce() ||
                 gg.dpadUpOnce() || gg.dpadDownOnce() || gg.dpadLeftOnce() || gg.dpadRightOnce() || gg.leftBumperOnce()
@@ -94,91 +95,92 @@ public class TeleOp extends OpMode {
         telemetry.addData("Top 100", formatResults(robot.top100));
         telemetry.addData("Top 10", formatResults(robot.top10));
     }
+
     @Override
-    public void loop()
-    {
+    public void loop() {
         gg2.update();
         gg.update();
         updateDrive();
         updateArm();
         hang();
         updateTelemetry();
-        if(useLogger) logger.writeData();
+        if (useLogger) logger.writeData();
     }
 
     public void updateArm() {
-        if(isManualControlActivated()) {
+        if (isManualControlActivated()) {
             robot.arm.handleManualControl(gg);
             robot.arm.manualControl = true;
-        }else if(manualControlDeactivated()) {
+        } else if (manualControlDeactivated()) {
             robot.arm.manualControl = false;
         }
-        if(gg.bOnce()) {
+        if (gg.bOnce()) {
             Log.w("debug", "b pressed");
 
-            if(robot.arm.targetState == ArmState.HIGHBASKET && robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
+            if (robot.arm.targetState == ArmState.HIGHBASKET && robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
                 robot.arm.setTargetState(ArmState.DEFAULT);
-            }
-            else if(robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
+            } else if (robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
                 robot.arm.setTargetState(ArmState.INTAKING);
             }
         }
         if (gg.yOnce()) {
             Log.w("debug", "y pressed");
 
-//            if( robot.arm.getCurrentState() == Arm.FSMState.IDLE && robot.arm.targetState==ArmState.INTAKING) {
-//                robot.arm.setTargetState(ArmState.SPECIMENGARD);
+            if (robot.arm.getCurrentState() == Arm.FSMState.IDLE && (robot.arm.targetState == ArmState.INTAKING || robot.arm.targetState == ArmState.HighBasketTeleOp || robot.arm.targetState == ArmState.DEFAULT)) {
+                robot.arm.setTargetState(ArmState.SPECIMENGARD);
 //            } else if(robot.arm.getCurrentState() == Arm.FSMState.IDLE && robot.arm.targetState==ArmState.SPECIMENGARD) {
 //                robot.arm.setTargetState(ArmState.SpecimenBar);
 //            }
-            if(robot.arm.getCurrentState() == Arm.FSMState.IDLE)
-            {
-                switch (robot.arm.targetState)
-                {
-                    case SPECIMENGARD:
-                        robot.arm.setTargetState(ArmState.SpecimenBar);
-                        break;
-                    case SpecimenBar:
-                        robot.arm.setTargetState(ArmState.SPECIMENGARD);
-                        break;
-                    default:
-                        robot.arm.setTargetState(ArmState.SPECIMENGARD);
-                        break;
-                }
+//            if(robot.arm.getCurrentState() == Arm.FSMState.IDLE)
+//            {
+//                switch (robot.arm.targetState)
+//                {
+//                    case SPECIMENGARD:
+//                        robot.arm.setTargetState(ArmState.SpecimenBar);
+//                        break;
+//                    case SpecimenBar:
+//                        robot.arm.setTargetState(ArmState.SPECIMENGARD);
+//                        break;
+//                    default:
+//                        robot.arm.setTargetState(ArmState.SPECIMENGARD);
+//                        break;
+//                }
+//            }
+
             }
 
-        }
 
-        if(gg.xOnce()) {
+        }
+        if (gg.xOnce()) {
             Log.w("debug", "x pressed");
-            if( robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
+            if (robot.arm.getCurrentState() == Arm.FSMState.IDLE) {
                 robot.arm.setTargetState(ArmState.HighBasketTeleOp);
             }
         }
     }
-    public void updateDrive() {
-        //total = 2 min = 120 sec
-        if(timer.time() > 90 && !endgame) {
-            endgame = true;
-            gg.rumble(450);
-        }
-        if(!park && timer.time() > 120 - parkTime) {
-            park = true;
-            gg.rumble(450);
-        }
-        if(!park2 && timer.time() > 120 - parkTime2) {
-            park2 = true;
-            gg.rumble(450);
-        }
-        robot.drive.slow_mode = robot.arm.extensionSubsystem.getPosition() >= slow_extension_limit;
+        public void updateDrive() {
+            //total = 2 min = 120 sec
+            if (timer.time() > 90 && !endgame) {
+                endgame = true;
+                gg.rumble(600);
+            }
+            if (!park && timer.time() > 120 - parkTime) {
+                park = true;
+                gg.rumble(600);
+            }
+            if (!park2 && timer.time() > 120 - parkTime2) {
+                park2 = true;
+                gg.rumble(600);
+            }
+            robot.drive.slow_mode = robot.arm.extensionSubsystem.getPosition() >= slow_extension_limit;
 
 //        if(robot.arm.targetState == ArmState.SPECIMENGARD) {
 //            robot.drive.slow_mode = true;
 //        }
-        robot.drive.drive(gg);
-    }
+            robot.drive.drive(gg);
+        }
 
-    public void hang() {
+        public void hang () {
 //        if(gg2.aOnce()) {
 //            robot.hang.setServo();
 //        }
@@ -191,63 +193,63 @@ public class TeleOp extends OpMode {
 //            robot.hang.startClimb();
 //        }
 //        robot.hang.changePower(gg2);
-        if(gg.dpadLeftOnce()){
-            robot.hang.setServo();
+            if (gg.dpadLeftOnce()) {
+                robot.hang.setServo();
+            }
+            if (gg.dpadRightOnce()) {
+                robot.hang.setCloseServo();
+            }
+            if (gg.dpadUp()) {
+                robot.hang.changePower(-1);
+            } else if (gg.dpadDown()) {
+                robot.hang.changePower(1);
+            } else {
+                robot.hang.changePower(0);
+            }
+            if (gg.rightStickButtonOnce()) {
+                robot.hang.startClimb();
+            }
         }
-        if(gg.dpadRightOnce()){
-            robot.hang.setCloseServo();
-        }
-        if(gg.dpadUp()){
-            robot.hang.changePower(-1);
-        }
-       else  if(gg.dpadDown()){
-            robot.hang.changePower(1);
-        }
-       else{
-           robot.hang.changePower(0);
-        }
-       if(gg.rightStickButtonOnce()){
-           robot.hang.startClimb();
-       }
-    }
-    public void updateTelemetry() {
-        telemetry.addLine();
-        telemetry.addLine("---------------ARM--------------");
-        telemetry.addData("ARM STATE",robot.arm.targetState);
-        telemetry.addData("ARM CURRENT STATE",robot.arm.getCurrentState());
-        telemetry.addData("ARM MANUAL CONTROL",robot.arm.manualControl);
-        telemetry.addLine();
-        telemetry.addData("useRetract",robot.arm.useRetractAuto);
-        telemetry.addData("ff",robot.arm.extensionSubsystem.ff);
-        telemetry.addData("Extension power",robot.arm.extensionSubsystem.power);
-        telemetry.addData("Extension pos",robot.arm.extensionSubsystem.currentPos);
-        telemetry.addData("extension offset",robot.arm.extensionSubsystem.offset);
-        telemetry.addData("maxx Amp",robot.arm.extensionSubsystem.getMaxAmps());
-        telemetry.addData("Amp",robot.arm.extensionSubsystem.getAmp());
-        telemetry.addData("Pith angle",robot.arm.pitchSubsystem.get_angle());
-        telemetry.addData("Pith pos",robot.arm.pitchSubsystem.getCurrentPos());
-        telemetry.addData("target angle",robot.arm.targetState.getPivotAngle());
-        telemetry.addData("target pitch",robot.arm.pitchSubsystem.getTarget());
-        telemetry.addData("pitch mode",robot.arm.pitchSubsystem.mode);
 
-        telemetry.addData("extend mode",robot.arm.extensionSubsystem.mode);
-        telemetry.addData("Claw pos",robot.arm.clawSubsystem.clawPos);
-        telemetry.addData("Claw state",robot.arm.clawSubsystem.tiltState);
-        telemetry.addData("pitch ff",robot.arm.pitchSubsystem.ff);
-        telemetry.addData("extension switch",robot.arm.extensionSubsystem.checkSwitch());
-        telemetry.addData("slowMode",robot.drive.slow_mode);
-        telemetry.addLine();
-        telemetry.addData("timer",timer.time());
-        telemetry.addData("Sample Rate (Hz) ",1/((double)(System.currentTimeMillis() - lastLoopFinish)/1000.0));
-        addStatistics();
-        telemetry.update();
-        TelemetryUtil.sendTelemetry();
-        lastLoopFinish = System.currentTimeMillis();
-    }
+        public void updateTelemetry () {
+            telemetry.addLine();
+            telemetry.addLine("---------------ARM--------------");
+            telemetry.addData("ARM STATE", robot.arm.targetState);
+            telemetry.addData("ARM CURRENT STATE", robot.arm.getCurrentState());
+            telemetry.addData("ARM MANUAL CONTROL", robot.arm.manualControl);
+            telemetry.addLine();
+            telemetry.addData("useRetract", robot.arm.useRetractAuto);
+            telemetry.addData("ff", robot.arm.extensionSubsystem.ff);
+            telemetry.addData("Extension power", robot.arm.extensionSubsystem.power);
+            telemetry.addData("Extension pos", robot.arm.extensionSubsystem.currentPos);
+            telemetry.addData("extension offset", robot.arm.extensionSubsystem.offset);
+            telemetry.addData("maxx Amp", robot.arm.extensionSubsystem.getMaxAmps());
+            telemetry.addData("Amp", robot.arm.extensionSubsystem.getAmp());
+            telemetry.addData("Pith angle", robot.arm.pitchSubsystem.get_angle());
+            telemetry.addData("Pith pos", robot.arm.pitchSubsystem.getCurrentPos());
+            telemetry.addData("target angle", robot.arm.targetState.getPivotAngle());
+            telemetry.addData("target pitch", robot.arm.pitchSubsystem.getTarget());
+            telemetry.addData("pitch mode", robot.arm.pitchSubsystem.mode);
 
-    @Override
-    public void stop() {
-        robot.stop();
-    }
+            telemetry.addData("extend mode", robot.arm.extensionSubsystem.mode);
+            telemetry.addData("Claw pos", robot.arm.clawSubsystem.clawPos);
+            telemetry.addData("Claw state", robot.arm.clawSubsystem.tiltState);
+            telemetry.addData("pitch ff", robot.arm.pitchSubsystem.ff);
+            telemetry.addData("extension switch", robot.arm.extensionSubsystem.getSwitchStatus());
+            telemetry.addData("slowMode", robot.drive.slow_mode);
+            //telemetry.addData("took it",robot.arm.clawSubsystem.tookit());
+            telemetry.addLine();
+            telemetry.addData("timer", timer.time());
+            telemetry.addData("Sample Rate (Hz) ", 1 / ((double) (System.currentTimeMillis() - lastLoopFinish) / 1000.0));
+            addStatistics();
+            telemetry.update();
+            TelemetryUtil.sendTelemetry();
+            lastLoopFinish = System.currentTimeMillis();
+        }
 
-}
+        @Override
+        public void stop() {
+            robot.stop();
+        }
+
+    }

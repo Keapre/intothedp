@@ -54,6 +54,7 @@ public class Claw {
         this.claw = new CachingServo(hardwareMap.get(Servo.class, "claw"));
         this.leftDiffy = new CachingServo(hardwareMap.get(Servo.class, "diffyLeft"));
         this.rightDiffy = new CachingServo(hardwareMap.get(Servo.class, "diffyRight"));
+        sensor = new OPColorSensor(hardwareMap,"colorSensor");
     }
 
 
@@ -65,6 +66,9 @@ public class Claw {
         return tiltState;
     }
 
+    public boolean tookit() {
+        return sensor.tookit();
+    }
     ElapsedTime timerClaw = null;
 //    public boolean checkTook() {
 //        if(sensor.tookit()) {

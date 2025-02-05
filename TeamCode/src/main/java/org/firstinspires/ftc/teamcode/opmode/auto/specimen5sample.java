@@ -40,16 +40,16 @@ public class specimen5sample extends LinearOpMode {
 
     Pose2d startPose = new Pose2d(-17, 62, Math.toRadians(180));
     Pose2d specinem1 = new Pose2d(-11.225201464074804, 49, Math.toRadians(113));
-    Pose2d specinem1_1 = new Pose2d(-11.5, 33, Math.toRadians(90));
-    Pose2d specimen2 = new Pose2d(-7.5, 33, Math.toRadians(90));
-    Pose2d specimen3 = new Pose2d(-4.5, 33, Math.toRadians(90));
-    Pose2d specimen4 = new Pose2d(-2, 34, Math.toRadians(90));
-    Pose2d specimen5 = new Pose2d(3, 33, Math.toRadians(90));
-    Pose2d specimen6 = new Pose2d(-4.5, 33,Math.toRadians(90));
+    Pose2d specinem1_1 = new Pose2d(-11.5, 34, Math.toRadians(90));
+    Pose2d specimen2 = new Pose2d(-7.5, 32.5, Math.toRadians(90));
+    Pose2d specimen3 = new Pose2d(-4.5, 32.5, Math.toRadians(90));
+    Pose2d specimen4 = new Pose2d(-2, 32.5, Math.toRadians(90));
+    Pose2d specimen5 = new Pose2d(3, 32.5, Math.toRadians(90));
+    Pose2d specimen6 = new Pose2d(-4.5, 32.5,Math.toRadians(90));
 
-    Pose2d pickUpspot = new Pose2d(-40 , 57.5, Math.toRadians(90));
+    Pose2d pickUpspot = new Pose2d(-40 , 55, Math.toRadians(90));
     Pose2d pickUpspot1 = new Pose2d(-60 , 57.5, Math.toRadians(90));
-    Pose2d transitionpickUpspot = new Pose2d(-41, 48, Math.toRadians(105));
+    Pose2d transitionpickUpspot = new Pose2d(-41, 45, Math.toRadians(95));
     Pose2d scoreBasket2 = new Pose2d(55,50.4,Math.toRadians(225));
 
 
@@ -77,7 +77,7 @@ public class specimen5sample extends LinearOpMode {
             add(new Pose(new Pose2d(-57,13,Math.toRadians(90))));
             add(new Pose(new Pose2d(-67.0570250984252,13,Math.toRadians(90))));
             add(new Pose(new Pose2d(-67.0570250984252,40,Math.toRadians(90))));
-            add(new Pose(new Pose2d(-64.07845853069636,56,Math.toRadians(90))));
+            add(new Pose(new Pose2d(-64.07845853069636,55.7,Math.toRadians(90))));
         }
     };
 
@@ -158,7 +158,7 @@ public class specimen5sample extends LinearOpMode {
     INTAKING intaking = new INTAKING();
 
     public  static Pose2d moveFirstPos1 = new Pose2d(-35.24815500815084,46.491546390563485,Math.toRadians(headingDegrees1));
-    public static Pose2d transitionPoint = new Pose2d(-12.7,43.5,Math.toRadians(110));
+    public static Pose2d transitionPoint = new Pose2d(-15,40,Math.toRadians(100));
     public static Pose2d moveFirstPos2 = new Pose2d(-31.7,45.107,Math.toRadians(131));
 
     public static Pose2d moveSecondPos1 = new Pose2d(-40.32611035925197,43.52032999354085,Math.toRadians(headingDegrees2));

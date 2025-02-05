@@ -48,7 +48,7 @@ public class P2Pdrive extends Drive{
     public  PIDFController hController = new PIDFController(hP, 0.0, hD, 0);
 
     public Pose2d targetPose2d;
-    public static double ALLOWED_TRANSLATIONAL_ERROR = 2.5;
+    public static double ALLOWED_TRANSLATIONAL_ERROR = 1;
     public static double ALLOWED_HEADING_ERROR = 3;
 
 
@@ -77,9 +77,6 @@ public class P2Pdrive extends Drive{
     public static double maxRotateTranslationalSpeed = 0.9;
 
     public void setTargetPose(Pose2d targetPose) {
-        xController.reset();
-        yController.reset();
-        hController.reset();
         ArrayList<Pose> temp = new ArrayList<>();
         temp.add(new Pose(targetPose));
         setTargetPose(new Path(temp));
@@ -97,11 +94,18 @@ public class P2Pdrive extends Drive{
     public boolean isFinishedLast(Pose currentPose) {
         Pose delta = targetPose.subtract(currentPose);
 
+
         if (delta.toVec2D().magnitude() > ALLOWED_TRANSLATIONAL_ERROR
                 || Math.abs(Math.toDegrees(delta.heading)) > ALLOWED_HEADING_ERROR) {
             stable.reset();
         }
 
+        if(timer.milliseconds() > DEAD_MS || stable.milliseconds() > STABLE_MS) {
+            Log.w("errors","target : " + targetPose);
+            Log.w("errors","translational error" + delta.toVec2D().magnitude());
+            Log.w("errors","x " + delta.x + " y: " +delta.y);
+            Log.w("errors","heading error" +  Math.abs(Math.toDegrees(delta.heading)));
+        }
         return timer.milliseconds() > DEAD_MS || stable.milliseconds() > STABLE_MS;
     }
     public boolean isFinishedTransition(Pose currentPose) {
@@ -119,7 +123,7 @@ public class P2Pdrive extends Drive{
 
         if (timer == null) timer = new ElapsedTime();
         if (stable == null) stable = new ElapsedTime();
-         PoseVelocity2d vel = updatePoseEstimate();
+        PoseVelocity2d vel = updatePoseEstimate();
         currentPose = new Pose(pose.position.x, pose.position.y, pose.heading.toDouble());
         if(!path.isLast()) {
             MAX_TRANSLATIONAL_SPEED = maxTranslationTransSpeed;

@@ -12,6 +12,8 @@ import org.firstinspires.ftc.teamcode.Utils.ArmStates.SPECIMEN;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.SPECIMENGARD;
 import org.firstinspires.ftc.teamcode.Utils.ArmStates.SPECIMENSLAM;
 import org.firstinspires.ftc.teamcode.Utils.Globals;
+import org.firstinspires.ftc.teamcode.Utils.Wrappers.PoseStorage;
+import org.firstinspires.ftc.teamcode.Utils.Wrappers.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.Utils.geometry.Path;
 import org.firstinspires.ftc.teamcode.Utils.geometry.Pose;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Arm;
@@ -38,19 +40,20 @@ public class Specinem5 extends LinearOpMode {
     Path PickUp2,PickUp3,PickUp5,PickUp4,PickUp6,PickUp7,PickUp8;
     Pose2d park = new Pose2d(-40,57,Math.toRadians(180));
 
-    Pose2d startPose = new Pose2d(-16.8, 62, Math.toRadians(180));
+    Pose2d startPose = new Pose2d(-17, 62, Math.toRadians(180));
     Pose2d specinem1 = new Pose2d(-11.225201464074804, 49, Math.toRadians(113));
-    Pose2d specinem1_1 = new Pose2d(-11.5, 33, Math.toRadians(90));
-    Pose2d specimen2 = new Pose2d(-7.5, 33, Math.toRadians(90));
-    Pose2d specimen3 = new Pose2d(-4.5, 33, Math.toRadians(90));
-    Pose2d specimen4 = new Pose2d(-2, 34, Math.toRadians(90));
-    Pose2d specimen5 = new Pose2d(3, 33, Math.toRadians(90));
-    Pose2d specimen6 = new Pose2d(-4.5, 33,Math.toRadians(90));
+    Pose2d specinem1_1 = new Pose2d(-11.5, 32, Math.toRadians(90));
+    Pose2d specimen2 = new Pose2d(-7.5, 32, Math.toRadians(90));
+    Pose2d specimen3 = new Pose2d(-4.5, 32, Math.toRadians(90));
+    Pose2d specimen4 = new Pose2d(-2, 32, Math.toRadians(90));
+    Pose2d specimen5 = new Pose2d(3, 32, Math.toRadians(90));
+    Pose2d specimen6 = new Pose2d(-4.5, 32,Math.toRadians(90));
+     Pose2d transitionPoint = new Pose2d(-22.7,43.5,Math.toRadians(110));
 
-    Pose2d pickUpspot = new Pose2d(-40 , 57.5, Math.toRadians(90));
+    Pose2d pickUpspot = new Pose2d(-41 , 56, Math.toRadians(90));
     Pose2d pickUpspot1 = new Pose2d(-60 , 57.5, Math.toRadians(90));
-    Pose2d transitionpickUpspot = new Pose2d(-41, 48, Math.toRadians(105));
-    Pose2d scoreBasket2 = new Pose2d(59,56.5,Math.toRadians(225));
+    Pose2d transitionpickUpspot = new Pose2d(-41, 40, Math.toRadians(92));
+    Pose2d scoreBasket2 = new Pose2d(55,50.4,Math.toRadians(225));
 
 
     public static double diff = 125;
@@ -149,23 +152,23 @@ public class Specinem5 extends LinearOpMode {
     public static double extension2 = 480;
     public static double extension3 = 425;
 
-    public static double headingDegrees1 = 234.3;
-    public static double headingDegrees2 = 224;
-    public static double headingDegrees3 = 223.3;
+    public  static double headingDegrees1 = 234.3;
+    public  static double headingDegrees2 = 224;
+    public static   double headingDegrees3 = 223.3;
     public static double specimenSlam = 240;
     SPECIMEN specimen = new SPECIMEN();
     SPECIMENGARD gard = new SPECIMENGARD();
     INTAKING intaking = new INTAKING();
 
-    public static Pose2d moveFirstPos1 = new Pose2d(-35.24815500815084,46.491546390563485,Math.toRadians(headingDegrees1));
-    public static Pose2d transitionPoint = new Pose2d(-12.7,43.5,Math.toRadians(110));
+    public  static Pose2d moveFirstPos1 = new Pose2d(-35.24815500815084,46.491546390563485,Math.toRadians(headingDegrees1));
+
     public static Pose2d moveFirstPos2 = new Pose2d(-31.7,45.107,Math.toRadians(131));
 
     public static Pose2d moveSecondPos1 = new Pose2d(-40.32611035925197,43.52032999354085,Math.toRadians(headingDegrees2));
-    public static Pose2d moveSecondPos2 = new Pose2d(-37.37830070435532,40.01918234036664,Math.toRadians(124));
+    public  static Pose2d moveSecondPos2 = new Pose2d(-37.37830070435532,40.01918234036664,Math.toRadians(124));
 
-    public static Pose2d moveThirdPos1 = new Pose2d(-50.9373077632874,42.20239882581816,Math.toRadians(headingDegrees3));
-    public static Pose2d moveThirdPos2 = new Pose2d(-32,44,Math.toRadians(120));
+    public  Pose2d moveThirdPos1 = new Pose2d(-50.9373077632874,42.20239882581816,Math.toRadians(headingDegrees3));
+    public  Pose2d moveThirdPos2 = new Pose2d(-32,44,Math.toRadians(120));
     INTAKING intaking2 = new INTAKING();
     INTAKING intaking3 = new INTAKING();
     HIGHBASKET high = new HIGHBASKET();
@@ -191,7 +194,7 @@ public class Specinem5 extends LinearOpMode {
             telemetry.update();
             robot.sleep(0.01);
         }
-        robot.sleep(0.1);
+        robot.sleep(0.2);
         robot.arm.fakePid( placeSpecimenDelta);
         while (robot.arm.currentState != Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
             telemetry.addData("extension", robot.arm.extensionSubsystem.currentPos);
@@ -375,7 +378,7 @@ public class Specinem5 extends LinearOpMode {
             telemetry.update();
             robot.sleep(0.001);
         }
-        robot.sleep(0.1);
+        robot.sleep(0.2);
         robot.arm.fakePid(placeSpecimenDelta);
         while (robot.arm.currentState != Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
             telemetry.addData("extension",robot.arm.extensionSubsystem.currentPos);
@@ -387,7 +390,7 @@ public class Specinem5 extends LinearOpMode {
         robot.sleep(0.1);
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
     }
-    public static double placeSpecimenDelta = 280;
+    public static double placeSpecimenDelta = 270;
 
     void placeThirdSpecimen() {
         PickUp5.reset();
@@ -398,7 +401,7 @@ public class Specinem5 extends LinearOpMode {
             telemetry.addData("robot arm",robot.arm.currentState);
             telemetry.addData("robot dt",robot.autoDrive.driveMode);
             telemetry.update();
-            robot.sleep(0.001);
+            robot.sleep(0.01);
         }
 
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
@@ -414,7 +417,7 @@ public class Specinem5 extends LinearOpMode {
             telemetry.update();
             robot.sleep(0.001);
         }
-        robot.sleep(0.1);
+        robot.sleep(0.2);
         robot.arm.fakePid(placeSpecimenDelta);
         while (robot.arm.currentState != Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
             telemetry.addData("extension",robot.arm.extensionSubsystem.currentPos);
@@ -452,7 +455,7 @@ public class Specinem5 extends LinearOpMode {
             telemetry.update();
             robot.sleep(0.001);
         }
-        robot.sleep(0.1);
+        robot.sleep(0.2);
         robot.arm.fakePid(placeSpecimenDelta);
         while (robot.arm.currentState != Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
             telemetry.addData("extension",robot.arm.extensionSubsystem.currentPos);
@@ -465,7 +468,7 @@ public class Specinem5 extends LinearOpMode {
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
     }
 
-    public static double bucketExtenstion = 970;
+    public static double bucketExtenstion = 955;
     void placeSample() {
         pickUP.reset();
         robot.autoDrive.setTargetPose(PickUp7);
@@ -576,9 +579,11 @@ public class Specinem5 extends LinearOpMode {
 
         moveThirdPos1 = new Pose2d(-50.9373077632874,42.20239882581816,Math.toRadians(headingDegrees3));
         moveThirdPos2 = new Pose2d(-32,44,Math.toRadians(120));
-        robot.start();
+
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
         robot.arm.changePitch(ArmConstants.START_PITCH);
+        TelemetryUtil.setup();
+        robot.start();
         xx = new Path(pathforsamplexx);
         firstSample = new Path(move1);
         secondSample = new Path(move2);
@@ -618,6 +623,7 @@ public class Specinem5 extends LinearOpMode {
         if(useSample) placeSample();
         park();
         robot.sleep(0.1);
+        PoseStorage.currentPose = robot.autoDrive.pose;
         robot.stop();
     }
 }

@@ -31,7 +31,7 @@ public class Drive extends MecanumDrive{
     }
     public static Params PARAMS = new Params();
     public GoBildaPinpointDriverRR pinpoint;
-    public static boolean usePin = true;
+    public static boolean usePin = false;
 
     @Override
     public void update() {
@@ -71,6 +71,7 @@ public class Drive extends MecanumDrive{
         }
 
         pinpoint.setPosition(pose);
+        lastPinpointPose = pose;
     }
 
 
@@ -141,6 +142,9 @@ public class Drive extends MecanumDrive{
         pinpoint.update();
         pose = pinpoint.getPositionRR();
 
+        if(pose == null) {
+            pose = lastPinpointPose;
+        }
         lastPinpointPose = pose;
 
         // RR standard

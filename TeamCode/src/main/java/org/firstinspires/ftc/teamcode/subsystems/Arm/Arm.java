@@ -46,6 +46,7 @@ public class Arm implements Subsystem {
     public FSMState currentState = FSMState.IDLE;
     public ArmState targetState = ArmState.DEFAULT, previousState;
     public String TAG = "Robot";
+    public boolean intaked = false;
 
 
     public boolean manualControl = false;
@@ -245,10 +246,10 @@ public class Arm implements Subsystem {
                 currentState = nextStateInPlan();
                 break;
             case EXTENDING_EXTENSION:
-//                if(timerExtension.time() > 2500) {
-//                    transitionPlan.add(FSMState.RETRACTING_EXTENSION);
-//                    currentState = nextStateInPlan();
-//                }
+                if(timerExtension.time() > 2500) {
+                    transitionPlan.add(FSMState.RETRACTING_EXTENSION);
+                    currentState = nextStateInPlan();
+                }
 
                 //                if (desiredExtension == 0) {
 //                    currentState = nextStateInPlan();
@@ -274,6 +275,7 @@ public class Arm implements Subsystem {
         currentState = FSMState.IDLE;
         extensionSubsystem.mode = Extension.MODE.IDLE;
         pitchSubsystem.mode = Pitch.MODE.IDLE;
+
 
     }
 
@@ -312,13 +314,27 @@ public class Arm implements Subsystem {
             useRetractAuto = !useRetractAuto;
         }
         if (gg.startOnce()) {
-            extensionSubsystem.offset += extensionSubsystem.currentPos;
+            extensionSubsystem.offset = extensionSubsystem.getTrueCurrentPosition();
         }
+
         if (gg.aOnce()) {
-            if (clawSubsystem.clawPos == Claw.CLAWPOS.OPEN)
+            if (clawSubsystem.clawPos == Claw.CLAWPOS.OPEN) {
                 clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
-            else clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
+            }
+            else {
+                clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
+                intaked = false;
+
+            }
         }
+//        if(clawSubsystem.clawPos == Claw.CLAWPOS.CLOSE) {
+//            if(!intaked) {
+//                if(clawSubsystem.tookit()) {
+//                    gg.rumble(300);
+//                    intaked = true;
+//                }
+//            }
+//        }
         if (gg.rightBumperOnce()) {
             if (clawSubsystem.tiltState == Claw.tiltMode.DOWN) {
                 clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;

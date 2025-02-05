@@ -34,7 +34,7 @@ public enum ArmState {
             () -> ArmConstants.HIGHBASKET_PITCH,
             ArmConstants.CLOSE_CLAW,
             ArmConstants.ORIZONTAL_ROTATE,
-            ArmConstants.UP2_TILT
+            ArmConstants.UP_TILT
     ),
     SpecimenBar(
             () -> ArmConstants.HIGHBASKET_EXTENSION,

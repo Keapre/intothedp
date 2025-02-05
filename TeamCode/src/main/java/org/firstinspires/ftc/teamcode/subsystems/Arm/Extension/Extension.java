@@ -46,7 +46,9 @@ public class Extension {
     DigitalChannel limitSwitchExtension;
     Debouncer debouncerExtension;
     Encoder encoder;
+    private double trueCurrentPos = 0;
     ElapsedTime timer = null;
+    Boolean switchStatus = false;
     double valueTimer = 0;
     Robot robot;
     public Extension(HardwareMap hardwareMap, boolean isAuto, Robot robot) {
@@ -78,14 +80,19 @@ public class Extension {
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         encoder = new Encoder(motor);
         offset = encoder.getCurrentPosition();
+        trueCurrentPos = offset;
         motor.setPower(0);
         motor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
     }
     public double raw_power = 0;
     private double currentAmp = 0;
+    public boolean getSwitchStatus() {
+        return switchStatus;
+    }
 
     public boolean checkSwitch() {
-        return debouncerExtension.calculate(limitSwitchExtension.getState());
+        switchStatus = debouncerExtension.calculate(limitSwitchExtension.getState());
+        return switchStatus;
     }
     public void setTaget(double target) {
         mode = MODE.AUTO;
@@ -138,8 +145,11 @@ public class Extension {
     public double getCurrentPosition() {
         return currentPos;
     }
+    private void updateCurrentPosition() {
+        trueCurrentPos = encoder.getCurrentPosition();
+    }
     public double getTrueCurrentPosition() {
-        return encoder.getCurrentPosition();
+        return trueCurrentPos;
     }
 
     public double getCurrentPos(double angle) {
@@ -163,11 +173,10 @@ public class Extension {
         }
     }
     void resetEncoder() {
-        offset = encoder.getCurrentPosition();
+        offset = getTrueCurrentPosition();
     }
     public void update() {
-
-        currentAmp = motor.getCurrent(CurrentUnit.AMPS);
+        updateCurrentPosition();
         angle = robot.arm.pitchSubsystem.get_angle();
         currentPos = getCurrentPos(angle);
         Log.w("Debug","case +" + mode);

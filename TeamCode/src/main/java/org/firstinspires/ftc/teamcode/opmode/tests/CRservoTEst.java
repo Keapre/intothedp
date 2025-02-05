@@ -27,11 +27,10 @@ public class CRservoTEst extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         Mode mode = Mode.IDLE;
-        crServo = hardwareMap.get(CRServo.class,"test");
         gg = new GamePadController(gamepad1);
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        rev = new OPColorSensor(this.hardwareMap,"intakeSensor");
+        rev = new OPColorSensor(this.hardwareMap,"colorSensor");
         waitForStart();
         while (opModeIsActive()) {
             gg.update();
@@ -42,18 +41,6 @@ public class CRservoTEst extends LinearOpMode {
                 mode = Mode.REVERSE;
             }else {
                 mode = Mode.IDLE;
-            }
-
-            switch (mode) {
-                case IDLE:
-                    crServo.setPower(0);
-                    break;
-                case FORWARD:
-                    crServo.setPower(power);
-                    break;
-                case REVERSE:
-                    crServo.setPower(-power);
-                    break;
             }
             telemetry.addData("green",rev.green());
             telemetry.addData("blue",rev.blue());
