@@ -63,6 +63,7 @@ public class Drive extends MecanumDrive{
          */
         //pinpoint.recalibrateIMU();
         pinpoint.resetPosAndIMU();
+
         // wait for pinpoint to finish calibrating
         try {
             Thread.sleep(300);
@@ -140,13 +141,17 @@ public class Drive extends MecanumDrive{
     @Override
     public PoseVelocity2d updatePoseEstimate() {
         pinpoint.update();
-        pose = pinpoint.getPositionRR();
-
-        if(pose == null) {
+        if (Double.isNaN(pinpoint.getPosX()) || Double.isNaN(pinpoint.getPosY()) ||
+                (pinpoint.getPosX() == 0.0
+                        && pinpoint.getPosY() == 0.0
+                        && pinpoint.getHeading() == 0.0
+                        && pinpoint.getVelX() == 0.0)) {
             pose = lastPinpointPose;
+            Log.i("%11", "pinpoint NaN value");
+        } else {
+            pose = pinpoint.getPositionRR();
+            lastPinpointPose = pose;
         }
-        lastPinpointPose = pose;
-
         // RR standard
         poseHistory.add(pose);
         while (poseHistory.size() > 100) {

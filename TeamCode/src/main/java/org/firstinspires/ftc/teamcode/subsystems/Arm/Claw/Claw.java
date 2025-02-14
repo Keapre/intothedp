@@ -40,7 +40,8 @@ public class Claw {
         UP,
         MID,
         DOWN,
-        MIDGARD
+        MIDGARD,
+        UPVERT
     }
     Robot robot;
 
@@ -145,9 +146,13 @@ public class Claw {
                 leftDiffy.setPosition(ClawConstants.midGard.left);
                 break;
             case UP:
-
-                rightDiffy.setPosition(ClawConstants.up.right);
-                leftDiffy.setPosition(ClawConstants.up.left);
+                if(rotateState == RotateMode.VERTICAL) {
+                    rightDiffy.setPosition(ClawConstants.up_vert.right);
+                    leftDiffy.setPosition(ClawConstants.up_vert.left);
+                }else {
+                    rightDiffy.setPosition(ClawConstants.up.right);
+                    leftDiffy.setPosition(ClawConstants.up.left);
+                }
                 break;
             case UP2:
                 rightDiffy.setPosition(ClawConstants.up2.right);

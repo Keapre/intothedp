@@ -48,7 +48,7 @@ public class P2Pdrive extends Drive{
     public  PIDFController hController = new PIDFController(hP, 0.0, hD, 0);
 
     public Pose2d targetPose2d;
-    public static double ALLOWED_TRANSLATIONAL_ERROR = 1;
+    public static double ALLOWED_TRANSLATIONAL_ERROR = 1.5;
     public static double ALLOWED_HEADING_ERROR = 3;
 
 

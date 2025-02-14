@@ -25,6 +25,9 @@ import java.util.ArrayList;
 public class samples4 extends LinearOpMode {
 
     Path first,parkPath;
+    public static double heading1 = 250;
+    public static double heading2 = 250;
+    public static double heading3 = 250;
     //Pose2d startPose = new Pose2d(32, 60.3, Math.toRadians(270));
     Pose2d startPose = new Pose2d(32, 60.3, Math.toRadians(270));
     Robot robot = null;
@@ -33,10 +36,10 @@ public class samples4 extends LinearOpMode {
     Pose2d scoreBasket1 = new Pose2d(52,52,Math.toRadians(243));
     Pose2d scoreBasket1_1 = new Pose2d(52,52,Math.toRadians(243));
 
-    Pose2d bucketFirst = new Pose2d(55,45,Math.toRadians(250));
+    Pose2d bucketFirst = new Pose2d(55,45,Math.toRadians(heading1));
     Pose2d transition = new Pose2d(23,46,Math.toRadians(265));
-    Pose2d bucketSecond = new Pose2d(58,43,Math.toRadians(270));
-    Pose2d bucketThird = new Pose2d(56.6,50,Math.toRadians(289));
+    Pose2d bucketSecond = new Pose2d(58,43,Math.toRadians(heading2));
+    Pose2d bucketThird = new Pose2d(56.6,50,Math.toRadians(heading3));
 
     ArrayList<Pose> toPark = new ArrayList<Pose>();
     ArrayList<Pose> toBucket = new ArrayList<Pose>();
@@ -67,7 +70,7 @@ public class samples4 extends LinearOpMode {
             robot.sleep(0.001);
         }
         robot.arm.setAutoTargetState(ArmState.HIGHBASKET);
-        robot.arm.changeDesiredExtension(basketLength);
+        robot.arm.fakePid(basketLength);
         while(robot.arm.currentState != Arm.FSMState.IDLE  && opModeIsActive() && !isStopRequested()) {
             telemetry.addData("extension",robot.arm.extensionSubsystem.currentPos);
             telemetry.addData("robot arm",robot.arm.currentState);
@@ -120,8 +123,8 @@ public class samples4 extends LinearOpMode {
             robot.sleep(0.001);
         }
 
-        robot.arm.setTargetState(ArmState.INTAKING);
-        robot.arm.changeDesiredExtension(firstBucketExtension);
+        robot.arm.setAutoTargetState(ArmState.INTAKING);
+        robot.arm.fakePid(firstBucketExtension);
         while(robot.arm.currentState!= Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
             telemetry.addData("extension",robot.arm.extensionSubsystem.currentPos);
             telemetry.addData("robot arm",robot.arm.currentState);
@@ -142,7 +145,7 @@ public class samples4 extends LinearOpMode {
         robot.arm.clawSubsystem.tiltState = Claw.tiltMode.MID;
         robot.autoDrive.setTargetPose(scoreBasket1);
         robot.arm.setAutoTargetState(ArmState.HIGHBASKET);
-        robot.arm.changeDesiredExtension(basketLength);
+        robot.arm.fakePid(basketLength);
         while((robot.autoDrive.driveMode!= P2Pdrive.DriveMode.IDLE || robot.arm.currentState != Arm.FSMState.IDLE) && opModeIsActive() && !isStopRequested()) {
             telemetry.addData("extension",robot.arm.extensionSubsystem.currentPos);
             telemetry.addData("robot arm",robot.arm.currentState);

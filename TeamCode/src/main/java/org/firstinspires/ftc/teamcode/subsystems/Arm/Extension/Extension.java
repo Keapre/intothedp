@@ -21,6 +21,7 @@ import org.firstinspires.ftc.teamcode.Utils.Wrappers.Debouncer;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.Encoder;
 import org.firstinspires.ftc.teamcode.Utils.geometry.Path;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Arm;
+import org.firstinspires.ftc.teamcode.subsystems.Arm.ArmState;
 
 @Config
 public class Extension {
@@ -153,7 +154,7 @@ public class Extension {
     }
 
     public double getCurrentPos(double angle) {
-        return getTrueCurrentPosition() - offset - (Math.sin(Math.toRadians(clamp(angle,0,90)) * ExtensionConstants.valueSHit)) ;
+        return getTrueCurrentPosition() - offset;
     }
 
 
@@ -203,7 +204,11 @@ public class Extension {
                 break;
             case IDLE:
                 raw_power = 0;
-                motor.setPower(ff);
+                if(robot.arm.targetState == ArmState.HighBasketTeleOp || robot.arm.targetState == ArmState.HIGHBASKET) {
+                    motor.setPower(ff);
+                }else {
+                    motor.setPower(ExtensionConstants.idlePower);
+                }
                 break;
         }
         previous_angle = angle;

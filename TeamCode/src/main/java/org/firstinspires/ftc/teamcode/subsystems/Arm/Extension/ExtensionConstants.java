@@ -8,7 +8,7 @@ public class ExtensionConstants {
     public static double kP = 0.0135;
     public static double kI = 0.0;
     public static double kD = 0.0003;
-    public static double idlePower = 0;
+    public static double idlePower = -0.05;
     public static double maxPower = 1;
     public static double minPower = -1;
     public static double valueSHit = 0;//should lower this fr fr;
@@ -17,8 +17,12 @@ public class ExtensionConstants {
     //thresholds
 
     public static double pointThreeshold = 9;
+
+    public static double fakePidThreeshold = 20;
     public static double at0Threeshold = 6;
     public static double at0positionPitch = 40;
+
+    public static double highBasketThreeshold = 200;
 
     public static double dynamicTimerThreshold = 3;
 }

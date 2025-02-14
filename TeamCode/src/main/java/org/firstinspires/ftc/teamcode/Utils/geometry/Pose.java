@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.Utils.geometry;
 import com.acmerobotics.roadrunner.Pose2d;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 
 import java.util.Locale;
@@ -26,6 +28,15 @@ public class Pose extends Point {
 
     public Pose(Pose2d pose2d) {
         this(pose2d.position.x, pose2d.position.y, pose2d.heading.toDouble());
+    }
+
+    public Pose(Pose2D pose2d) {
+        this(pose2d.getX(DistanceUnit.INCH), pose2d.getY(DistanceUnit.INCH), pose2d.getHeading(AngleUnit.RADIANS));
+    }
+
+    public Pose2D getFtc() {
+        return new Pose2D(DistanceUnit.INCH,x,y,AngleUnit.RADIANS,heading);
+
     }
 
     public Pose() {
@@ -66,6 +77,15 @@ public class Pose extends Point {
 
     public Vector2D toVec2D() {
         return new Vector2D(x, y);
+    }
+
+    public Pose computeFtcPose(Pose2D pose) {
+        Pose ftcPose = new Pose(
+                pose.getX(DistanceUnit.INCH),
+                pose.getY(DistanceUnit.INCH),
+                pose.getHeading(AngleUnit.RADIANS)
+        );
+        return ftcPose;
     }
 
     public void copyFromPose2D(Pose2d pose2d) {

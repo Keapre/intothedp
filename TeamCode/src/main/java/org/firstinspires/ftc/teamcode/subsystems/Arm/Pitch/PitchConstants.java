@@ -21,8 +21,14 @@ public class PitchConstants {
 
     public static double threshold =3;
 
+
+    public static double lowSpeedBasket = 0.2;
+    public static double highSpeedBasket = 0.8;
+    public static double highSpeedDown = 0.6;
+    public static double lowSpeedDown = 0.1;
+
     public static double lowThreshold = 10;
     public static double low_Value = -0.15;
-    public static double max_Value = 0.55;
+    public static double max_Value = 0.6;
 
 }

@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.Utils.Caching.CachingDcMotorEx;
 import org.firstinspires.ftc.teamcode.Utils.Utils;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.Debouncer;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.Encoder;
+import org.firstinspires.ftc.teamcode.subsystems.Arm.ArmState;
 import org.firstinspires.ftc.teamcode.subsystems.Arm.Extension.ExtensionConstants;
 
 @Config
@@ -77,6 +78,34 @@ public class Pitch {
         offset = currentPos;
     }
 
+    void caping() {
+        motor1Power = (motor1Power) * robot.getNormalizedVoltage();
+        motor2Power = (motor2Power) * robot.getNormalizedVoltage();
+
+        if(target == ArmState.HighBasketTeleOp.getPivotAngle()) {
+
+            if(currentPos > target - ExtensionConstants.highBasketThreeshold) {
+                motor1Power = clamp(motor1Power,-PitchConstants.lowSpeedBasket,PitchConstants.lowSpeedBasket);
+                motor2Power = clamp(motor2Power,-PitchConstants.lowSpeedBasket,PitchConstants.lowSpeedBasket);
+            }else {
+                motor1Power = clamp(motor1Power,-PitchConstants.highSpeedBasket,PitchConstants.highSpeedBasket);
+                motor2Power = clamp(motor2Power,-PitchConstants.highSpeedBasket,PitchConstants.highSpeedBasket);
+            }
+        }else if(target == ExtensionConstants.at0positionPitch) {
+            if(currentPos < ExtensionConstants.at0positionPitch + ExtensionConstants.at0Threeshold) {
+                motor1Power = clamp(motor1Power,-PitchConstants.lowSpeedDown,PitchConstants.lowSpeedDown);
+                motor2Power = clamp(motor2Power,-PitchConstants.lowSpeedDown,PitchConstants.lowSpeedDown);
+            }else {
+                motor1Power = clamp(motor1Power,-PitchConstants.highSpeedDown,PitchConstants.highSpeedDown);
+                motor2Power = clamp(motor2Power,-PitchConstants.highSpeedDown,PitchConstants.highSpeedDown);
+            }
+        }else {
+            motor1Power = clamp(motor1Power,-PitchConstants.max_Value,PitchConstants.max_Value);
+            motor2Power = clamp(motor2Power,-PitchConstants.max_Value,PitchConstants.max_Value);
+        }
+        motor1Power+=ff * robot.getNormalizedVoltage();
+        motor2Power+=ff * robot.getNormalizedVoltage();
+    }
     void resetVar() {
         motor1Power = 0;
         motor2Power = 0;
@@ -181,8 +210,9 @@ public class Pitch {
                 break;
             case AUTO:
                 pid();
-                extension1.setPower(Utils.minMaxClip(motor1Power +ff  , PitchConstants.low_Value, PitchConstants.max_Value));
-                extension2.setPower(Utils.minMaxClip(motor2Power +ff  , PitchConstants.low_Value, PitchConstants.max_Value));
+                caping();
+                extension1.setPower(Utils.minMaxClip(-1,1,motor1Power));
+                extension2.setPower(Utils.minMaxClip(-1,1,motor2Power));
                 break;
             case MANUAL:
                 extension1.setPower(Utils.minMaxClip(-1,1,motor1Power));
@@ -194,8 +224,8 @@ public class Pitch {
                     extension2.setPower(0);
                 }
                 else {
-                    extension1.setPower(ff);
-                    extension2.setPower(ff);
+                    extension1.setPower(ff * robot.getNormalizedVoltage());
+                    extension2.setPower(ff * robot.getNormalizedVoltage());
                 }
                 break;
         }

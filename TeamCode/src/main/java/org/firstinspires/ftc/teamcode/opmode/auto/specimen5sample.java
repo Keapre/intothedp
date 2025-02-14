@@ -29,7 +29,7 @@ public class specimen5sample extends LinearOpMode {
     public static boolean useWait = false;
     Path xx;
     Path goTobasket;
-    Pose2d transBASKET = new Pose2d(40,51,Math.toRadians(180));
+    Pose2d transBASKET = new Pose2d(28,51,Math.toRadians(180));
     Pose2d bucketFirst = new Pose2d(55,45,Math.toRadians(250));
 
     public static boolean useSample = true;
@@ -40,22 +40,21 @@ public class specimen5sample extends LinearOpMode {
 
     Pose2d startPose = new Pose2d(-17, 62, Math.toRadians(180));
     Pose2d specinem1 = new Pose2d(-11.225201464074804, 49, Math.toRadians(113));
-    Pose2d specinem1_1 = new Pose2d(-11.5, 34, Math.toRadians(90));
-    Pose2d specimen2 = new Pose2d(-7.5, 32.5, Math.toRadians(90));
-    Pose2d specimen3 = new Pose2d(-4.5, 32.5, Math.toRadians(90));
-    Pose2d specimen4 = new Pose2d(-2, 32.5, Math.toRadians(90));
-    Pose2d specimen5 = new Pose2d(3, 32.5, Math.toRadians(90));
-    Pose2d specimen6 = new Pose2d(-4.5, 32.5,Math.toRadians(90));
+    Pose2d specinem1_1 = new Pose2d(-11.5, 33.2, Math.toRadians(90));
+    Pose2d specimen2 = new Pose2d(-7.5, 32, Math.toRadians(90));
+    Pose2d specimen3 = new Pose2d(-4.5, 32, Math.toRadians(90));
+    Pose2d specimen4 = new Pose2d(-2, 32, Math.toRadians(90));
+    Pose2d specimen5 = new Pose2d(1, 32, Math.toRadians(90));
+    Pose2d specimen6 = new Pose2d(-4.5, 32,Math.toRadians(90));
 
-    Pose2d pickUpspot = new Pose2d(-40 , 55, Math.toRadians(90));
+    Pose2d pickUpspot = new Pose2d(-40 , 56, Math.toRadians(90));
     Pose2d pickUpspot1 = new Pose2d(-60 , 57.5, Math.toRadians(90));
     Pose2d transitionpickUpspot = new Pose2d(-41, 45, Math.toRadians(95));
-    Pose2d scoreBasket2 = new Pose2d(55,50.4,Math.toRadians(225));
+    Pose2d scoreBasket2 = new Pose2d(51,57,Math.toRadians(200));
 
 
     public static double diff = 125;
-
-    Pose2d scoreBasket1 = new Pose2d(52,52,Math.toRadians(243));
+    Pose2d scoreBasket1 = new Pose2d(56,54,Math.toRadians(243));
 
     ArrayList<Pose> move1 = new ArrayList<Pose>() {
         {
@@ -158,7 +157,7 @@ public class specimen5sample extends LinearOpMode {
     INTAKING intaking = new INTAKING();
 
     public  static Pose2d moveFirstPos1 = new Pose2d(-35.24815500815084,46.491546390563485,Math.toRadians(headingDegrees1));
-    public static Pose2d transitionPoint = new Pose2d(-15,40,Math.toRadians(100));
+    public static Pose2d transitionPoint = new Pose2d(-10,45,Math.toRadians(100));
     public static Pose2d moveFirstPos2 = new Pose2d(-31.7,45.107,Math.toRadians(131));
 
     public static Pose2d moveSecondPos1 = new Pose2d(-40.32611035925197,43.52032999354085,Math.toRadians(headingDegrees2));
@@ -191,7 +190,7 @@ public class specimen5sample extends LinearOpMode {
             telemetry.update();
             robot.sleep(0.01);
         }
-        robot.sleep(0.1);
+        robot.sleep(0.3);
         robot.arm.fakePid( placeSpecimenDelta);
         while (robot.arm.currentState != Arm.FSMState.IDLE && opModeIsActive() && !isStopRequested()) {
             telemetry.addData("extension", robot.arm.extensionSubsystem.currentPos);
@@ -387,7 +386,7 @@ public class specimen5sample extends LinearOpMode {
         robot.sleep(0.1);
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
     }
-    public static double placeSpecimenDelta = 270;
+    public static double placeSpecimenDelta = 240;
 
     void placeThirdSpecimen() {
         PickUp5.reset();
@@ -465,7 +464,7 @@ public class specimen5sample extends LinearOpMode {
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
     }
 
-    public static double bucketExtenstion = 955;
+    public static double bucketExtenstion = 920;
     void placeSample() {
         pickUP.reset();
         robot.autoDrive.setTargetPose(PickUp7);
@@ -480,7 +479,7 @@ public class specimen5sample extends LinearOpMode {
 
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.CLOSE;
         if(useWait)robot.sleep(1.45);
-        else robot.sleep(0.35);
+        else robot.sleep(0.15);
         robot.arm.clawSubsystem.tiltState = Claw.tiltMode.UP;
 
         robot.autoDrive.setTargetPose(goTobasket);
@@ -493,18 +492,17 @@ public class specimen5sample extends LinearOpMode {
             telemetry.addData("pose",robot.autoDrive.currentPose);
             telemetry.update();
             if(robot.autoDrive.path.isLast() && !trans) {
-                robot.arm.clawSubsystem.tiltState = Claw.tiltMode.MID;
                 robot.arm.fakePid(bucketExtenstion);
                 trans = true;
             }
             robot.sleep(0.001);
         }
-
         robot.sleep(0.1);
-        robot.arm.clawSubsystem.tiltState = Claw.tiltMode.UP;
-        robot.sleep(0.20);
         robot.arm.clawSubsystem.clawPos = Claw.CLAWPOS.OPEN;
-        robot.sleep(0.1);
+        robot.sleep(0.20);
+        robot.arm.clawSubsystem.tiltState = Claw.tiltMode.DOWN;
+        robot.sleep(0.30);
+
 
     }
 
@@ -560,6 +558,7 @@ public class specimen5sample extends LinearOpMode {
 //            }
 //            robot.arm.fakePid(400);
 //        }
+        robot.arm.clawSubsystem.tiltState = Claw.tiltMode.DOWN;
         while ((robot.autoDrive.driveMode != P2Pdrive.DriveMode.IDLE || robot.arm.currentState != Arm.FSMState.IDLE) && opModeIsActive() && !isStopRequested()) {
             robot.sleep(0.01);
         }

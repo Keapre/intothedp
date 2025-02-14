@@ -11,7 +11,7 @@ public class ArmConstants {
     public static double DEFAULT_PITCH = 0;
 
     public static double HIGHBASKET_EXTENSION = 0;
-    public static double HIGHBASKET_PITCH = 555;
+    public static double HIGHBASKET_PITCH = 570;
 
     public static double INTAKING_EXTENSION = 0;
     public static double INTAKING_PITCH = 0;
@@ -32,6 +32,7 @@ public class ArmConstants {
     public static Claw.tiltMode GARD_TILT = Claw.tiltMode.MIDGARD;
     public static Claw.tiltMode DOWN_TILT = Claw.tiltMode.DOWN;
     public static Claw.tiltMode UP_TILT = Claw.tiltMode.UP;
+    public static Claw.tiltMode UP_VERT = Claw.tiltMode.UP;
 
     public static Claw.CLAWPOS CLOSE_CLAW = Claw.CLAWPOS.CLOSE;
     public static Claw.CLAWPOS OPEN_CLAW = Claw.CLAWPOS.OPEN;

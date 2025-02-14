@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.subsystems.DriveTrain;
 
 import static com.arcrobotics.ftclib.util.MathUtils.clamp;
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.DualNum;
 import com.acmerobotics.roadrunner.MecanumKinematics;
@@ -231,7 +233,7 @@ public class DriveTrain implements Subsystem {
         lastState = state;
     }
 
-//    private void doPathFollowLogic() {
+    //    private void doPathFollowLogic() {
 //        if(path == null || path.isComplete()) {
 //            state = STATE.IDLE;
 //            return;
@@ -309,10 +311,17 @@ public class DriveTrain implements Subsystem {
 
     public void updateLocalization() {
         pinpoint.update();
-        pose = pinpoint.getPositionRR();
-        TelemetryUtil.packet.put("x",pinpoint.getPosX());
-        speed = pinpoint.getVelocityRR();
-        lastPinPoint = pose;
+        if (Double.isNaN(pinpoint.getPosX()) || Double.isNaN(pinpoint.getPosY()) ||
+                (pinpoint.getPosX() == 0.0
+                        && pinpoint.getPosY() == 0.0
+                        && pinpoint.getHeading() == 0.0
+                        && pinpoint.getVelX() == 0.0)) {
+            pose = lastPinPoint;
+            Log.i("%11", "pinpoint NaN value");
+        } else {
+            pose = pinpoint.getPositionRR();
+            lastPinPoint = pose;
+        }
     }
 
     public void calculateErrors() {

@@ -43,6 +43,8 @@ public class Arm implements Subsystem {
         EXTEND_TILL_SENSOR
     }
 
+    public static double timerExtend = 1500;
+    ElapsedTime timerAt0 = null;
     public FSMState currentState = FSMState.IDLE;
     public ArmState targetState = ArmState.DEFAULT, previousState;
     public String TAG = "Robot";
@@ -61,7 +63,7 @@ public class Arm implements Subsystem {
     private long lastUpdateTime;
     double extensionInput = 0;
     private static final long UPDATE_INTERVAL_MS = 15;
-    public static double lengthLimitAt0 = 600;
+    public static double lengthLimitAt0 = 660;
     Robot robot;
 
     public Arm(HardwareMap hardwareMap, boolean isAuto, Robot robot) {
@@ -97,15 +99,6 @@ public class Arm implements Subsystem {
     public double desiredPitch = 0;
     public static double predictValue = 80;
 
-    public void setTargetState(ArmState newState) {
-        Log.w("debug", "set target state");
-        previousState = targetState;
-        targetState = newState;
-        desiredExtension = targetState.getExtensionTarget();
-        desiredPitch = targetState.getPivotAngle();
-        planTransitionSteps();
-        currentState = nextStateInPlan();
-    }
 
     public void changeExtension(double extension) {
         transitionPlan.clear();
@@ -128,12 +121,23 @@ public class Arm implements Subsystem {
     public void changeDesiredExtension(double extension) {
         desiredExtension = extension;
     }
+    public void setTargetState(ArmState newState) {
+        Log.w("debug", "set target state");
+        previousState = targetState;
+        targetState = newState;
+        desiredExtension = targetState.getExtensionTarget();
+        desiredPitch = targetState.getPivotAngle();
+        planTransitionSteps();
+        currentState = nextStateInPlan();
+    }
+
     public void setAutoTargetState(ArmState newState) {
         previousState = targetState;
         targetState = newState;
-        planAutoTransitionSteps();
         desiredExtension = targetState.getExtensionTarget();
         desiredPitch= targetState.getPivotAngle();
+        planAutoTransitionSteps();
+
         currentState = nextStateInPlan();
     }
     public void fakePid(double addon) {
@@ -197,7 +201,7 @@ public class Arm implements Subsystem {
             case EXTEND_MAX_FOR_TIME:
                 extensionSubsystem.mode = Extension.MODE.RAW_POWER;
                 extensionSubsystem.changeRawPower(1);
-                if(extensionSubsystem.currentPos > desiredExtension || maxTimer.time() > 2000) {
+                if(Math.abs(extensionSubsystem.currentPos -  desiredExtension) < ExtensionConstants.fakePidThreeshold || maxTimer.time() > timerExtend) {
                     extensionSubsystem.mode = Extension.MODE.IDLE;
                     currentState = nextStateInPlan();
                 }
@@ -227,11 +231,16 @@ public class Arm implements Subsystem {
                     resetMode();
                     break;
                 }
-                if ((desiredPitch!= ExtensionConstants.at0positionPitch && pitchSubsystem.isAtPosition(desiredPitch) || (desiredPitch == ExtensionConstants.at0positionPitch && pitchSubsystem.isAt0()))) {
-                    if(atThreeshold == null) atThreeshold = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-                    //extensionSubsystem.updateKerem(pitchSubsystem.calculateAngle());
-                    // pitchSubsystem.updateRegreesion();
-                    currentState = nextStateInPlan();
+                if (atThreeshold != null || (desiredPitch!= ExtensionConstants.at0positionPitch && pitchSubsystem.isAtPosition(desiredPitch) || (desiredPitch == ExtensionConstants.at0positionPitch && pitchSubsystem.isAt0()))) {
+                    if(desiredPitch == ExtensionConstants.at0positionPitch) {
+                        if(atThreeshold == null) atThreeshold = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+                        if(atThreeshold.time() > timer0) {
+                            currentState = nextStateInPlan();
+                            atThreeshold = null;
+                        }
+                    }else {
+                        currentState = nextStateInPlan();
+                    }
                 }else {
                     atThreeshold = null;
                 }
@@ -294,6 +303,10 @@ public class Arm implements Subsystem {
             }
         }
 
+        if(targetState == ArmState.SPECIMENGARD) {
+            extensionInput = 0;
+        }
+
         if(currentState != FSMState.IDLE) {
             if(targetState == ArmState.HIGHBASKET) {
                 if(extensionInput < 0) extensionInput = 0;
@@ -343,6 +356,10 @@ public class Arm implements Subsystem {
                 clawSubsystem.tiltState = Claw.tiltMode.UP2;
             } else if (clawSubsystem.tiltState == Claw.tiltMode.UP2) {
                 clawSubsystem.tiltState = Claw.tiltMode.UP;
+            }else if(clawSubsystem.tiltState == Claw.tiltMode.UP && clawSubsystem.rotateState == Claw.RotateMode.ORIZONTAL) {
+                clawSubsystem.rotateState = Claw.RotateMode.VERTICAL;
+            }else if(clawSubsystem.tiltState == Claw.tiltMode.UP && clawSubsystem.rotateState == Claw.RotateMode.VERTICAL) {
+                clawSubsystem.rotateState = Claw.RotateMode.ORIZONTAL;
             }
         }
 
