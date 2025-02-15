@@ -60,7 +60,7 @@ public class Pitch {
     public MODE mode = MODE.AUTO;
 
     public double target = 0;
-    Regression regression = new Regression();
+
 
 
 
@@ -90,7 +90,7 @@ public class Pitch {
         /*
         regression.add();
          */
-        regression.createLUT();
+        //regression.createLUT();
     }
     void caping() {
         motor1Power = (motor1Power) * robot.getNormalizedVoltage();
@@ -106,7 +106,7 @@ public class Pitch {
                 motor2Power = clamp(motor2Power,-PitchConstants.highSpeedBasket,PitchConstants.highSpeedBasket);
             }
         }else if(target == ExtensionConstants.at0positionPitch) {
-            if(currentPos < ExtensionConstants.at0positionPitch + ExtensionConstants.at0Threeshold) {
+            if(currentPos < ExtensionConstants.at0positionPitch + ExtensionConstants.at0ThreesholdDif) {
                 motor1Power = clamp(motor1Power,-PitchConstants.lowSpeedDown,PitchConstants.lowSpeedDown);
                 motor2Power = clamp(motor2Power,-PitchConstants.lowSpeedDown,PitchConstants.lowSpeedDown);
             }else {
@@ -114,8 +114,8 @@ public class Pitch {
                 motor2Power = clamp(motor2Power,-PitchConstants.highSpeedDown,PitchConstants.highSpeedDown);
             }
         }else {
-            motor1Power = clamp(motor1Power,-PitchConstants.max_Value,PitchConstants.max_Value);
-            motor2Power = clamp(motor2Power,-PitchConstants.max_Value,PitchConstants.max_Value);
+            motor1Power = clamp(motor1Power,-PitchConstants.max_Value_down,PitchConstants.max_Value);
+            motor2Power = clamp(motor2Power,-PitchConstants.max_Value_down,PitchConstants.max_Value);
         }
         motor1Power+=ff * robot.getNormalizedVoltage();
         motor2Power+=ff * robot.getNormalizedVoltage();
@@ -224,7 +224,7 @@ public class Pitch {
                 ff*=tunning_multiplier;
             }
             else {
-                ff *= (regression.get(currentPos));
+                //ff *= (regression.get(currentPos));
             }
         }
         switch (mode) {

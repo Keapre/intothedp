@@ -30,5 +30,6 @@ public class PitchConstants {
     public static double lowThreshold = 10;
     public static double low_Value = -0.15;
     public static double max_Value = 0.6;
+    public static double max_Value_down = -0.2;
 
 }

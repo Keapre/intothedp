@@ -17,6 +17,7 @@ public class ExtensionConstants {
     //thresholds
 
     public static double pointThreeshold = 9;
+    public static double at0ThreesholdDif = 200;
 
     public static double fakePidThreeshold = 20;
     public static double at0Threeshold = 6;

@@ -37,14 +37,16 @@ public class TunePitchPid extends LinearOpMode {
         gg = new GamePadController(gamepad1);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
+        double pre_target = target;
         waitForStart();
         robot.start();
-        while (opModeIsActive()) {
+        while (opModeIsActive() && !isStopRequested()) {
             gg.update();
-
-            if(gg.aOnce()) {
-                robot.arm.changePitch(target);
+            if(target!=pre_target) {
+                robot.arm.pitchSubsystem.setTarget(target);
+                pre_target = target;
             }
+
             telemetry.addData("target",target);
             telemetry.addData("pos",robot.arm.pitchSubsystem.getCurrentPos());
             telemetry.addData("state",robot.arm.pitchSubsystem.mode);
@@ -57,5 +59,6 @@ public class TunePitchPid extends LinearOpMode {
             telemetry.update();
             prev_target = target;
         }
+        robot.stop();
     }
 }

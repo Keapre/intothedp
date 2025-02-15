@@ -40,7 +40,8 @@ public class Arm implements Subsystem {
         OPERATION_COMPLETE,
         PRE_EXTENSION,
         CHANGING_OUTTAKE,
-        EXTEND_TILL_SENSOR
+        EXTEND_TILL_SENSOR,
+        RETRACT_AND_PIVOT
     }
 
     public static double timerExtend = 1500;
@@ -127,16 +128,33 @@ public class Arm implements Subsystem {
         targetState = newState;
         desiredExtension = targetState.getExtensionTarget();
         desiredPitch = targetState.getPivotAngle();
-        planTransitionSteps();
+        planTransitionSteps(false);
         currentState = nextStateInPlan();
     }
+    public void setTargetStateSimultan(ArmState newState) {
+        Log.w("debug", "set target state");
+        previousState = targetState;
+        targetState = newState;
+        desiredExtension = targetState.getExtensionTarget();
+        desiredPitch = targetState.getPivotAngle();
+        planTransitionSteps(true);
+        currentState = nextStateInPlan();
+    }
+    public void setAutoTargetStateSimultan(ArmState newState) {
+        previousState = targetState;
+        targetState = newState;
+        desiredExtension = targetState.getExtensionTarget();
+        desiredPitch= targetState.getPivotAngle();
+        planAutoTransitionSteps(true);
 
+        currentState = nextStateInPlan();
+    }
     public void setAutoTargetState(ArmState newState) {
         previousState = targetState;
         targetState = newState;
         desiredExtension = targetState.getExtensionTarget();
         desiredPitch= targetState.getPivotAngle();
-        planAutoTransitionSteps();
+        planAutoTransitionSteps(false);
 
         currentState = nextStateInPlan();
     }
@@ -188,6 +206,36 @@ public class Arm implements Subsystem {
                     clawSubsystem.rotateState = targetState.getRotatePos();
 
                 currentState = nextStateInPlan();
+                break;
+            case RETRACT_AND_PIVOT:
+                if(adjustingPitchTimer.time()>=2500) {
+                    pitchSubsystem.mode = Pitch.MODE.IDLE;
+                    resetMode();
+                    break;
+                }
+                extensionSubsystem.mode = Extension.MODE.RAW_POWER;
+                extensionSubsystem.changeRawPower(-raw_power_0);
+                if (extensionSubsystem.checkSwitch()) {
+                    if (atThreeshold != null || (desiredPitch!= ExtensionConstants.at0positionPitch && pitchSubsystem.isAtPosition(desiredPitch) || (desiredPitch == ExtensionConstants.at0positionPitch && pitchSubsystem.isAt0()))) {
+                        if(desiredPitch == ExtensionConstants.at0positionPitch) {
+                            if(atThreeshold == null) atThreeshold = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+                            if(atThreeshold.time() > timer0) {
+                                currentState = nextStateInPlan();
+                                extensionSubsystem.mode = Extension.MODE.IDLE;
+                                partTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+                                currentState = nextStateInPlan();
+                                atThreeshold = null;
+                            }
+                        }else {
+                            extensionSubsystem.mode = Extension.MODE.IDLE;
+                            partTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+                            currentState = nextStateInPlan();
+                            currentState = nextStateInPlan();
+                        }
+                    }else {
+                        atThreeshold = null;
+                    }
+                }
                 break;
             case RETRACTING_EXTENSION:
                 extensionSubsystem.mode = Extension.MODE.RAW_POWER;
@@ -392,15 +440,20 @@ public class Arm implements Subsystem {
 
 
 
-    private void planAutoTransitionSteps() {
+    private void planAutoTransitionSteps(boolean useRetractPivot) {
         Log.w("debug", "auto transitions");
 
         transitionPlan.clear();
         transitionPlan.add(FSMState.CHANGING_OUTTAKE);
-        transitionPlan.add(FSMState.RETRACTING_EXTENSION);
+        if(useRetractPivot) {
+            transitionPlan.add(FSMState.PRE_ADJUSTING_PITCH);
+            transitionPlan.add(FSMState.RETRACTING_EXTENSION);
+        }else {
+            if (useRetractAuto) transitionPlan.add(FSMState.RETRACTING_EXTENSION);
 
-        transitionPlan.add(FSMState.PRE_ADJUSTING_PITCH);
-        transitionPlan.add(FSMState.ADJUSTING_PITCH);
+            transitionPlan.add(FSMState.PRE_ADJUSTING_PITCH);
+            transitionPlan.add(FSMState.ADJUSTING_PITCH);
+        }
         //transitionPlan.add(FSMState.RETRACTING_EXTENSION);
 
         transitionPlan.add(FSMState.PRE_EXTENSION);
@@ -410,14 +463,21 @@ public class Arm implements Subsystem {
 
     }
 
-    private void planTransitionSteps() {
+
+    private void planTransitionSteps(boolean useRetractPivot) {
         Log.w("debug", "planning transition steps");
         transitionPlan.clear();
         transitionPlan.add(FSMState.CHANGING_OUTTAKE);
-        if (useRetractAuto) transitionPlan.add(FSMState.RETRACTING_EXTENSION);
+        if(useRetractPivot) {
+            transitionPlan.add(FSMState.PRE_ADJUSTING_PITCH);
+            transitionPlan.add(FSMState.RETRACTING_EXTENSION);
+        }else {
+            if (useRetractAuto) transitionPlan.add(FSMState.RETRACTING_EXTENSION);
 
-        transitionPlan.add(FSMState.PRE_ADJUSTING_PITCH);
-        transitionPlan.add(FSMState.ADJUSTING_PITCH);
+            transitionPlan.add(FSMState.PRE_ADJUSTING_PITCH);
+            transitionPlan.add(FSMState.ADJUSTING_PITCH);
+        }
+
         //transitionPlan.add(FSMState.RETRACTING_EXTENSION);
 //        if (Math.abs(extensionSubsystem.getCurrentPosition() - targetState.extensionTarget) > 10) {
 //            transitionPlan.add(FSMState.EXTENDING_EXTENSION);
