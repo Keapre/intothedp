@@ -25,7 +25,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Arm.ArmState;
 
 @Config
 public class Extension {
-    public static boolean IS_DISABLED = false;
+    public boolean IS_DISABLED = false;
 
     public DcMotorEx motor;
 

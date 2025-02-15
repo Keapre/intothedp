@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.Utils.Caching.CachingDcMotorEx;
+import org.firstinspires.ftc.teamcode.Utils.Regression;
 import org.firstinspires.ftc.teamcode.Utils.Utils;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.Debouncer;
 import org.firstinspires.ftc.teamcode.Utils.Wrappers.Encoder;
@@ -45,8 +46,11 @@ public class Pitch {
     public double motor2Power = 0;
     public double ff = 0;
 
+    public double tunning_multiplier = 1;
+
 
     public  double angle = 0;
+    public boolean TUNING_FF= false;
 
     DigitalChannel limitSwitch;
     public  double offset = 0;
@@ -56,6 +60,7 @@ public class Pitch {
     public MODE mode = MODE.AUTO;
 
     public double target = 0;
+    Regression regression = new Regression();
 
 
 
@@ -76,8 +81,17 @@ public class Pitch {
         currentPos = encoder.getCurrentPosition();
         currentEncoderPos = currentPos;
         offset = currentPos;
+
+        updateRegression();
     }
 
+
+    private void updateRegression() {
+        /*
+        regression.add();
+         */
+        regression.createLUT();
+    }
     void caping() {
         motor1Power = (motor1Power) * robot.getNormalizedVoltage();
         motor2Power = (motor2Power) * robot.getNormalizedVoltage();
@@ -185,6 +199,15 @@ public class Pitch {
     public void setMode(MODE md) {
         this.mode = md;
     }
+
+    public void setTUNING_FF(boolean value) {
+        TUNING_FF = value;
+    }
+
+    public void setMultiplier(double value) {
+        tunning_multiplier = value;
+    }
+
     public boolean USE_EXTENSTIONFEED = false;
     public void update() {
         updateTrueCurrentPosition();
@@ -196,13 +219,14 @@ public class Pitch {
         if(IS_DISABLED) return;
         ff = Math.cos(Math.toRadians(angle))* PitchConstants.max_f;
         if(USE_EXTENSTIONFEED) {
-            ff *= (1 + (clamp(robot.arm.extensionSubsystem.currentPos,0,1000)) * PitchConstants.extensionVar);
+            //ff *= (1 + (clamp(robot.arm.extensionSubsystem.currentPos,0,1000)) * PitchConstants.extensionVar);
+            if(TUNING_FF) {
+                ff*=tunning_multiplier;
+            }
+            else {
+                ff *= (regression.get(currentPos));
+            }
         }
-//        if(lutExtendIntake == null) {
-//            updateRegreesion();
-//        }'[
-        //ff*=(1 + (600/robot.arm.extensionSubsystem.currentPos));
-//        ff*=lutExtendIntake.get(clamp(robot.arm.extensionSubsystem.getPosition(),minnLinerPos,maxxLinearPos));
         switch (mode) {
             case RAW_POWER:
                 extension1.setPower(raw_power);
@@ -219,14 +243,11 @@ public class Pitch {
                 extension2.setPower(Utils.minMaxClip(-1,1,motor2Power));
                 break;
             case IDLE:
-                if(target == ExtensionConstants.at0positionPitch) {
-                    extension1.setPower(0);
-                    extension2.setPower(0);
+                if(target == ExtensionConstants.at0positionPitch && !TUNING_FF) {
+                    ff = 0;
                 }
-                else {
-                    extension1.setPower(ff * robot.getNormalizedVoltage());
-                    extension2.setPower(ff * robot.getNormalizedVoltage());
-                }
+                extension1.setPower(ff * robot.getNormalizedVoltage());
+                extension2.setPower(ff * robot.getNormalizedVoltage());
                 break;
         }
     }

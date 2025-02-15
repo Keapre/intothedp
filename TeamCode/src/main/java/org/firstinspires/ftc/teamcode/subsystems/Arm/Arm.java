@@ -192,7 +192,7 @@ public class Arm implements Subsystem {
             case RETRACTING_EXTENSION:
                 extensionSubsystem.mode = Extension.MODE.RAW_POWER;
                 extensionSubsystem.changeRawPower(-raw_power_0);
-                if (extensionSubsystem.checkSwitch() == true) {
+                if (extensionSubsystem.checkSwitch()) {
                     extensionSubsystem.mode = Extension.MODE.IDLE;
                     partTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
                     currentState = nextStateInPlan();
